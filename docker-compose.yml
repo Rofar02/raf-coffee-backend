@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: raf-postgres
+    environment:
+      POSTGRES_DB: rafcoffee
+      POSTGRES_USER: rafuser
+      POSTGRES_PASSWORD: rafpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: raf-redis
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: ./backend
+    container_name: raf-backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://rafuser:rafpass@postgres:5432/rafcoffee
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app
+
+volumes:
+  postgres_data:

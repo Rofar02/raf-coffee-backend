@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+.env
+.venv
+venv/
+poetry.lock
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+*.pid
+
+# OS
+.DS_Store
+Thumbs.db
