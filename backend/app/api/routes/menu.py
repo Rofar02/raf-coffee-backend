@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from typing import List
-from ....core.database import get_pool
-from ....repositories.dish_repository import DishRepository
-from ....services.menu_service import MenuService
-from ....models.dish import Dish
+from app.core.database import get_pool
+from app.repositories.dish_repository import DishRepository
+from app.services.menu_service import MenuService
+from app.models.dish import Dish
 
 router = APIRouter(prefix="/menu", tags=["menu"])
 
