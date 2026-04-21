@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="api-base" content="" />
+  <title>Меню — Rafchik Coffee</title>
+  <link rel="stylesheet" href="/dist/styles.css" />
+  <style>
+    #modal-panel {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    #modal-panel::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="menu-backdrop font-sans text-coffee-900 antialiased">
+  <header class="border-b border-coffee-200/80 bg-coffee-50/95 backdrop-blur-md">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+      <a href="/" class="flex items-center gap-3 rounded-xl text-coffee-50 transition hover:opacity-90">
+        <img src="/static/new_logo_rafchik.png" alt="Рафчик" class="h-10 w-auto sm:h-12" width="120" height="48" />
+      </a>
+      <nav class="flex items-center gap-4 text-sm font-medium text-coffee-800">
+        <a href="/" class="rounded-full px-3 py-1.5 transition hover:bg-coffee-200/50">Главная</a>
+        <span class="rounded-full bg-coffee-200/60 px-3 py-1.5 text-coffee-900">Меню</span>
+      </nav>
+    </div>
+  </header>
+
+  <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <header class="mb-10 text-center">
+      <p class="mb-2 text-sm font-medium uppercase tracking-[0.35em] text-coffee-200/90">
+        Добро пожаловать
+      </p>
+      <h1 class="font-display text-3xl font-semibold text-coffee-50 drop-shadow sm:text-4xl">
+        Меню на сегодня
+      </h1>
+    </header>
+
+    <div id="state-loading" class="rounded-2xl bg-coffee-50/95 p-8 text-center shadow-lg backdrop-blur-sm">
+      <p class="text-coffee-700">Загружаем меню…</p>
+    </div>
+    <div id="state-error" class="hidden rounded-2xl border border-red-200 bg-red-50/95 p-6 text-red-800 shadow-lg backdrop-blur-sm">
+      <p class="font-medium">Не удалось загрузить меню</p>
+      <p id="state-error-msg" class="mt-2 text-sm"></p>
+    </div>
+    <div id="state-empty" class="hidden rounded-2xl bg-coffee-50/95 p-10 text-center text-coffee-600 shadow-lg backdrop-blur-sm">
+      Пока нет позиций в меню. Загляните чуть позже.
+    </div>
+
+    <div id="menu-root" class="hidden space-y-14"></div>
+  </div>
+
+  <div
+    id="modal-overlay"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/55 p-4 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
+  >
+    <div
+      id="modal-panel"
+      class="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl p-6 shadow-2xl ring-1 ring-black/5"
+      style="background: linear-gradient(165deg, rgba(251,246,238,0.98) 0%, rgba(236,225,208,0.96) 44%, rgba(226,212,191,0.96) 100%);"
+    >
+      <button
+        type="button"
+        id="modal-close"
+        class="absolute right-4 top-4 rounded-full bg-coffee-100 p-2 text-coffee-800 transition hover:bg-coffee-200"
+        aria-label="Закрыть"
+      >
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="mb-4 flex items-center justify-start">
+        <img
+          src="/static/new_logo_rafchik.png"
+          alt="Рафчик"
+          class="h-12 w-auto sm:h-14"
+          width="160"
+          height="64"
+        />
+      </div>
+
+      <div id="modal-media" class="mb-5 hidden overflow-hidden rounded-xl"></div>
+
+      <h2 id="modal-title" class="font-display pr-10 text-2xl font-semibold text-[#3f2f25]"></h2>
+      <p id="modal-meta" class="mt-2 text-lg font-semibold text-[#5b4334]"></p>
+
+      <div id="modal-description-block" class="mt-5 hidden">
+        <p class="text-xs font-semibold uppercase tracking-wide text-[#7a5c49]">Описание</p>
+        <p id="modal-description" class="mt-1 leading-relaxed text-[#4f3a2d]"></p>
+      </div>
+      <p id="modal-calories" class="mt-4 hidden text-sm font-medium text-[#5b4334]"></p>
+
+    </div>
+  </div>
+
+  <script>
+    const apiBaseMeta = document.querySelector('meta[name="api-base"]');
+    const API_ORIGIN = (apiBaseMeta && apiBaseMeta.content && apiBaseMeta.content.trim())
+      ? apiBaseMeta.content.trim().replace(/\/$/, '')
+      : '';
+
+    function apiOriginForRequests() {
+      return API_ORIGIN || window.location.origin;
+    }
+
+    function getMenuUrl() {
+      return new URL('/menu/', apiOriginForRequests()).href;
+    }
+
+    function resolveMediaUrl(url) {
+      if (!url) return url;
+      const u = String(url).trim();
+      if (/^https?:\/\//i.test(u) || u.startsWith('data:') || u.startsWith('blob:')) return u;
+      const path = u.startsWith('/') ? u : '/' + u;
+      return new URL(path, apiOriginForRequests()).href;
+    }
+
+    function groupMenuItems(items) {
+      const catMap = new Map();
+
+      for (const dish of items) {
+        const catKey = dish.category_id != null ? String(dish.category_id) : '_other';
+        const catLabel = dish.category_name || 'Другое';
+        const subKey = dish.subcategory_id != null ? String(dish.subcategory_id) : '_nosub';
+        const subLabel = dish.subcategory_name || 'Без подкатегории';
+
+        if (!catMap.has(catKey)) {
+          catMap.set(catKey, {
+            id: dish.category_id,
+            label: catLabel,
+            sort: dish.category_id ?? 9999,
+            subs: new Map(),
+          });
+        }
+        const cat = catMap.get(catKey);
+        if (!cat.subs.has(subKey)) {
+          cat.subs.set(subKey, {
+            id: dish.subcategory_id,
+            label: subLabel,
+            sort: dish.subcategory_id ?? 9999,
+            dishes: [],
+          });
+        }
+        cat.subs.get(subKey).dishes.push(dish);
+      }
+
+      const categories = [...catMap.values()].sort((a, b) => {
+        if (a.sort !== b.sort) return a.sort - b.sort;
+        return String(a.label).localeCompare(String(b.label), 'ru');
+      });
+
+      for (const cat of categories) {
+        cat.subs = [...cat.subs.values()].sort((a, b) => {
+          if (a.sort !== b.sort) return a.sort - b.sort;
+          return String(a.label).localeCompare(String(b.label), 'ru');
+        });
+      }
+
+      return categories;
+    }
+
+    function formatPrice(n) {
+      return new Intl.NumberFormat('ru-RU').format(n) + '\u00a0₽';
+    }
+
+    function escapeHtml(s) {
+      if (s == null) return '';
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    function escapeAttr(s) {
+      if (s == null) return '';
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;');
+    }
+
+    function formatWeight(dish) {
+      if (dish.weight_grams == null || dish.weight_grams === '') return '';
+      const n = Number(dish.weight_grams);
+      if (Number.isNaN(n)) return '';
+      return n + '\u00a0г';
+    }
+
+    /** В списке меню — только название, граммы и цена (без фото). Подробности — в модалке по клику. */
+    function renderDishRow(dish) {
+      const w = formatWeight(dish);
+      const weightCell = w || '—';
+
+      return `
+        <article
+          class="group flex cursor-pointer flex-col gap-2 border-b border-coffee-200/70 py-4 last:border-b-0 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6 sm:py-3"
+          data-dish-id="${dish.id}"
+          role="button"
+          tabindex="0"
+        >
+          <span class="min-w-0 flex-1 font-display text-base font-semibold leading-snug text-coffee-900 group-hover:text-coffee-700 group-hover:underline decoration-coffee-400/60 underline-offset-2">
+            ${escapeHtml(dish.name)}
+          </span>
+          <div class="flex shrink-0 flex-wrap items-baseline gap-4 sm:justify-end">
+            <span class="text-sm tabular-nums text-coffee-600">${weightCell}</span>
+            <span class="min-w-[5.5rem] text-right text-lg font-semibold tabular-nums text-coffee-900">${formatPrice(dish.price)}</span>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderMenu(groups) {
+      const root = document.getElementById('menu-root');
+      root.innerHTML = groups
+        .map((cat) => {
+          const subBlocks = cat.subs
+            .map(
+              (sub) => `
+            <div class="mb-8 last:mb-0">
+              <h3 class="mb-3 border-b border-coffee-200/60 pb-2 font-display text-xl text-coffee-800">
+                ${escapeHtml(sub.label)}
+              </h3>
+              <div class="rounded-xl border border-coffee-200/50 bg-white/70 px-3 py-1 shadow-inner sm:px-5">
+                ${sub.dishes.map(renderDishRow).join('')}
+              </div>
+            </div>
+          `
+            )
+            .join('');
+
+          return `
+            <section class="rounded-3xl bg-coffee-50/95 p-6 shadow-xl ring-1 ring-white/20 backdrop-blur-sm sm:p-8">
+              <h2 class="font-display mb-8 text-2xl font-bold text-coffee-900 md:text-3xl">
+                ${escapeHtml(cat.label)}
+              </h2>
+              ${subBlocks}
+            </section>
+          `;
+        })
+        .join('');
+
+      root.querySelectorAll('[data-dish-id]').forEach((el) => {
+        const id = Number(el.getAttribute('data-dish-id'));
+        const dish = itemsById.get(id);
+        el.addEventListener('click', () => openModal(dish));
+        el.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openModal(dish);
+          }
+        });
+      });
+    }
+
+    const itemsById = new Map();
+    const mediaWarmupCache = [];
+    let modalOpenRequestId = 0;
+
+    function warmupMedia(items) {
+      const seen = new Set();
+      const maxPreload = 12;
+      let loaded = 0;
+
+      for (const dish of items) {
+        if (loaded >= maxPreload) break;
+        const rawUrl = dish.video_url || dish.image_url;
+        if (!rawUrl) continue;
+        const url = resolveMediaUrl(rawUrl);
+        if (!url || seen.has(url)) continue;
+        seen.add(url);
+
+        if (dish.video_url) {
+          const preloadVideo = document.createElement('video');
+          preloadVideo.preload = 'auto';
+          preloadVideo.muted = true;
+          preloadVideo.playsInline = true;
+          preloadVideo.src = url;
+          preloadVideo.load();
+          mediaWarmupCache.push(preloadVideo);
+        } else {
+          const preloadImage = new Image();
+          preloadImage.decoding = 'async';
+          preloadImage.loading = 'eager';
+          preloadImage.src = url;
+          mediaWarmupCache.push(preloadImage);
+        }
+        loaded += 1;
+      }
+    }
+
+    function waitForMediaReady(el, timeoutMs) {
+      return new Promise((resolve) => {
+        let done = false;
+        const finish = () => {
+          if (done) return;
+          done = true;
+          resolve();
+        };
+        const t = setTimeout(finish, timeoutMs);
+
+        if (el.tagName === 'VIDEO') {
+          el.addEventListener('loadeddata', () => {
+            clearTimeout(t);
+            finish();
+          }, { once: true });
+          el.addEventListener('error', () => {
+            clearTimeout(t);
+            finish();
+          }, { once: true });
+        } else if (el.tagName === 'IMG') {
+          if (el.complete) {
+            clearTimeout(t);
+            finish();
+            return;
+          }
+          el.addEventListener('load', () => {
+            clearTimeout(t);
+            finish();
+          }, { once: true });
+          el.addEventListener('error', () => {
+            clearTimeout(t);
+            finish();
+          }, { once: true });
+        } else {
+          clearTimeout(t);
+          finish();
+        }
+      });
+    }
+
+    function buildMediaElement(dish) {
+      if (dish.video_url) {
+        const v = document.createElement('video');
+        v.src = resolveMediaUrl(dish.video_url);
+        v.controls = false;
+        v.className = 'mx-auto block max-h-[60vh] w-auto max-w-full object-contain';
+        v.playsInline = true;
+        v.setAttribute('playsinline', '');
+        v.setAttribute('muted', '');
+        v.muted = true;
+        v.volume = 0;
+        v.autoplay = true;
+        v.loop = true;
+        v.preload = 'auto';
+        v.style.backgroundColor = 'transparent';
+        v.style.cursor = 'pointer';
+        v.addEventListener('volumechange', function () {
+          if (v.volume > 0 || !v.muted) {
+            v.muted = true;
+            v.volume = 0;
+          }
+        });
+        v.addEventListener('click', function () {
+          v.controls = true;
+        }, { once: true });
+        return v;
+      }
+
+      if (dish.image_url) {
+        const img = document.createElement('img');
+        img.src = resolveMediaUrl(dish.image_url);
+        img.alt = dish.name;
+        img.className = 'max-h-72 w-full object-cover';
+        return img;
+      }
+
+      return null;
+    }
+
+    async function openModal(dish) {
+      const currentRequestId = ++modalOpenRequestId;
+      const overlay = document.getElementById('modal-overlay');
+      const panel = document.getElementById('modal-panel');
+      document.getElementById('modal-title').textContent = dish.name;
+      const metaParts = [];
+      const w = formatWeight(dish);
+      if (w) metaParts.push(w);
+      metaParts.push(formatPrice(dish.price));
+      document.getElementById('modal-meta').textContent = metaParts.join(' · ');
+
+      const descBlock = document.getElementById('modal-description-block');
+      const descEl = document.getElementById('modal-description');
+      if (dish.description) {
+        descEl.textContent = dish.description;
+        descBlock.classList.remove('hidden');
+      } else {
+        descEl.textContent = '';
+        descBlock.classList.add('hidden');
+      }
+
+      const calEl = document.getElementById('modal-calories');
+      if (dish.calories) {
+        calEl.textContent = 'Калорийность: ' + dish.calories;
+        calEl.classList.remove('hidden');
+      } else {
+        calEl.textContent = '';
+        calEl.classList.add('hidden');
+      }
+
+      const media = document.getElementById('modal-media');
+      media.innerHTML = '';
+      const mediaEl = buildMediaElement(dish);
+      if (!mediaEl) {
+        media.classList.add('hidden');
+      } else {
+        media.classList.remove('hidden');
+        media.appendChild(mediaEl);
+      }
+
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+      panel.style.opacity = '0';
+      panel.style.transition = 'opacity 220ms ease';
+
+      if (mediaEl) {
+        await waitForMediaReady(mediaEl, 900);
+      }
+
+      if (currentRequestId !== modalOpenRequestId) return;
+      panel.style.opacity = '1';
+
+      if (mediaEl && mediaEl.tagName === 'VIDEO') {
+        mediaEl.play().catch(function () {});
+      }
+    }
+
+    function closeModal() {
+      const overlay = document.getElementById('modal-overlay');
+      overlay.classList.add('hidden');
+      overlay.classList.remove('flex');
+      document.body.style.overflow = '';
+      const v = document.querySelector('#modal-media video');
+      if (v) v.pause();
+    }
+
+    document.getElementById('modal-close').addEventListener('click', closeModal);
+    document.getElementById('modal-overlay').addEventListener('click', (e) => {
+      if (e.target.id === 'modal-overlay') closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    function showLoadError(message) {
+      const loading = document.getElementById('state-loading');
+      const errBox = document.getElementById('state-error');
+      loading.classList.add('hidden');
+      errBox.classList.remove('hidden');
+      document.getElementById('state-error-msg').textContent = message;
+    }
+
+    async function loadMenu() {
+      const loading = document.getElementById('state-loading');
+      const errBox = document.getElementById('state-error');
+      const empty = document.getElementById('state-empty');
+      const root = document.getElementById('menu-root');
+
+      if (window.location.protocol === 'file:') {
+        if (!API_ORIGIN) {
+          showLoadError(
+            'Страница открыта как файл. Запустите: docker compose up и откройте http://localhost:8080 ' +
+              'или укажите в <meta name="api-base" content="http://127.0.0.1:8000"> и откройте через локальный сервер.'
+          );
+          return;
+        }
+      }
+
+      errBox.classList.add('hidden');
+
+      try {
+        const res = await fetch(getMenuUrl());
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+
+        loading.classList.add('hidden');
+
+        if (!Array.isArray(data) || data.length === 0) {
+          empty.classList.remove('hidden');
+          return;
+        }
+
+        data.forEach((d) => itemsById.set(d.id, d));
+        const groups = groupMenuItems(data);
+        renderMenu(groups);
+        root.classList.remove('hidden');
+        setTimeout(() => warmupMedia(data), 0);
+      } catch (e) {
+        const hint =
+          (e && (e.name === 'TypeError' || /fetch|Load failed|NETWORK/i.test(String(e.message))))
+            ? ' Не удаётся подключиться к API (часто: не запущен docker compose / uvicorn, или неверный адрес).'
+            : '';
+        showLoadError((e.message || String(e)) + hint);
+      }
+    }
+
+    loadMenu();
+  </script>
+</body>
+</html>

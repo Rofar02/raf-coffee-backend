@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Рафчик — кофейня. Уют, кофе и десерты. Как нас найти и что внутри." />
+  <title>Рафчик — кофейня</title>
+  <link rel="stylesheet" href="/dist/styles.css" />
+</head>
+<body class="bg-coffee-50 font-sans text-coffee-900 antialiased">
+  <!-- Шапка: цвета как у логотипа — тёмный кофейный + кремовый фон -->
+  <header id="site-header" class="sticky top-0 z-40 border-b border-coffee-200/80 bg-coffee-50/95 backdrop-blur-md transition-colors duration-300">
+    <div class="mx-auto flex max-w-6xl items-center justify-between gap-6 px-4 py-4 sm:px-6">
+      <a href="/" class="flex shrink-0 items-center gap-2">
+        <img
+          src="/static/new_logo_rafchik.png"
+          alt="Рафчик"
+          class="h-11 w-auto sm:h-14"
+          width="140"
+          height="56"
+        />
+      </a>
+      <nav id="site-nav" class="flex flex-1 flex-wrap items-center justify-center gap-1 text-xs font-medium text-coffee-800 sm:justify-end sm:gap-2 sm:text-sm">
+        <a href="#about" class="rounded-full px-2 py-1.5 sm:px-3 sm:py-2 transition hover:bg-coffee-200/50">О нас</a>
+        <a href="#place" class="rounded-full px-2 py-1.5 sm:px-3 sm:py-2 transition hover:bg-coffee-200/50">Как добраться</a>
+        <a href="#interior" class="rounded-full px-2 py-1.5 sm:px-3 sm:py-2 transition hover:bg-coffee-200/50">Интерьер</a>
+      </nav>
+      <a
+        id="menu-link"
+        href="/menu.html"
+        class="rounded-full bg-coffee-800 px-4 py-2.5 text-sm font-semibold text-coffee-50 shadow-sm transition hover:bg-coffee-900"
+      >
+        Меню
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <section id="welcome-screen" class="relative flex items-end justify-center overflow-hidden bg-black" style="min-height: calc(100vh - var(--header-height, 80px));">
+      <video
+        id="welcome-video"
+        class="absolute inset-0 h-full w-full object-contain"
+        src="/static/start_video.mp4"
+        autoplay
+        muted
+        loop
+        playsinline
+        webkit-playsinline
+        preload="auto"
+      ></video>
+      <div class="relative z-10 flex w-full flex-col items-center bg-gradient-to-t from-black/75 via-black/35 to-transparent px-6 pb-10 pt-28 text-center text-white">
+        <p class="text-base font-medium sm:text-lg">Прокрутите вниз, чтобы перейти к информации</p>
+      </div>
+    </section>
+
+    <!-- Герой -->
+    <section id="home-content" class="border-b border-coffee-200/60 bg-gradient-to-b from-white to-coffee-50 px-4 py-16 sm:px-6 sm:py-24">
+      <div class="mx-auto max-w-3xl text-center">
+        <img
+          src="/static/new_logo_rafchik.png"
+          alt=""
+          class="mx-auto mb-8 h-24 w-auto sm:h-32"
+          width="200"
+          height="80"
+        />
+        <p class="font-display text-2xl font-semibold text-coffee-900 sm:text-3xl">
+          Неспешный кофе и тёплая атмосфера
+        </p>
+        <p class="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-coffee-700">
+          Заходите на раф, чай или десерт — берите с собой или оставайтесь за столом. Мы рядом, когда нужна пауза в дне.
+        </p>
+        <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <a
+            href="/menu.html"
+            class="inline-flex rounded-full bg-coffee-800 px-8 py-3 text-base font-semibold text-white shadow-md transition hover:bg-coffee-900"
+          >
+            Смотреть меню
+          </a>
+          <a
+            href="#place"
+            class="inline-flex rounded-full border-2 border-coffee-700 px-8 py-3 text-base font-semibold text-coffee-800 transition hover:bg-coffee-100"
+          >
+            Как нас найти
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- О нас — замените текст на свой -->
+    <section id="about" class="scroll-mt-24 px-4 py-16 sm:px-6 sm:py-20">
+      <div class="mx-auto max-w-3xl">
+        <h2 class="font-display text-2xl font-bold text-coffee-900 sm:text-3xl">О кофейне</h2>
+        <p class="mt-2 h-1 w-16 rounded-full bg-coffee-700"></p>
+        <div class="mt-8 space-y-4 text-lg leading-relaxed text-coffee-800">
+          <p>
+            «Рафчик» — это про спокойный ритм: удобные места, честный кофе и десерты без лишней суеты. Мы любим, когда гости возвращаются — как к знакомым.
+          </p>
+          <p>
+            Здесь можно поработать с ноутбуком, встретиться с другом или просто выпить чашку до дороги. Этот блок легко правится в исходнике главной страницы.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Локация — подставьте адрес и часы -->
+    <section id="place" class="scroll-mt-24 border-y border-coffee-200/80 bg-white px-4 py-16 sm:px-6 sm:py-20">
+      <div class="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2 lg:gap-16">
+        <div>
+          <h2 class="font-display text-2xl font-bold text-coffee-900 sm:text-3xl">Как добраться</h2>
+          <p class="mt-2 h-1 w-16 rounded-full bg-coffee-700"></p>
+          <address class="mt-8 not-italic text-lg leading-relaxed text-coffee-800">
+            <p class="font-semibold text-coffee-900">Адрес</p>
+            <p class="mt-2">г. Москва, ул. Примерная, д. 1</p>
+            <p class="mt-1 text-coffee-600">Вход со двора / ориентир — «замените на ваш адрес»</p>
+            <p class="mt-6 font-semibold text-coffee-900">Часы работы</p>
+            <p class="mt-2">Пн–Пт 8:00–21:00</p>
+            <p>Сб–Вс 9:00–22:00</p>
+          </address>
+          <p class="mt-8 text-sm text-coffee-600">
+            Карту можно вставить сюда ссылкой на Яндекс или Google Maps — блок ниже оставлен под iframe или кнопку «Построить маршрут».
+          </p>
+          <a
+            href="https://yandex.ru/maps"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mt-4 inline-flex rounded-xl border border-coffee-300 bg-coffee-50 px-4 py-3 text-sm font-medium text-coffee-800 transition hover:border-coffee-500"
+          >
+            Открыть в картах (шаблон)
+          </a>
+        </div>
+        <div class="flex min-h-[220px] items-center justify-center rounded-2xl border-2 border-dashed border-coffee-300 bg-coffee-100/50 p-8 text-center text-coffee-600">
+          <p>Место под карту или фото входа в кофейню</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Интерьер -->
+    <section id="interior" class="scroll-mt-24 px-4 py-16 sm:px-6 sm:py-20">
+      <div class="mx-auto max-w-5xl">
+        <h2 class="font-display text-2xl font-bold text-coffee-900 sm:text-3xl">Интерьер</h2>
+        <p class="mt-2 h-1 w-16 rounded-full bg-coffee-700"></p>
+        <p class="mt-8 max-w-3xl text-lg leading-relaxed text-coffee-800">
+          Светлое дерево, мягкий свет и немного зелени — чтобы было уютно и в будни, и в выходные. Ниже — места под фото зала (подключите свои снимки в папке сайта).
+        </p>
+        <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div class="flex aspect-[4/3] items-center justify-center rounded-2xl bg-coffee-200/40 text-center text-sm text-coffee-600 ring-1 ring-coffee-200/80">
+            Фото 1
+          </div>
+          <div class="flex aspect-[4/3] items-center justify-center rounded-2xl bg-coffee-200/40 text-center text-sm text-coffee-600 ring-1 ring-coffee-200/80">
+            Фото 2
+          </div>
+          <div class="flex aspect-[4/3] items-center justify-center rounded-2xl bg-coffee-200/40 text-center text-sm text-coffee-600 ring-1 ring-coffee-200/80 sm:col-span-2 lg:col-span-1">
+            Фото 3
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-coffee-200 bg-coffee-100/80 px-4 py-10 sm:px-6">
+    <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 sm:flex-row">
+      <img src="/static/new_logo_rafchik.png" alt="" class="h-10 w-auto opacity-90" width="120" height="40" />
+      <p class="text-center text-sm text-coffee-700 sm:text-right">
+        © Рафчик, 2026 · <a href="/menu.html" class="font-medium text-coffee-900 underline-offset-2 hover:underline">Меню</a>
+        · <a href="/admin.html" class="text-coffee-600 underline-offset-2 hover:text-coffee-900 hover:underline">Админ</a>
+      </p>
+    </div>
+  </footer>
+  <script>
+    (function () {
+      const welcomeScreen = document.getElementById('welcome-screen');
+      const video = document.getElementById('welcome-video');
+      const siteHeader = document.getElementById('site-header');
+      const siteNav = document.getElementById('site-nav');
+      const menuLink = document.getElementById('menu-link');
+
+      if (!welcomeScreen || !video || !siteHeader || !siteNav || !menuLink) return;
+
+      function syncHeaderHeightVar() {
+        const headerHeight = siteHeader.offsetHeight || 80;
+        document.documentElement.style.setProperty('--header-height', headerHeight + 'px');
+      }
+
+      function updateVideoFitMode() {
+        const isNarrowScreen = window.matchMedia('(max-width: 768px)').matches;
+        // Vertical source looks better filled on phone; on desktop keep full frame visible.
+        video.style.objectFit = isNarrowScreen ? 'cover' : 'contain';
+      }
+
+      video.play().catch(() => {});
+
+      function updateHeaderTheme() {
+        const isOnWelcome = window.scrollY < (welcomeScreen.offsetHeight - 120);
+        if (isOnWelcome) {
+          siteHeader.style.backgroundColor = 'rgba(0, 0, 0, 0.55)';
+          siteHeader.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+          siteNav.style.color = '#f7f3ec';
+          menuLink.style.backgroundColor = 'rgba(255, 255, 255, 0.18)';
+          menuLink.style.color = '#ffffff';
+        } else {
+          siteHeader.style.backgroundColor = '';
+          siteHeader.style.borderColor = '';
+          siteNav.style.color = '';
+          menuLink.style.backgroundColor = '';
+          menuLink.style.color = '';
+        }
+      }
+
+      window.addEventListener('scroll', updateHeaderTheme, { passive: true });
+      window.addEventListener('resize', () => {
+        syncHeaderHeightVar();
+        updateVideoFitMode();
+        updateHeaderTheme();
+      });
+      syncHeaderHeightVar();
+      updateVideoFitMode();
+      updateHeaderTheme();
+    })();
+  </script>
+</body>
+</html>

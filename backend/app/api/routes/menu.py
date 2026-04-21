@@ -3,11 +3,11 @@ from typing import List
 from app.core.database import get_pool
 from app.repositories.dish_repository import DishRepository
 from app.services.menu_service import MenuService
-from app.models.dish import Dish
+from app.models.dish import MenuItem
 
 router = APIRouter(prefix="/menu", tags=["menu"])
 
-@router.get("/", response_model=List[Dish])
+@router.get("/", response_model=List[MenuItem])
 async def get_menu(pool=Depends(get_pool)):
     repo = DishRepository(pool)
     service = MenuService(repo)

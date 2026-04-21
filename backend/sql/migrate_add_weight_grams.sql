@@ -1,0 +1,1 @@
+ALTER TABLE dishes ADD COLUMN IF NOT EXISTS weight_grams INTEGER;

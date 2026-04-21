@@ -1,6 +1,6 @@
 # Raf Coffee
 
-Backend API для меню кофейни (FastAPI, PostgreSQL, Redis).
+Backend API для меню кофейни (FastAPI, PostgreSQL, Redis) и статическая витрина меню во **`frontend/`**.
 
 ## Запуск через Docker
 
@@ -10,11 +10,35 @@ Backend API для меню кофейни (FastAPI, PostgreSQL, Redis).
 docker compose up --build
 ```
 
-- API: http://localhost:8000  
-- Документация: http://localhost:8000/docs  
+- **Сайт (nginx + HTML):** http://localhost:8080 — главная; **меню:** http://localhost:8080/menu.html; **админка (добавить блюдо):** http://localhost:8080/admin.html (токен = `ADMIN_TOKEN` из compose). Запросы к `/menu`, `/admin`, `/static/...` проксируются на бэкенд.  
+  Если в Chrome видите `ERR_CONNECTION_REFUSED`, откройте **http://127.0.0.1:8080** (на Windows иногда `localhost` уходит в IPv6, а порт проброшен только на IPv4).
+
+После `docker compose up` дождитесь, пока **backend** станет healthy (фронт стартует только после этого). Проверка: в браузере откройте http://127.0.0.1:8000/ping — должен быть JSON `{"status":"ok",...}`.
+- **API напрямую:** http://localhost:8000  
+- Документация: http://localhost:8000/docs (через фронт также: http://localhost:8080/docs)  
 - Проверка: `GET /ping`
 
-При **первом** создании тома PostgreSQL выполняется `backend/sql/init.sql` (таблица `dishes`). Если том уже был без этой схемы, выполните вручную `backend/sql/init.sql` и при необходимости `backend/sql/migrate_add_subcategory_id.sql`, либо удалите том `postgres_data` и поднимите заново.
+### Фронтенд без Docker
+
+Стили Tailwind собираются один раз после правок разметки/классов:
+
+```bash
+cd frontend && npm install && npm run build:css
+```
+
+В репозитории уже лежит сгенерированный `frontend/dist/styles.css` — для Docker достаточно `compose up`.
+
+Шрифт бренда: положите файлы в `frontend/assets/fonts/` (имена по умолчанию — `Rafchik-Regular.woff2` или `.ttf`, см. `frontend/src/rafchik-fonts.css`), затем снова `npm run build:css` не обязателен — пути в CSS уже абсолютные `/assets/fonts/...`.
+
+Цвета интерфейса взяты с бренд-шкалы (MATCHA `#809671`, ALMOND `#E5E0D8`, PISTACHE `#B3B792`, CHAI `#D2AB80`, CAROB `#725C3A`, VANILLA `#E5D2B8`); в Tailwind доступны как `coffee-*` и как `brand-matcha`, `brand-carob` и т.д. Референс скопирован в `frontend/assets/brand-colors-ref.jpg`.
+
+Поднимите API (`uvicorn` в `backend/`), откройте страницу через **http://** (например `npx serve frontend` или тот же nginx локально). Файл `index.html` с диска (`file://`) к API не подключается — либо `http://localhost:8080` после compose, либо `<meta name="api-base" content="http://127.0.0.1:8000">` и статический сервер (CORS в `main.py` уже настроен).
+
+При **первом** создании тома PostgreSQL выполняется `backend/sql/init.sql` (таблицы и дерево категорий: **Сезонное предложение** → Кофе/Смузи; **Бар** → чёрный кофе, альтернатива, не кофе, классика, авторские рафы; **Кухня** → сытные блюда, сэндвичи, салаты, закуски, сладкие блюда).
+
+Уже есть данные, но нужны новые рубрики: выполните в БД `backend/sql/reseed_menu_categories.sql` (связи блюд с подкатегориями обнулятся — выставите заново в админке) или пересоздайте том `postgres_data`.
+
+Колонка **веса порции** (`weight_grams`): для существующей БД выполните `backend/sql/migrate_add_weight_grams.sql` (или пересоздайте том — в `init.sql` колонка уже есть).
 
 Переменные окружения backend:
 

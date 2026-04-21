@@ -1,0 +1,30 @@
+/*
+  Скопируйте файлы шрифта в frontend/assets/fonts/
+
+  Минимум: Rafchik-Regular.woff2 или Rafchik-Regular.ttf
+  Опционально: Rafchik-Bold.woff2 — тогда раскомментируйте блок @font-face для 700 ниже.
+
+  Коды/ключи для веба не нужны, только файлы .woff2 / .ttf / .woff
+*/
+
+@font-face {
+  font-family: 'Rafchik';
+  src:
+    url('/assets/fonts/Rafchik-Regular.woff2') format('woff2'),
+    url('/assets/fonts/Rafchik-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/*
+@font-face {
+  font-family: 'Rafchik';
+  src:
+    url('/assets/fonts/Rafchik-Bold.woff2') format('woff2'),
+    url('/assets/fonts/Rafchik-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+*/
