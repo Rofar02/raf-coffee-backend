@@ -37,7 +37,7 @@ services:
     environment:
       DATABASE_URL: postgresql://rafuser:rafpass@postgres:5432/rafcoffee
       REDIS_URL: redis://redis:6379/0
-      ADMIN_TOKEN: ${ADMIN_TOKEN:-dev-admin-token-change-me}
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-8922}
     depends_on:
       postgres:
         condition: service_healthy
