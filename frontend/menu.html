@@ -14,39 +14,158 @@
     #modal-panel::-webkit-scrollbar {
       display: none;
     }
+    #menu-layout {
+      display: block;
+    }
+    #menu-nav-panel {
+      margin-bottom: 1rem;
+    }
+    #mobile-nav-wrap {
+      display: block;
+    }
+    #desktop-tabs {
+      display: none;
+    }
+    #desktop-sub-nav {
+      display: none;
+    }
+    @media (min-width: 1024px) {
+      #menu-layout {
+        display: grid;
+        grid-template-columns: 320px minmax(0, 1fr);
+        gap: 2rem;
+        align-items: start;
+      }
+      #menu-nav-panel {
+        margin-bottom: 0;
+        position: sticky;
+        top: 1rem;
+      }
+      #mobile-nav-wrap {
+        display: none;
+      }
+      #desktop-sub-nav {
+        display: block;
+      }
+      #desktop-tabs {
+        display: grid;
+      }
+    }
+    .nav-btn {
+      width: 100%;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      background: #fff;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-size: 15px;
+      line-height: 1.2;
+      color: #000;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+    }
+    .nav-btn:hover {
+      transform: translateY(-1px);
+      background: #fafafa;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+    }
+    .nav-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+    }
+    .nav-btn.is-active {
+      font-weight: 600;
+      box-shadow: 0 0 0 2px rgba(111, 78, 55, 0.35), 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+    #desktop-sub-nav { max-height: calc(100vh - 11rem); overflow-y: auto; padding-right: 4px; }
+    .nav-group {
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.02);
+      padding: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      margin-bottom: 12px;
+    }
+    .nav-group-title {
+      margin: 0 0 10px 0;
+      padding: 0 4px 8px 4px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(0, 0, 0, 0.62);
+    }
+    .nav-group-items {
+      display: grid;
+      gap: 8px;
+    }
+    #desktop-tabs { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    #mobile-nav-toggle {
+      width: 100%;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      border-radius: 14px;
+      background: #fff;
+      color: #000;
+      font-weight: 600;
+      padding: 11px 14px;
+      text-align: left;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    #mobile-nav-panel {
+      display: none;
+      margin-top: 10px;
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      padding-top: 10px;
+    }
+    #mobile-nav-panel.is-open {
+      display: block;
+    }
+    #mobile-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    #mobile-sub-nav {
+      display: grid;
+      gap: 8px;
+      max-height: 42vh;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
   </style>
 </head>
-<body class="menu-backdrop font-sans text-coffee-900 antialiased">
-  <header class="border-b border-coffee-200/80 bg-coffee-50/95 backdrop-blur-md">
+<body class="bg-white font-sans text-black antialiased">
+  <header class="border-b border-black/10 bg-white">
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
       <a href="/" class="flex items-center gap-3 rounded-xl text-coffee-50 transition hover:opacity-90">
         <img src="/static/new_logo_rafchik.png" alt="Рафчик" class="h-10 w-auto sm:h-12" width="120" height="48" />
       </a>
-      <nav class="flex items-center gap-4 text-sm font-medium text-coffee-800">
-        <a href="/" class="rounded-full px-3 py-1.5 transition hover:bg-coffee-200/50">Главная</a>
-        <span class="rounded-full bg-coffee-200/60 px-3 py-1.5 text-coffee-900">Меню</span>
+      <nav class="flex items-center gap-4 text-sm font-medium text-black">
+        <a href="/" class="rounded-full px-3 py-1.5 transition hover:bg-black/5">Главная</a>
+        <span class="rounded-full bg-black/10 px-3 py-1.5 text-black">Меню</span>
       </nav>
     </div>
   </header>
 
   <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
     <header class="mb-10 text-center">
-      <p class="mb-2 text-sm font-medium uppercase tracking-[0.35em] text-coffee-200/90">
+      <p class="mb-2 text-sm font-medium uppercase tracking-[0.35em] text-black/50">
         Добро пожаловать
       </p>
-      <h1 class="font-display text-3xl font-semibold text-coffee-50 drop-shadow sm:text-4xl">
+      <h1 class="font-display text-3xl font-semibold text-black sm:text-4xl">
         Меню на сегодня
       </h1>
     </header>
 
-    <div id="state-loading" class="rounded-2xl bg-coffee-50/95 p-8 text-center shadow-lg backdrop-blur-sm">
-      <p class="text-coffee-700">Загружаем меню…</p>
+    <div id="state-loading" class="rounded-2xl border border-black/10 bg-white p-8 text-center shadow-sm">
+      <p class="text-black/70">Загружаем меню…</p>
     </div>
     <div id="state-error" class="hidden rounded-2xl border border-red-200 bg-red-50/95 p-6 text-red-800 shadow-lg backdrop-blur-sm">
       <p class="font-medium">Не удалось загрузить меню</p>
       <p id="state-error-msg" class="mt-2 text-sm"></p>
     </div>
-    <div id="state-empty" class="hidden rounded-2xl bg-coffee-50/95 p-10 text-center text-coffee-600 shadow-lg backdrop-blur-sm">
+    <div id="state-empty" class="hidden rounded-2xl border border-black/10 bg-white p-10 text-center text-black/70 shadow-sm">
       Пока нет позиций в меню. Загляните чуть позже.
     </div>
 
@@ -216,36 +335,45 @@
       `;
     }
 
-    function renderMenu(groups) {
-      const root = document.getElementById('menu-root');
-      root.innerHTML = groups
-        .map((cat) => {
-          const subBlocks = cat.subs
-            .map(
-              (sub) => `
-            <div class="mb-8 last:mb-0">
-              <h3 class="mb-3 border-b border-coffee-200/60 pb-2 font-display text-xl text-coffee-800">
-                ${escapeHtml(sub.label)}
-              </h3>
-              <div class="rounded-xl border border-coffee-200/50 bg-white/70 px-3 py-1 shadow-inner sm:px-5">
-                ${sub.dishes.map(renderDishRow).join('')}
-              </div>
-            </div>
-          `
-            )
-            .join('');
+    function categoryTabKey(catLabel) {
+      const s = String(catLabel || '').toLowerCase();
+      const drinkMarkers = ['напит', 'кофе', 'чай', 'лимонад', 'сок', 'коктейл', 'drink', 'coffee', 'tea'];
+      return drinkMarkers.some((m) => s.includes(m)) ? 'drinks' : 'food';
+    }
 
-          return `
-            <section class="rounded-3xl bg-coffee-50/95 p-6 shadow-xl ring-1 ring-white/20 backdrop-blur-sm sm:p-8">
-              <h2 class="font-display mb-8 text-2xl font-bold text-coffee-900 md:text-3xl">
-                ${escapeHtml(cat.label)}
-              </h2>
-              ${subBlocks}
-            </section>
-          `;
-        })
-        .join('');
+    function tabLabel(tabKey) {
+      return tabKey === 'drinks' ? 'Напитки' : 'Еда';
+    }
 
+    function applyNavButtonStyle(btn, isActive) {
+      btn.className = 'nav-btn';
+      if (isActive) {
+        btn.classList.add('is-active');
+      }
+    }
+
+    function flattenSubcategories(groups) {
+      const result = [];
+      for (const cat of groups) {
+        const mobileTab = categoryTabKey(cat.label);
+        for (const sub of cat.subs) {
+          result.push({
+            key: `${cat.id ?? 'cat'}:${sub.id ?? sub.label}`,
+            categoryId: cat.id,
+            categoryLabel: cat.label,
+            subcategoryId: sub.id,
+            subcategoryLabel: sub.label,
+            dishes: sub.dishes,
+            mobileTab,
+            sortCat: cat.sort ?? 9999,
+            sortSub: sub.sort ?? 9999,
+          });
+        }
+      }
+      return result;
+    }
+
+    function attachDishEvents(root) {
       root.querySelectorAll('[data-dish-id]').forEach((el) => {
         const id = Number(el.getAttribute('data-dish-id'));
         const dish = itemsById.get(id);
@@ -257,6 +385,219 @@
           }
         });
       });
+    }
+
+    function renderMenu(groups) {
+      const root = document.getElementById('menu-root');
+      const flatSubs = flattenSubcategories(groups);
+      const tabOrder = ['food', 'drinks'];
+      const availableTabs = tabOrder.filter((tab) => flatSubs.some((s) => s.mobileTab === tab));
+      const initialTab = availableTabs[0] || 'food';
+      let activeTab = initialTab;
+      let activeSubKey = null;
+      let isMobileNavOpen = false;
+
+      function sortedSubsForDesktop() {
+        return [...flatSubs].sort((a, b) => {
+          if (a.sortCat !== b.sortCat) return a.sortCat - b.sortCat;
+          if (a.sortSub !== b.sortSub) return a.sortSub - b.sortSub;
+          return a.subcategoryLabel.localeCompare(b.subcategoryLabel, 'ru');
+        });
+      }
+
+      function subsForActiveTab() {
+        return flatSubs
+          .filter((s) => s.mobileTab === activeTab)
+          .sort((a, b) => {
+            if (a.sortCat !== b.sortCat) return a.sortCat - b.sortCat;
+            if (a.sortSub !== b.sortSub) return a.sortSub - b.sortSub;
+            return a.subcategoryLabel.localeCompare(b.subcategoryLabel, 'ru');
+          });
+      }
+
+      function ensureActiveSub() {
+        const desktopSubs = sortedSubsForDesktop();
+        if (!activeSubKey && desktopSubs.length) {
+          activeSubKey = desktopSubs[0].key;
+          return;
+        }
+        const validDesktop = desktopSubs.some((s) => s.key === activeSubKey);
+        if (!validDesktop) {
+          activeSubKey = desktopSubs[0] ? desktopSubs[0].key : null;
+        }
+      }
+
+      function renderDesktopNav() {
+        const nav = root.querySelector('#desktop-sub-nav');
+        const tabs = root.querySelector('#desktop-tabs');
+        if (!nav) return;
+        if (tabs) {
+          tabs.innerHTML = '';
+          for (const tab of availableTabs) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            applyNavButtonStyle(btn, tab === activeTab);
+            btn.textContent = tabLabel(tab);
+            btn.addEventListener('click', () => {
+              activeTab = tab;
+              const firstForTab = subsForActiveTab()[0];
+              if (firstForTab) activeSubKey = firstForTab.key;
+              redraw();
+            });
+            tabs.appendChild(btn);
+          }
+        }
+
+        const desktopSubs = subsForActiveTab();
+        nav.innerHTML = '';
+        const groups = new Map();
+        for (const sub of desktopSubs) {
+          if (!groups.has(sub.categoryId)) {
+            groups.set(sub.categoryId, {
+              categoryLabel: sub.categoryLabel,
+              items: [],
+            });
+          }
+          groups.get(sub.categoryId).items.push(sub);
+        }
+
+        for (const group of groups.values()) {
+          const section = document.createElement('section');
+          section.className = 'nav-group';
+
+          const categoryTitle = document.createElement('p');
+          categoryTitle.className = 'nav-group-title';
+          categoryTitle.textContent = group.categoryLabel;
+          section.appendChild(categoryTitle);
+
+          const itemsWrap = document.createElement('div');
+          itemsWrap.className = 'nav-group-items';
+
+          for (const sub of group.items) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.classList.add('text-left');
+            applyNavButtonStyle(btn, sub.key === activeSubKey);
+            btn.textContent = sub.subcategoryLabel;
+            btn.addEventListener('click', () => {
+              activeSubKey = sub.key;
+              redraw();
+            });
+            itemsWrap.appendChild(btn);
+          }
+
+          section.appendChild(itemsWrap);
+          nav.appendChild(section);
+        }
+      }
+
+      function renderMobileTabs() {
+        const tabs = root.querySelector('#mobile-tabs');
+        if (!tabs) return;
+        tabs.innerHTML = '';
+        for (const tab of availableTabs) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          applyNavButtonStyle(btn, tab === activeTab);
+          btn.textContent = tabLabel(tab);
+          btn.addEventListener('click', () => {
+            activeTab = tab;
+            const firstForTab = subsForActiveTab()[0];
+            if (firstForTab) activeSubKey = firstForTab.key;
+            redraw();
+          });
+          tabs.appendChild(btn);
+        }
+      }
+
+      function renderMobileSubcategories() {
+        const subsRoot = root.querySelector('#mobile-sub-nav');
+        if (!subsRoot) return;
+        subsRoot.innerHTML = '';
+        const subs = subsForActiveTab();
+        for (const sub of subs) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.classList.add('text-left');
+          applyNavButtonStyle(btn, sub.key === activeSubKey);
+          btn.textContent = sub.subcategoryLabel;
+          btn.addEventListener('click', () => {
+            activeSubKey = sub.key;
+            isMobileNavOpen = false;
+            redraw();
+          });
+          subsRoot.appendChild(btn);
+        }
+      }
+
+      function renderMobileNavShell() {
+        const toggleBtn = root.querySelector('#mobile-nav-toggle');
+        const panel = root.querySelector('#mobile-nav-panel');
+        if (!toggleBtn || !panel) return;
+        const selectedSub = flatSubs.find((s) => s.key === activeSubKey);
+        const selectedLabel = selectedSub ? selectedSub.subcategoryLabel : 'Выберите раздел';
+        toggleBtn.textContent = isMobileNavOpen ? `${selectedLabel} ▲` : `${selectedLabel} ▼`;
+        panel.classList.toggle('is-open', isMobileNavOpen);
+      }
+
+      function renderContent() {
+        const content = root.querySelector('#menu-content');
+        if (!content) return;
+        const sub = flatSubs.find((s) => s.key === activeSubKey);
+        if (!sub) {
+          content.innerHTML = '';
+          return;
+        }
+
+        content.innerHTML = `
+          <section class="rounded-3xl border border-black/10 bg-white p-4 shadow-sm sm:p-8">
+            <h2 class="mb-3 font-display text-xl font-bold text-black sm:text-2xl">
+              ${escapeHtml(sub.subcategoryLabel)}
+            </h2>
+            <p class="mb-5 text-sm text-black/60">${escapeHtml(sub.categoryLabel)}</p>
+            <div class="rounded-xl border border-coffee-200/50 bg-white/70 px-3 py-1 shadow-inner sm:px-5">
+              ${sub.dishes.map(renderDishRow).join('')}
+            </div>
+          </section>
+        `;
+        attachDishEvents(content);
+      }
+
+      function redraw() {
+        ensureActiveSub();
+        renderMobileNavShell();
+        renderDesktopNav();
+        renderMobileTabs();
+        renderMobileSubcategories();
+        renderContent();
+      }
+
+      root.innerHTML = `
+        <div id="menu-layout">
+          <section id="menu-nav-panel" class="rounded-3xl border border-black/10 bg-white p-5 shadow-md lg:p-6">
+            <div id="mobile-nav-wrap">
+              <button id="mobile-nav-toggle" type="button">Выберите раздел ▼</button>
+              <div id="mobile-nav-panel">
+                <div id="mobile-tabs"></div>
+                <div id="mobile-sub-nav"></div>
+              </div>
+            </div>
+            <div id="desktop-tabs"></div>
+            <div id="desktop-sub-nav"></div>
+          </section>
+          <div id="menu-content"></div>
+        </div>
+      `;
+
+      const mobileToggleBtn = root.querySelector('#mobile-nav-toggle');
+      if (mobileToggleBtn) {
+        mobileToggleBtn.addEventListener('click', () => {
+          isMobileNavOpen = !isMobileNavOpen;
+          renderMobileNavShell();
+        });
+      }
+
+      redraw();
     }
 
     const itemsById = new Map();

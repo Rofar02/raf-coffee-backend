@@ -17,11 +17,11 @@
     </div>
   </header>
 
-  <main class="mx-auto max-w-2xl px-4 py-10 sm:px-6">
+  <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-10">
     <div class="mb-8">
       <img src="/static/new_logo_rafchik.png" alt="" class="mb-4 h-12 w-auto sm:h-14" />
-      <h1 class="font-display text-2xl font-bold text-coffee-900">Новое блюдо</h1>
-      <p class="mt-2 text-coffee-600">Данные уходят в API <code class="rounded bg-coffee-200/50 px-1 text-sm">POST /admin/dishes</code>. Токен совпадает с <code class="rounded bg-coffee-200/50 px-1 text-sm">ADMIN_TOKEN</code> в бэкенде.</p>
+      <h1 class="font-display text-2xl font-bold text-coffee-900">Управление меню</h1>
+      <p class="mt-2 text-coffee-600">Создание, редактирование и удаление блюд через API админки.</p>
     </div>
 
     <!-- Токен -->
@@ -53,59 +53,115 @@
       <p id="token-hint" class="mt-2 text-sm text-coffee-500"></p>
     </section>
 
-    <form id="form-dish" class="space-y-6 rounded-2xl border border-coffee-200 bg-white p-5 shadow-sm">
-      <div>
-        <label for="name" class="block text-sm font-semibold text-coffee-800">Название *</label>
-        <input id="name" name="name" required maxlength="200" class="mt-2 w-full rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
+    <section class="mb-8 rounded-2xl border border-coffee-200 bg-white p-5 shadow-sm">
+      <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div>
+          <label for="active-season-select" class="block text-sm font-semibold text-coffee-800">Текущий сезон</label>
+          <div class="mt-2 flex gap-2">
+            <select id="active-season-select" class="w-full rounded-xl border border-coffee-300 bg-white px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30">
+              <option value="">— выберите сезон —</option>
+            </select>
+            <button id="btn-activate-season" type="button" class="rounded-xl border border-coffee-400 px-4 py-2 text-sm font-medium text-coffee-800 transition hover:bg-coffee-100">Сделать активным</button>
+          </div>
+          <p id="season-hint" class="mt-2 text-sm text-coffee-500"></p>
+        </div>
+        <div>
+          <p class="block text-sm font-semibold text-coffee-800">Создать сезон</p>
+          <div class="mt-2 grid gap-2 sm:grid-cols-3">
+            <input id="season-name" placeholder="Название" class="rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
+            <input id="season-slug" placeholder="slug" class="rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
+            <button id="btn-create-season" type="button" class="rounded-xl bg-coffee-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-coffee-900">Создать</button>
+          </div>
+        </div>
       </div>
-      <div>
-        <label for="price" class="block text-sm font-semibold text-coffee-800">Цена (₽) *</label>
-        <input id="price" name="price" type="number" required min="0" step="1" class="mt-2 w-full rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
-      </div>
-      <div>
-        <label for="weight_grams" class="block text-sm font-semibold text-coffee-800">Порция (г)</label>
-        <input id="weight_grams" name="weight_grams" type="number" min="0" step="1" placeholder="например 250" class="mt-2 w-full rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
-        <p class="mt-1 text-sm text-coffee-500">Показывается в списке меню рядом с ценой. Можно оставить пустым.</p>
-      </div>
-      <div>
-        <label for="subcategory_id" class="block text-sm font-semibold text-coffee-800">Подкатегория</label>
-        <select id="subcategory_id" name="subcategory_id" class="mt-2 w-full rounded-xl border border-coffee-300 bg-white px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30">
-          <option value="">— не выбрано —</option>
-        </select>
-        <p id="subcat-hint" class="mt-1 text-sm text-coffee-500">Сначала введите токен и нажмите «Загрузить подкатегории».</p>
-      </div>
-      <div>
-        <label for="description" class="block text-sm font-semibold text-coffee-800">Описание</label>
-        <textarea id="description" name="description" rows="3" maxlength="1000" class="mt-2 w-full rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30"></textarea>
-      </div>
-      <div>
-        <label for="calories" class="block text-sm font-semibold text-coffee-800">Калории (текст)</label>
-        <input id="calories" name="calories" placeholder="например 250 ккал" class="mt-2 w-full rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
-      </div>
-      <div>
-        <label for="image_url" class="block text-sm font-semibold text-coffee-800">URL картинки</label>
-        <input id="image_url" name="image_url" type="text" inputmode="url" autocomplete="off" placeholder="https://… или /static/photo.jpg" class="mt-2 w-full rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
-      </div>
-      <div>
-        <label for="video_url" class="block text-sm font-semibold text-coffee-800">URL видео</label>
-        <input id="video_url" name="video_url" type="text" inputmode="url" autocomplete="off" placeholder="/static/raf_stir.mp4" class="mt-2 w-full rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
-        <p class="mt-1 text-sm text-coffee-500">Можно относительный путь с сайта, например <code class="rounded bg-coffee-100 px-1">/static/raf_stir.mp4</code> — полный https:// не обязателен.</p>
-      </div>
+    </section>
 
-      <div class="flex flex-wrap gap-3 pt-2">
-        <button
-          type="submit"
-          class="rounded-full bg-coffee-800 px-8 py-3 font-semibold text-white shadow-md transition hover:bg-coffee-900"
-        >
-          Добавить блюдо
-        </button>
-        <button type="reset" class="rounded-full border border-coffee-400 px-6 py-3 font-medium text-coffee-800 transition hover:bg-coffee-100">
-          Очистить форму
-        </button>
-      </div>
-    </form>
+    <div class="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+      <form id="form-dish" class="space-y-6 rounded-2xl border border-coffee-200 bg-white p-5 shadow-sm">
+        <div class="rounded-xl border border-coffee-200 bg-coffee-50/60 p-4">
+          <label class="inline-flex items-center gap-2 text-sm font-medium text-coffee-800">
+            <input id="clone-existing" type="checkbox" class="h-4 w-4 rounded border-coffee-300 text-coffee-700 focus:ring-coffee-500/40" />
+            Добавить на основе существующего блюда
+          </label>
+          <div id="clone-picker-wrap" class="mt-3 hidden">
+            <label for="existing_dish_id" class="block text-sm font-semibold text-coffee-800">Существующее блюдо</label>
+            <select id="existing_dish_id" class="mt-2 w-full rounded-xl border border-coffee-300 bg-white px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30">
+              <option value="">— выберите блюдо —</option>
+            </select>
+          </div>
+        </div>
 
-    <div id="alert" class="mt-8 hidden rounded-2xl border p-4 text-sm" role="status"></div>
+        <div class="grid gap-4 md:grid-cols-2">
+          <div>
+            <label for="name" class="block text-sm font-semibold text-coffee-800">Название *</label>
+            <input id="name" name="name" required maxlength="200" class="mt-2 w-full rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
+          </div>
+          <div>
+            <label for="price" class="block text-sm font-semibold text-coffee-800">Цена (₽) *</label>
+            <input id="price" name="price" type="number" required min="0" step="1" class="mt-2 w-full rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
+          </div>
+          <div>
+            <label for="calories" class="block text-sm font-semibold text-coffee-800">Калории</label>
+            <input id="calories" name="calories" placeholder="например 250 ккал" class="mt-2 w-full rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
+          </div>
+          <div>
+            <label for="weight_grams" class="block text-sm font-semibold text-coffee-800">Порция (г)</label>
+            <input id="weight_grams" name="weight_grams" type="number" min="0" step="1" placeholder="например 250" class="mt-2 w-full rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
+          </div>
+          <div>
+            <label for="category_id" class="block text-sm font-semibold text-coffee-800">Категория</label>
+            <select id="category_id" class="mt-2 w-full rounded-xl border border-coffee-300 bg-white px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30">
+              <option value="">— не выбрано —</option>
+            </select>
+          </div>
+          <div>
+            <label for="subcategory_id" class="block text-sm font-semibold text-coffee-800">Подкатегория</label>
+            <select id="subcategory_id" name="subcategory_id" class="mt-2 w-full rounded-xl border border-coffee-300 bg-white px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30">
+              <option value="">— не выбрано —</option>
+            </select>
+            <p id="subcat-hint" class="mt-1 text-sm text-coffee-500">Сначала загрузите метаданные.</p>
+          </div>
+        </div>
+
+        <div>
+          <label for="description" class="block text-sm font-semibold text-coffee-800">Описание</label>
+          <textarea id="description" name="description" rows="4" maxlength="1000" class="mt-2 w-full rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30"></textarea>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2">
+          <div class="rounded-xl border border-coffee-200 p-4">
+            <label for="image_file" class="block text-sm font-semibold text-coffee-800">Картинка (файл)</label>
+            <input id="image_file" type="file" accept="image/*" class="mt-2 block w-full text-sm text-coffee-700 file:mr-3 file:rounded-full file:border-0 file:bg-coffee-200 file:px-3 file:py-2 file:font-medium file:text-coffee-900 hover:file:bg-coffee-300" />
+            <img id="image_preview" alt="" class="mt-3 hidden h-36 w-full rounded-lg object-cover" />
+            <input id="image_url" name="image_url" type="text" inputmode="url" autocomplete="off" placeholder="или URL картинки" class="mt-3 w-full rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
+          </div>
+          <div class="rounded-xl border border-coffee-200 p-4">
+            <label for="video_url" class="block text-sm font-semibold text-coffee-800">Видео (ссылка или файл)</label>
+            <input id="video_file" type="file" accept="video/*" class="mt-2 block w-full text-sm text-coffee-700 file:mr-3 file:rounded-full file:border-0 file:bg-coffee-200 file:px-3 file:py-2 file:font-medium file:text-coffee-900 hover:file:bg-coffee-300" />
+            <video id="video_preview" class="mt-3 hidden h-36 w-full rounded-lg bg-black/70 object-cover" muted playsinline></video>
+            <input id="video_url" name="video_url" type="text" inputmode="url" autocomplete="off" placeholder="или URL видео" class="mt-3 w-full rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-3 pt-2">
+          <button id="submit-btn" type="submit" class="rounded-full bg-coffee-800 px-8 py-3 font-semibold text-white shadow-md transition hover:bg-coffee-900">Сохранить</button>
+          <button id="cancel-edit-btn" type="button" class="hidden rounded-full border border-coffee-400 px-6 py-3 font-medium text-coffee-800 transition hover:bg-coffee-100">Отменить редактирование</button>
+          <button type="reset" id="reset-form-btn" class="rounded-full border border-coffee-400 px-6 py-3 font-medium text-coffee-800 transition hover:bg-coffee-100">Очистить форму</button>
+        </div>
+      </form>
+
+      <section class="rounded-2xl border border-coffee-200 bg-white p-5 shadow-sm">
+        <div class="mb-3 flex items-center justify-between gap-3">
+          <h2 class="font-display text-xl font-semibold text-coffee-900">Блюда активного сезона</h2>
+          <button id="btn-refresh-dishes" type="button" class="rounded-full border border-coffee-400 px-4 py-2 text-sm font-medium text-coffee-800 transition hover:bg-coffee-100">Обновить</button>
+        </div>
+        <div id="season-dishes-list" class="max-h-[36vh] space-y-2 overflow-auto pr-1"></div>
+        <h3 class="mt-5 font-display text-lg font-semibold text-coffee-900">Все блюда</h3>
+        <div id="dishes-list" class="mt-2 max-h-[26vh] space-y-2 overflow-auto pr-1"></div>
+      </section>
+    </div>
+
+    <div id="alert" class="mt-6 hidden rounded-2xl border p-4 text-sm" role="status"></div>
   </main>
 
   <script>
@@ -124,10 +180,33 @@
     }
 
     const tokenInput = document.getElementById('token');
-    const subSelect = document.getElementById('subcategory_id');
-    const subcatHint = document.getElementById('subcat-hint');
     const tokenHint = document.getElementById('token-hint');
     const alertEl = document.getElementById('alert');
+    const formEl = document.getElementById('form-dish');
+    const submitBtn = document.getElementById('submit-btn');
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    const subcatHint = document.getElementById('subcat-hint');
+    const categorySelect = document.getElementById('category_id');
+    const subcategorySelect = document.getElementById('subcategory_id');
+    const existingDishSelect = document.getElementById('existing_dish_id');
+    const cloneCheckbox = document.getElementById('clone-existing');
+    const clonePickerWrap = document.getElementById('clone-picker-wrap');
+    const dishesListEl = document.getElementById('dishes-list');
+    const seasonDishesListEl = document.getElementById('season-dishes-list');
+    const seasonHintEl = document.getElementById('season-hint');
+    const activeSeasonSelect = document.getElementById('active-season-select');
+    const seasonNameInput = document.getElementById('season-name');
+    const seasonSlugInput = document.getElementById('season-slug');
+    const imageInput = document.getElementById('image_file');
+    const videoInput = document.getElementById('video_file');
+    const imagePreview = document.getElementById('image_preview');
+    const videoPreview = document.getElementById('video_preview');
+
+    let subcategories = [];
+    let seasons = [];
+    let dishes = [];
+    let seasonDishes = [];
+    let editingDishId = null;
 
     if (localStorage.getItem(STORAGE_KEY)) {
       tokenInput.value = localStorage.getItem(STORAGE_KEY);
@@ -155,6 +234,177 @@
       alertEl.classList.remove('hidden');
     }
 
+    function parseErrorText(text) {
+      let detail = text;
+      try {
+        const j = JSON.parse(text);
+        detail = j.detail ? JSON.stringify(j.detail) : text;
+      } catch (_) {}
+      return detail;
+    }
+
+    function getTokenOrWarn() {
+      const token = tokenInput.value.trim();
+      if (!token) {
+        showAlert('err', 'Укажите токен администратора.');
+        return '';
+      }
+      return token;
+    }
+
+    function resetPreviews() {
+      imagePreview.src = '';
+      imagePreview.classList.add('hidden');
+      videoPreview.src = '';
+      videoPreview.classList.add('hidden');
+    }
+
+    function renderExistingDishSelect() {
+      existingDishSelect.innerHTML = '<option value="">— выберите блюдо —</option>';
+      for (const dish of dishes) {
+        const opt = document.createElement('option');
+        opt.value = String(dish.id);
+        opt.textContent = `#${dish.id} · ${dish.name}`;
+        existingDishSelect.appendChild(opt);
+      }
+    }
+
+    function getActiveSeasonId() {
+      const selected = activeSeasonSelect.value ? parseInt(activeSeasonSelect.value, 10) : null;
+      if (selected) return selected;
+      const active = seasons.find((s) => s.is_active);
+      return active ? active.id : null;
+    }
+
+    function renderSeasonSelect() {
+      const current = getActiveSeasonId();
+      activeSeasonSelect.innerHTML = '<option value="">— выберите сезон —</option>';
+      for (const season of seasons) {
+        const opt = document.createElement('option');
+        opt.value = String(season.id);
+        opt.textContent = `${season.name}${season.is_active ? ' (активный)' : ''}`;
+        activeSeasonSelect.appendChild(opt);
+      }
+      if (current) activeSeasonSelect.value = String(current);
+      seasonHintEl.textContent = current ? 'Выбран сезон для управления меню.' : 'Создайте сезон и сделайте его активным.';
+    }
+
+    function setFormModeEdit(dishId) {
+      editingDishId = dishId;
+      submitBtn.textContent = 'Сохранить';
+      cancelEditBtn.classList.remove('hidden');
+      cloneCheckbox.checked = false;
+      clonePickerWrap.classList.add('hidden');
+      existingDishSelect.value = '';
+    }
+
+    function setFormModeCreate() {
+      editingDishId = null;
+      submitBtn.textContent = 'Сохранить';
+      cancelEditBtn.classList.add('hidden');
+    }
+
+    function renderSubcategoriesForCategory(selectedCategoryId) {
+      const prev = subcategorySelect.value;
+      const filtered = selectedCategoryId
+        ? subcategories.filter((s) => String(s.category_id) === String(selectedCategoryId))
+        : subcategories;
+      subcategorySelect.innerHTML = '<option value="">— не выбрано —</option>';
+      for (const row of filtered) {
+        const opt = document.createElement('option');
+        opt.value = String(row.id);
+        opt.textContent = row.subcategory_name;
+        subcategorySelect.appendChild(opt);
+      }
+      if (prev && filtered.some((s) => String(s.id) === prev)) subcategorySelect.value = prev;
+      subcatHint.textContent = filtered.length ? 'Выберите подкатегорию или оставьте пустым.' : 'Нет подкатегорий для выбранной категории.';
+    }
+
+    function renderCategories() {
+      const byId = new Map();
+      for (const row of subcategories) {
+        if (!byId.has(row.category_id)) byId.set(row.category_id, row.category_name);
+      }
+      categorySelect.innerHTML = '<option value="">— не выбрано —</option>';
+      for (const [id, name] of byId.entries()) {
+        const opt = document.createElement('option');
+        opt.value = String(id);
+        opt.textContent = name;
+        categorySelect.appendChild(opt);
+      }
+      renderSubcategoriesForCategory(categorySelect.value);
+    }
+
+    function fillFormFromDish(dish) {
+      document.getElementById('name').value = dish.name || '';
+      document.getElementById('price').value = dish.price != null ? String(dish.price) : '';
+      document.getElementById('weight_grams').value = dish.weight_grams != null ? String(dish.weight_grams) : '';
+      document.getElementById('description').value = dish.description || '';
+      document.getElementById('calories').value = dish.calories || '';
+      document.getElementById('image_url').value = dish.image_url || '';
+      document.getElementById('video_url').value = dish.video_url || '';
+      imageInput.value = '';
+      videoInput.value = '';
+      resetPreviews();
+
+      if (dish.category_id != null) categorySelect.value = String(dish.category_id);
+      renderSubcategoriesForCategory(categorySelect.value);
+      if (dish.subcategory_id != null) subcategorySelect.value = String(dish.subcategory_id);
+    }
+
+    function collectPayload() {
+      const name = document.getElementById('name').value.trim();
+      const priceRaw = document.getElementById('price').value;
+      const price = parseInt(priceRaw, 10);
+      if (!name || Number.isNaN(price) || price < 0) {
+        showAlert('err', 'Заполните название и корректную цену.');
+        return null;
+      }
+      const body = {
+        name,
+        price,
+        description: null,
+        calories: null,
+        image_url: null,
+        video_url: null,
+        subcategory_id: null,
+        weight_grams: null,
+      };
+      const wg = document.getElementById('weight_grams').value.trim();
+      if (wg !== '') {
+        const n = parseInt(wg, 10);
+        if (!Number.isNaN(n) && n >= 0) body.weight_grams = n;
+      }
+      const desc = document.getElementById('description').value.trim();
+      if (desc) body.description = desc;
+      const cal = document.getElementById('calories').value.trim();
+      if (cal) body.calories = cal;
+      const img = document.getElementById('image_url').value.trim();
+      if (img) body.image_url = img;
+      const vid = document.getElementById('video_url').value.trim();
+      if (vid) body.video_url = vid;
+      const sid = subcategorySelect.value;
+      if (sid) body.subcategory_id = parseInt(sid, 10);
+      return body;
+    }
+
+    async function uploadFile(file) {
+      const token = getTokenOrWarn();
+      if (!token) return null;
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch(url('/admin/upload'), {
+        method: 'POST',
+        headers: { 'X-Admin-Token': token },
+        body: fd,
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error('Ошибка загрузки: ' + parseErrorText(text));
+      }
+      return await res.json();
+    }
+
     async function loadSubcategories() {
       const token = tokenInput.value.trim();
       if (!token) {
@@ -171,15 +421,9 @@
           return;
         }
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        const list = await res.json();
-        subSelect.innerHTML = '<option value="">— не выбрано —</option>';
-        for (const row of list) {
-          const opt = document.createElement('option');
-          opt.value = String(row.id);
-          opt.textContent = row.category_name + ' — ' + row.subcategory_name;
-          subSelect.appendChild(opt);
-        }
-        subcatHint.textContent = list.length ? 'Выберите подкатегорию или оставьте пустым.' : 'В базе нет таблиц категорий — поле можно не трогать.';
+        subcategories = await res.json();
+        renderCategories();
+        subcatHint.textContent = subcategories.length ? 'Выберите категорию и подкатегорию.' : 'В базе нет таблиц категорий — поле можно не трогать.';
       } catch (e) {
         subcatHint.textContent = 'Ошибка: ' + (e.message || e);
       }
@@ -187,89 +431,375 @@
 
     document.getElementById('btn-load-meta').addEventListener('click', loadSubcategories);
 
-    document.getElementById('form-dish').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const token = tokenInput.value.trim();
-      if (!token) {
-        showAlert('err', 'Укажите токен администратора.');
+    async function loadDishes() {
+      const token = getTokenOrWarn();
+      if (!token) return;
+      dishesListEl.innerHTML = '<p class="text-sm text-coffee-500">Загрузка...</p>';
+      const res = await fetch(url('/admin/dishes'), { headers: { 'X-Admin-Token': token } });
+      if (!res.ok) {
+        const text = await res.text();
+        dishesListEl.innerHTML = '<p class="text-sm text-red-700">Ошибка: ' + parseErrorText(text) + '</p>';
+        return;
+      }
+      dishes = await res.json();
+      renderExistingDishSelect();
+      if (!dishes.length) {
+        dishesListEl.innerHTML = '<p class="text-sm text-coffee-500">Блюд пока нет.</p>';
         return;
       }
 
-      const name = document.getElementById('name').value.trim();
-      const priceRaw = document.getElementById('price').value;
-      const price = parseInt(priceRaw, 10);
-      if (!name || Number.isNaN(price) || price < 0) {
-        showAlert('err', 'Заполните название и корректную цену.');
+      dishesListEl.innerHTML = '';
+      const seasonDishIds = new Set(seasonDishes.map((d) => d.id));
+      for (const dish of dishes) {
+        const row = document.createElement('article');
+        row.className = 'rounded-xl border border-coffee-200 p-3';
+        const inSeason = seasonDishIds.has(dish.id);
+        row.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="font-semibold text-coffee-900">#${dish.id} · ${dish.name}</p>
+              <p class="text-sm text-coffee-600">${dish.price} ₽${dish.subcategory_name ? ' · ' + dish.subcategory_name : ''}</p>
+            </div>
+            <div class="flex gap-2">
+              <button type="button" data-action="${inSeason ? 'remove-season' : 'add-season'}" data-id="${dish.id}" class="rounded-full border px-3 py-1 text-xs font-medium ${inSeason ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-emerald-300 text-emerald-700 hover:bg-emerald-50'}">${inSeason ? 'Убрать из сезона' : 'Добавить в сезон'}</button>
+              <button type="button" data-action="edit" data-id="${dish.id}" class="rounded-full border border-coffee-300 px-3 py-1 text-xs font-medium text-coffee-800 hover:bg-coffee-100">Редактировать</button>
+              <button type="button" data-action="delete" data-id="${dish.id}" class="rounded-full border border-red-300 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-50">Удалить</button>
+            </div>
+          </div>
+        `;
+        dishesListEl.appendChild(row);
+      }
+    }
+
+    async function loadSeasons() {
+      const token = getTokenOrWarn();
+      if (!token) return;
+      const res = await fetch(url('/admin/seasons'), { headers: { 'X-Admin-Token': token } });
+      if (!res.ok) {
+        const text = await res.text();
+        showAlert('err', 'Не удалось загрузить сезоны: ' + parseErrorText(text));
+        return;
+      }
+      seasons = await res.json();
+      renderSeasonSelect();
+    }
+
+    async function loadSeasonDishes() {
+      const token = getTokenOrWarn();
+      if (!token) return;
+      const seasonId = getActiveSeasonId();
+      if (!seasonId) {
+        seasonDishes = [];
+        seasonDishesListEl.innerHTML = '<p class="text-sm text-coffee-500">Выберите сезон.</p>';
+        return;
+      }
+      seasonDishesListEl.innerHTML = '<p class="text-sm text-coffee-500">Загрузка...</p>';
+      const res = await fetch(url(`/admin/seasons/${seasonId}/dishes`), { headers: { 'X-Admin-Token': token } });
+      if (!res.ok) {
+        const text = await res.text();
+        seasonDishesListEl.innerHTML = '<p class="text-sm text-red-700">Ошибка: ' + parseErrorText(text) + '</p>';
+        return;
+      }
+      seasonDishes = await res.json();
+      if (!seasonDishes.length) {
+        seasonDishesListEl.innerHTML = '<p class="text-sm text-coffee-500">В сезоне пока нет блюд.</p>';
+        return;
+      }
+      seasonDishesListEl.innerHTML = '';
+      for (const dish of seasonDishes) {
+        const row = document.createElement('article');
+        row.className = 'rounded-xl border border-coffee-200 p-3';
+        row.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="font-semibold text-coffee-900">#${dish.id} · ${dish.name}</p>
+              <p class="text-sm text-coffee-600">${dish.price} ₽${dish.subcategory_name ? ' · ' + dish.subcategory_name : ''}</p>
+            </div>
+            <button type="button" data-action="remove-season" data-id="${dish.id}" class="rounded-full border border-amber-300 px-3 py-1 text-xs font-medium text-amber-700 hover:bg-amber-50">Убрать из сезона</button>
+          </div>
+        `;
+        seasonDishesListEl.appendChild(row);
+      }
+    }
+
+    categorySelect.addEventListener('change', () => renderSubcategoriesForCategory(categorySelect.value));
+
+    cloneCheckbox.addEventListener('change', () => {
+      clonePickerWrap.classList.toggle('hidden', !cloneCheckbox.checked);
+      if (!cloneCheckbox.checked) existingDishSelect.value = '';
+    });
+
+    existingDishSelect.addEventListener('change', () => {
+      const id = parseInt(existingDishSelect.value, 10);
+      const dish = dishes.find((d) => d.id === id);
+      if (!dish) return;
+      fillFormFromDish(dish);
+      setFormModeCreate();
+    });
+
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files && imageInput.files[0];
+      if (!file) {
+        imagePreview.classList.add('hidden');
+        return;
+      }
+      imagePreview.src = URL.createObjectURL(file);
+      imagePreview.classList.remove('hidden');
+    });
+
+    videoInput.addEventListener('change', () => {
+      const file = videoInput.files && videoInput.files[0];
+      if (!file) {
+        videoPreview.classList.add('hidden');
+        return;
+      }
+      videoPreview.src = URL.createObjectURL(file);
+      videoPreview.classList.remove('hidden');
+      videoPreview.play().catch(() => {});
+    });
+
+    cancelEditBtn.addEventListener('click', () => {
+      formEl.reset();
+      setFormModeCreate();
+      resetPreviews();
+      renderSubcategoriesForCategory(categorySelect.value);
+    });
+
+    document.getElementById('reset-form-btn').addEventListener('click', () => {
+      setFormModeCreate();
+      resetPreviews();
+      categorySelect.value = '';
+      renderSubcategoriesForCategory('');
+    });
+
+    dishesListEl.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const dishId = parseInt(btn.getAttribute('data-id'), 10);
+      const action = btn.getAttribute('data-action');
+      const dish = dishes.find((d) => d.id === dishId);
+      if (!dish) return;
+
+      if (action === 'edit') {
+        fillFormFromDish(dish);
+        setFormModeEdit(dishId);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
 
-      const body = {
-        name,
-        price,
-        description: null,
-        calories: null,
-        image_url: null,
-        video_url: null,
-        subcategory_id: null,
-        weight_grams: null,
-      };
-
-      const wg = document.getElementById('weight_grams').value.trim();
-      if (wg !== '') {
-        const n = parseInt(wg, 10);
-        if (!Number.isNaN(n) && n >= 0) body.weight_grams = n;
+      if (action === 'add-season' || action === 'remove-season') {
+        const seasonId = getActiveSeasonId();
+        if (!seasonId) {
+          showAlert('err', 'Сначала выберите сезон.');
+          return;
+        }
+        const token = getTokenOrWarn();
+        if (!token) return;
+        try {
+          const endpoint = url(`/admin/seasons/${seasonId}/dishes/${dishId}`);
+          const res = await fetch(endpoint, {
+            method: action === 'add-season' ? 'POST' : 'DELETE',
+            headers: {
+              'X-Admin-Token': token,
+              ...(action === 'add-season' ? { 'Content-Type': 'application/json' } : {}),
+            },
+            ...(action === 'add-season' ? { body: JSON.stringify({ sort_order: dishId, is_visible: true }) } : {}),
+          });
+          if (!res.ok) {
+            const text = await res.text();
+            showAlert('err', 'Ошибка: ' + parseErrorText(text));
+            return;
+          }
+          showAlert('ok', action === 'add-season' ? 'Блюдо добавлено в сезон.' : 'Блюдо убрано из сезона.');
+          await loadSeasonDishes();
+          await loadDishes();
+        } catch (err) {
+          showAlert('err', 'Сеть: ' + (err.message || err));
+        }
+        return;
       }
 
-      const desc = document.getElementById('description').value.trim();
-      if (desc) body.description = desc;
-
-      const cal = document.getElementById('calories').value.trim();
-      if (cal) body.calories = cal;
-
-      const img = document.getElementById('image_url').value.trim();
-      if (img) body.image_url = img;
-
-      const vid = document.getElementById('video_url').value.trim();
-      if (vid) body.video_url = vid;
-
-      const sid = document.getElementById('subcategory_id').value;
-      if (sid) body.subcategory_id = parseInt(sid, 10);
-
-      const submitBtn = e.target.querySelector('button[type="submit"]');
-      submitBtn.disabled = true;
-      alertEl.classList.add('hidden');
-
+      if (!window.confirm(`Удалить блюдо "${dish.name}"?`)) return;
+      const token = getTokenOrWarn();
+      if (!token) return;
       try {
-        const res = await fetch(url('/admin/dishes'), {
+        const res = await fetch(url(`/admin/dishes/${dishId}`), {
+          method: 'DELETE',
+          headers: { 'X-Admin-Token': token },
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          showAlert('err', 'Ошибка удаления: ' + parseErrorText(text));
+          return;
+        }
+        showAlert('ok', `Блюдо "${dish.name}" удалено.`);
+        await loadDishes();
+      } catch (err) {
+        showAlert('err', 'Сеть: ' + (err.message || err));
+      }
+    });
+
+    document.getElementById('btn-refresh-dishes').addEventListener('click', async () => {
+      await loadSeasonDishes();
+      await loadDishes();
+    });
+
+    seasonDishesListEl.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-action="remove-season"]');
+      if (!btn) return;
+      const dishId = parseInt(btn.getAttribute('data-id'), 10);
+      const seasonId = getActiveSeasonId();
+      const token = getTokenOrWarn();
+      if (!seasonId || !token) return;
+      try {
+        const res = await fetch(url(`/admin/seasons/${seasonId}/dishes/${dishId}`), {
+          method: 'DELETE',
+          headers: { 'X-Admin-Token': token },
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          showAlert('err', 'Ошибка: ' + parseErrorText(text));
+          return;
+        }
+        showAlert('ok', 'Блюдо убрано из сезона.');
+        await loadSeasonDishes();
+        await loadDishes();
+      } catch (err) {
+        showAlert('err', 'Сеть: ' + (err.message || err));
+      }
+    });
+
+    activeSeasonSelect.addEventListener('change', async () => {
+      await loadSeasonDishes();
+      await loadDishes();
+    });
+
+    document.getElementById('btn-activate-season').addEventListener('click', async () => {
+      const seasonId = activeSeasonSelect.value ? parseInt(activeSeasonSelect.value, 10) : null;
+      const token = getTokenOrWarn();
+      if (!token || !seasonId) {
+        showAlert('err', 'Выберите сезон для активации.');
+        return;
+      }
+      try {
+        const res = await fetch(url(`/admin/seasons/${seasonId}/activate`), {
+          method: 'POST',
+          headers: { 'X-Admin-Token': token },
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          showAlert('err', 'Ошибка активации: ' + parseErrorText(text));
+          return;
+        }
+        showAlert('ok', 'Активный сезон обновлен.');
+        await loadSeasons();
+        await loadSeasonDishes();
+        await loadDishes();
+      } catch (err) {
+        showAlert('err', 'Сеть: ' + (err.message || err));
+      }
+    });
+
+    document.getElementById('btn-create-season').addEventListener('click', async () => {
+      const token = getTokenOrWarn();
+      if (!token) return;
+      const name = seasonNameInput.value.trim();
+      const slug = seasonSlugInput.value.trim();
+      if (!name || !slug) {
+        showAlert('err', 'Заполните название и slug сезона.');
+        return;
+      }
+      try {
+        const res = await fetch(url('/admin/seasons'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'X-Admin-Token': token,
           },
-          body: JSON.stringify(body),
+          body: JSON.stringify({ name, slug, sort_order: seasons.length + 1, is_active: false }),
         });
         const text = await res.text();
         if (!res.ok) {
-          let detail = text;
-          try {
-            const j = JSON.parse(text);
-            detail = j.detail ? JSON.stringify(j.detail) : text;
-          } catch (_) {}
-          showAlert('err', 'Ошибка ' + res.status + ': ' + detail);
+          showAlert('err', 'Ошибка создания сезона: ' + parseErrorText(text));
+          return;
+        }
+        showAlert('ok', 'Сезон создан.');
+        seasonNameInput.value = '';
+        seasonSlugInput.value = '';
+        await loadSeasons();
+      } catch (err) {
+        showAlert('err', 'Сеть: ' + (err.message || err));
+      }
+    });
+
+    formEl.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const token = getTokenOrWarn();
+      if (!token) return;
+
+      submitBtn.disabled = true;
+      alertEl.classList.add('hidden');
+
+      try {
+        const imageFile = imageInput.files && imageInput.files[0];
+        if (imageFile) {
+          const uploadedImage = await uploadFile(imageFile);
+          document.getElementById('image_url').value = uploadedImage.url;
+        }
+
+        const videoFile = videoInput.files && videoInput.files[0];
+        if (videoFile) {
+          const uploadedVideo = await uploadFile(videoFile);
+          document.getElementById('video_url').value = uploadedVideo.url;
+        }
+
+        const payload = collectPayload();
+        if (!payload) return;
+
+        const method = editingDishId ? 'PUT' : 'POST';
+        const activeSeasonId = getActiveSeasonId();
+        const endpoint = editingDishId
+          ? `/admin/dishes/${editingDishId}`
+          : activeSeasonId
+            ? `/admin/dishes?season_id=${activeSeasonId}`
+            : '/admin/dishes';
+        const res = await fetch(url(endpoint), {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Token': token,
+          },
+          body: JSON.stringify(payload),
+        });
+        const text = await res.text();
+        if (!res.ok) {
+          showAlert('err', 'Ошибка ' + res.status + ': ' + parseErrorText(text));
           return;
         }
         const data = JSON.parse(text);
-        showAlert('ok', 'Блюдо добавлено, id=' + data.id + '. Кэш меню сброшен — обновите страницу меню.');
-        e.target.reset();
-        subSelect.innerHTML = '<option value="">— не выбрано —</option>';
-        tokenInput.value = token;
-        if (localStorage.getItem(STORAGE_KEY)) loadSubcategories();
+        showAlert('ok', editingDishId ? `Блюдо #${data.id} обновлено.` : `Блюдо добавлено, id=${data.id}.`);
+        formEl.reset();
+        setFormModeCreate();
+        resetPreviews();
+        categorySelect.value = '';
+        renderSubcategoriesForCategory('');
+        await loadDishes();
+        await loadSeasonDishes();
       } catch (err) {
         showAlert('err', 'Сеть: ' + (err.message || err));
       } finally {
         submitBtn.disabled = false;
       }
     });
+
+    (async function bootstrap() {
+      if (localStorage.getItem(STORAGE_KEY)) {
+        await loadSubcategories();
+        await loadSeasons();
+        await loadSeasonDishes();
+        await loadDishes();
+      }
+    })();
   </script>
 </body>
 </html>
