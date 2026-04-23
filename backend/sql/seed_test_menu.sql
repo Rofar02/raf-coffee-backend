@@ -1,3 +1,11 @@
+-- Полная пересборка демо-меню: мало позиций, у напитков — объём (мл).
+-- Строки с кириллицей — только через U&'...' (ASCII-файл), иначе при
+--   PowerShell: Get-Content | docker exec psql
+--   без UTF-8 в БД попадут «??????».
+--
+-- Применение (рекомендуется): docker cp в контейнер и psql -f, либо:
+--   Get-Content -Path seed_test_menu.sql -Encoding UTF8 -Raw | docker exec -i raf-postgres psql -U rafuser -d rafcoffee
+
 BEGIN;
 
 CREATE TABLE IF NOT EXISTS menu_seasons (
@@ -17,6 +25,20 @@ CREATE TABLE IF NOT EXISTS season_dishes (
   PRIMARY KEY (season_id, dish_id)
 );
 
+ALTER TABLE dishes ADD COLUMN IF NOT EXISTS is_base_menu BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE dishes
+ADD COLUMN IF NOT EXISTS volume_ml INTEGER
+CHECK (volume_ml IS NULL OR (volume_ml >= 0 AND volume_ml <= 2000));
+
+CREATE TABLE IF NOT EXISTS dish_volume_options (
+    id SERIAL PRIMARY KEY,
+    dish_id INTEGER NOT NULL REFERENCES dishes(id) ON DELETE CASCADE,
+    volume_ml INTEGER NOT NULL CHECK (volume_ml >= 0 AND volume_ml <= 2000),
+    price INTEGER NOT NULL CHECK (price >= 0),
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    UNIQUE (dish_id, volume_ml)
+);
+
 DELETE FROM season_dishes;
 DELETE FROM menu_seasons;
 DELETE FROM dishes;
@@ -24,103 +46,88 @@ DELETE FROM subcategories;
 DELETE FROM categories;
 
 INSERT INTO categories (name, sort_order) VALUES
-  ('Еда', 1),
-  ('Напитки', 2);
+  (U&'\0415\0434\0430', 1),
+  (U&'\041d\0430\043f\0438\0442\043a\0438', 2);
 
 INSERT INTO subcategories (category_id, name, sort_order)
 SELECT c.id, v.sub_name, v.sort_order
 FROM (
   VALUES
-    ('Еда', 'Завтраки', 1),
-    ('Еда', 'Основные блюда', 2),
-    ('Еда', 'Салаты', 3),
-    ('Еда', 'Десерты', 4),
-    ('Еда', 'Закуски', 5),
-    ('Напитки', 'Кофе', 1),
-    ('Напитки', 'Чай', 2),
-    ('Напитки', 'Лимонады', 3),
-    ('Напитки', 'Смузи', 4),
-    ('Напитки', 'Фреши', 5)
+    (U&'\0415\0434\0430', U&'\0421\044b\0442\043d\043e\0435', 1),
+    (U&'\0415\0434\0430', U&'\0421\043b\0430\0434\043a\043e\0435', 2),
+    (U&'\041d\0430\043f\0438\0442\043a\0438', U&'\041a\043e\0444\0435', 1),
+    (U&'\041d\0430\043f\0438\0442\043a\0438', U&'\0425\043e\043b\043e\0434\043d\044b\0435', 2)
 ) AS v(cat_name, sub_name, sort_order)
 JOIN categories c ON c.name = v.cat_name;
 
 INSERT INTO menu_seasons (name, slug, is_active, sort_order) VALUES
-  ('Лето 2026', 'summer-2026', TRUE, 1),
-  ('Осень 2026', 'autumn-2026', FALSE, 2),
-  ('Зима 2026', 'winter-2026', FALSE, 3);
+  (U&'\041b\0435\0442\043e\0020\0032\0030\0032\0036', 'summer-2026', TRUE, 1),
+  (U&'\041e\0441\0435\043d\044c\0020\0032\0030\0032\0036', 'autumn-2026', FALSE, 2);
 
-INSERT INTO dishes (name, price, weight_grams, description, calories, image_url, video_url, subcategory_id)
-SELECT v.name, v.price, v.weight_grams, v.description, v.calories, v.image_url, v.video_url, s.id
+INSERT INTO dishes (name, price, weight_grams, volume_ml, description, calories, image_url, video_url, is_base_menu, subcategory_id)
+SELECT v.dname, v.price, v.wg, v.vm, v.descr, v.kcal, NULL, NULL, TRUE, s.id
 FROM (
   VALUES
-    -- Завтраки (5)
-    ('Завтрак фермера', 420, 320, 'Омлет с овощами, зеленью и тостом.', '420 ккал', NULL, NULL, 'Завтраки'),
-    ('Сырники со сметаной', 360, 240, 'Творожные сырники с ванилью и ягодным соусом.', '380 ккал', NULL, NULL, 'Завтраки'),
-    ('Овсянка с бананом', 290, 280, 'Овсяная каша на молоке с бананом и медом.', '310 ккал', NULL, NULL, 'Завтраки'),
-    ('Тост с авокадо и яйцом', 390, 210, 'Цельнозерновой тост, авокадо, яйцо пашот.', '340 ккал', NULL, NULL, 'Завтраки'),
-    ('Блинчики с творогом', 350, 260, 'Нежные блинчики с творожной начинкой.', '360 ккал', NULL, NULL, 'Завтраки'),
+    (U&'\0421\044d\043d\0434\0432\0438\0447\0020\0441\0020\043a\0443\0440\0438\0446\0435\0439', 320, 220, NULL, U&'\0421\044b\0442\043d\044b\0439\0020\0441\044d\043d\0434\0432\0438\0447\0020\043d\0430\0020\0447\0438\0430\0431\0430\0442\0442\0435\002e', U&'\0034\0032\0030\0020\043a\043a\0430\043b', U&'\0421\044b\0442\043d\043e\0435'),
+    (U&'\0411\043e\0443\043b\0020\0441\0020\043b\043e\0441\043e\0441\0435\043c', 420, 320, NULL, U&'\0420\0438\0441\002c\0020\043b\043e\0441\043e\0441\044c\002c\0020\043e\0432\043e\0449\0438\002c\0020\0441\043e\0443\0441\002e', U&'\0035\0031\0030\0020\043a\043a\0430\043b', U&'\0421\044b\0442\043d\043e\0435'),
+    (U&'\0421\044b\0440\043d\0438\043a', 180, 140, NULL, U&'\0414\043e\043c\0430\0448\043d\0438\0435\0020\0441\044b\0440\043d\0438\043a\0438\0020\0441\0020\044f\0433\043e\0434\043d\044b\043c\0020\0441\043e\0443\0441\043e\043c\002e', U&'\0032\0038\0030\0020\043a\043a\0430\043b', U&'\0421\043b\0430\0434\043a\043e\0435'),
+    (U&'\041a\0440\0443\0430\0441\0441\0430\043d', 150, 90, NULL, U&'\0421\043b\043e\0451\043d\044b\0439\0020\043a\0440\0443\0430\0441\0441\0430\043d\0020\0441\0020\043c\0430\0441\043b\043e\043c\002e', U&'\0032\0034\0030\0020\043a\043a\0430\043b', U&'\0421\043b\0430\0434\043a\043e\0435'),
+    (U&'\041a\0430\043f\0443\0447\0438\043d\043e', 200, NULL, 200, U&'\042d\0441\043f\0440\0435\0441\0441\043e\0020\0438\0020\043c\043e\043b\043e\0447\043d\0430\044f\0020\043f\0435\043d\0430\002e', U&'\0031\0032\0030\0020\043a\043a\0430\043b', U&'\041a\043e\0444\0435'),
+    (U&'\041b\0430\0442\0442\0435', 220, NULL, 300, U&'\041d\0435\0436\043d\043e\0435\0020\043c\043e\043b\043e\043a\043e\0020\0438\0020\044d\0441\043f\0440\0435\0441\0441\043e\002e', U&'\0031\0038\0030\0020\043a\043a\0430\043b', U&'\041a\043e\0444\0435'),
+    (U&'\041b\0438\043c\043e\043d\0430\0434\0020\043a\043b\0443\0431\043d\0438\043a\0430', 180, NULL, 400, U&'\041e\0441\0432\0435\0436\0430\044e\0449\0438\0439\0020\043b\0438\043c\043e\043d\0430\0434\0020\0441\0020\043a\043b\0443\0431\043d\0438\043a\043e\0439\002e', U&'\0039\0030\0020\043a\043a\0430\043b', U&'\0425\043e\043b\043e\0434\043d\044b\0435'),
+    (U&'\0421\043c\0443\0437\0438\0020\043c\0430\043d\0433\043e', 250, NULL, 350, U&'\041c\0430\043d\0433\043e\002c\0020\0431\0430\043d\0430\043d\002c\0020\0441\043e\043a\002e', U&'\0032\0030\0030\0020\043a\043a\0430\043b', U&'\0425\043e\043b\043e\0434\043d\044b\0435')
+) AS v(dname, price, wg, vm, descr, kcal, sub_name)
+JOIN subcategories s ON s.name = v.sub_name;
 
-    -- Основные блюда (5)
-    ('Паста с курицей', 520, 340, 'Паста в сливочном соусе с куриным филе.', '560 ккал', NULL, NULL, 'Основные блюда'),
-    ('Куриный боул', 490, 330, 'Рис, курица терияки, овощи и соус.', '510 ккал', NULL, NULL, 'Основные блюда'),
-    ('Салат Цезарь с курицей', 450, 280, 'Классический цезарь с соусом и пармезаном.', '430 ккал', NULL, NULL, 'Основные блюда'),
-    ('Суп дня', 280, 300, 'Ежедневный домашний суп, уточняйте у бариста.', '220 ккал', NULL, NULL, 'Основные блюда'),
-    ('Кесадилья с сыром и курицей', 470, 290, 'Хрустящая тортилья с сыром и курицей.', '540 ккал', NULL, NULL, 'Основные блюда'),
-
-    -- Кофе (5)
-    ('Эспрессо', 170, 35, 'Классический насыщенный эспрессо.', '5 ккал', NULL, NULL, 'Кофе'),
-    ('Американо', 190, 250, 'Эспрессо с горячей водой.', '10 ккал', NULL, NULL, 'Кофе'),
-    ('Капучино', 240, 300, 'Эспрессо с молоком и плотной пеной.', '140 ккал', NULL, NULL, 'Кофе'),
-    ('Латте', 260, 350, 'Мягкий кофейно-молочный напиток.', '170 ккал', NULL, NULL, 'Кофе'),
-    ('Раф ванильный', 290, 300, 'Сливочный раф с ванильным сиропом.', '230 ккал', NULL, NULL, 'Кофе'),
-
-    -- Чай (5)
-    ('Чай Ассам', 190, 400, 'Крепкий черный чай.', '0 ккал', NULL, NULL, 'Чай'),
-    ('Чай Эрл Грей', 210, 400, 'Черный чай с бергамотом.', '0 ккал', NULL, NULL, 'Чай'),
-    ('Зеленый Сенча', 210, 400, 'Свежий японский зеленый чай.', '0 ккал', NULL, NULL, 'Чай'),
-    ('Ягодный чай', 250, 450, 'Фруктово-ягодный чай с легкой кислинкой.', '40 ккал', NULL, NULL, 'Чай'),
-    ('Облепиховый чай', 260, 450, 'Теплый чай с облепихой и медом.', '90 ккал', NULL, NULL, 'Чай')
-
-    -- Доп. подкатегории (по 1 позиции)
-   ,('Греческий салат', 390, 260, 'Свежие овощи, фета и оливковая заправка.', '290 ккал', NULL, NULL, 'Салаты')
-   ,('Чизкейк классический', 310, 140, 'Нежный чизкейк с ванильной ноткой.', '410 ккал', NULL, NULL, 'Десерты')
-   ,('Картофель по-деревенски', 240, 180, 'Хрустящий картофель с фирменным соусом.', '330 ккал', NULL, NULL, 'Закуски')
-   ,('Лимонад цитрус-мята', 260, 450, 'Домашний лимонад с мятой и лаймом.', '120 ккал', NULL, NULL, 'Лимонады')
-   ,('Смузи манго-маракуйя', 330, 350, 'Тропический смузи на пюре манго.', '190 ккал', NULL, NULL, 'Смузи')
-   ,('Апельсиновый фреш', 320, 300, 'Свежевыжатый апельсиновый сок.', '130 ккал', NULL, NULL, 'Фреши')
-) AS v(name, price, weight_grams, description, calories, image_url, video_url, subcategory_name)
-JOIN subcategories s ON s.name = v.subcategory_name;
-
--- Активный сезон (Лето): включает всё тестовое меню.
-INSERT INTO season_dishes (season_id, dish_id, sort_order, is_visible)
-SELECT ms.id, d.id, d.id, TRUE
+-- Варианты объёма (капучино, латте) — min(price) в dishes
+INSERT INTO dish_volume_options (dish_id, volume_ml, price, sort_order)
+SELECT d.id, v.vm, v.pr, v.so
 FROM dishes d
-JOIN menu_seasons ms ON ms.slug = 'summer-2026';
+JOIN (
+  VALUES
+    (U&'\041a\0430\043f\0443\0447\0438\043d\043e', 200, 180, 0),
+    (U&'\041a\0430\043f\0443\0447\0438\043d\043e', 300, 200, 1),
+    (U&'\041a\0430\043f\0443\0447\0438\043d\043e', 400, 230, 2),
+    (U&'\041b\0430\0442\0442\0435', 200, 200, 0),
+    (U&'\041b\0430\0442\0442\0435', 300, 220, 1),
+    (U&'\041b\0430\0442\0442\0435', 400, 250, 2)
+) AS v(dname, vm, pr, so) ON d.name = v.dname
+ON CONFLICT (dish_id, volume_ml) DO NOTHING;
 
--- Осень: ограниченный пример набора позиций.
-INSERT INTO season_dishes (season_id, dish_id, sort_order, is_visible)
-SELECT ms.id, d.id, d.id, TRUE
-FROM dishes d
-JOIN menu_seasons ms ON ms.slug = 'autumn-2026'
-WHERE d.name IN (
-  'Завтрак фермера',
-  'Сырники со сметаной',
-  'Суп дня',
-  'Латте',
-  'Чай Эрл Грей',
-  'Чизкейк классический'
-);
+UPDATE dishes SET price = 180, volume_ml = NULL WHERE name = U&'\041a\0430\043f\0443\0447\0438\043d\043e';
+UPDATE dishes SET price = 200, volume_ml = NULL WHERE name = U&'\041b\0430\0442\0442\0435';
 
--- Зима: отдельный небольшой набор.
+INSERT INTO dishes (name, price, weight_grams, volume_ml, description, calories, image_url, video_url, is_base_menu, subcategory_id)
+SELECT
+  ms.name || U&'\0020\2014\0020' || s.name,
+  CASE
+    WHEN c.name = U&'\0415\0434\0430' THEN 350
+    ELSE 200
+  END,
+  CASE WHEN c.name = U&'\0415\0434\0430' THEN 200 ELSE NULL END,
+  CASE WHEN c.name = U&'\041d\0430\043f\0438\0442\043a\0438' THEN 300 ELSE NULL END,
+  U&'\0421\0435\0437\043e\043d\043d\0430\044f\0020\043f\043e\0437\0438\0446\0438\044f\0020\0434\043b\044f\0020\00ab' || ms.name || U&'\00bb\002e',
+  (200 + s.sort_order * 15) || U&'\0020\043a\043a\0430\043b',
+  NULL,
+  NULL,
+  FALSE,
+  s.id
+FROM menu_seasons ms
+CROSS JOIN subcategories s
+JOIN categories c ON c.id = s.category_id
+WHERE ms.is_active = TRUE
+ORDER BY s.sort_order, s.id;
+
 INSERT INTO season_dishes (season_id, dish_id, sort_order, is_visible)
-SELECT ms.id, d.id, d.id, TRUE
+SELECT
+  ms.id,
+  d.id,
+  s.sort_order * 10,
+  TRUE
 FROM dishes d
-JOIN menu_seasons ms ON ms.slug = 'winter-2026'
-WHERE d.name IN (
-  'Блинчики с творогом',
-  'Кесадилья с сыром и курицей',
-  'Раф ванильный',
-  'Облепиховый чай'
-);
+JOIN subcategories s ON s.id = d.subcategory_id
+JOIN menu_seasons ms ON d.is_base_menu = FALSE
+  AND d.name LIKE ms.name || U&'\0020\2014\0020' || U&'\0025'
+  AND ms.is_active = TRUE;
 
 COMMIT;

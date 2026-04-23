@@ -147,10 +147,43 @@
       text-transform: uppercase;
       color: rgba(63, 47, 37, 0.72);
     }
+    .menu-scope-block {
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 14px;
+      background: #fff;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+    .menu-scope-title {
+      margin: 0 0 10px 0;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #3f2f25;
+      letter-spacing: 0.01em;
+    }
     @media (max-width: 640px) {
       .dish-row { flex-direction: column !important; justify-content: flex-start !important; }
       .dish-actions { justify-content: flex-start !important; width: 100%; }
       .dish-actions > button { width: 100%; }
+    }
+    .pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 9px;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+    .pill-base {
+      background: #edf7ed;
+      color: #1f6b2f;
+      border: 1px solid #b9dfc0;
+    }
+    .pill-seasonal {
+      background: #fff3e8;
+      color: #8a4b10;
+      border: 1px solid #f2d0af;
     }
   </style>
 </head>
@@ -220,14 +253,14 @@
               <option value="">— выберите сезон —</option>
             </select>
             <button id="btn-activate-season" type="button" class="rounded-xl border border-coffee-400 px-4 py-2 text-sm font-medium text-coffee-800 transition hover:bg-coffee-100">Сделать активным</button>
+            <button id="btn-delete-season" type="button" class="rounded-xl border border-red-300 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50">Удалить сезон</button>
           </div>
           <p id="season-hint" class="mt-2 text-sm text-coffee-500"></p>
         </div>
         <div>
           <p class="block text-sm font-semibold text-coffee-800">Создать сезон</p>
-          <div class="mt-2 grid gap-2 sm:grid-cols-3">
+          <div class="mt-2 grid gap-2 sm:grid-cols-2">
             <input id="season-name" placeholder="Название" class="rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
-            <input id="season-slug" placeholder="slug" class="rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
             <button id="btn-create-season" type="button" class="rounded-xl bg-coffee-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-coffee-900">Создать</button>
           </div>
         </div>
@@ -248,6 +281,21 @@
               <option value="">— выберите блюдо —</option>
             </select>
           </div>
+          <div class="mt-3 rounded-lg border border-coffee-200 bg-white p-3">
+            <p class="mb-2 text-sm font-semibold text-coffee-800">Куда добавить блюдо</p>
+            <label class="inline-flex items-center gap-2 text-sm text-coffee-800">
+              <input id="placement-base" type="radio" name="dish-placement" value="base" checked class="h-4 w-4 border-coffee-300 text-coffee-700 focus:ring-coffee-500/40" />
+              В основное меню (постоянно)
+            </label>
+            <label class="mt-2 inline-flex items-center gap-2 text-sm text-coffee-800">
+              <input id="placement-seasonal" type="radio" name="dish-placement" value="seasonal" class="h-4 w-4 border-coffee-300 text-coffee-700 focus:ring-coffee-500/40" />
+              Только сезонная добавка
+            </label>
+            <label id="also-season-wrap" class="mt-3 inline-flex items-center gap-2 text-sm text-coffee-700">
+              <input id="also-add-to-season" type="checkbox" class="h-4 w-4 rounded border-coffee-300 text-coffee-700 focus:ring-coffee-500/40" />
+              Также добавить в активный сезон
+            </label>
+          </div>
         </div>
 
         <div class="grid gap-4 md:grid-cols-2">
@@ -266,6 +314,20 @@
           <div>
             <label for="weight_grams" class="block text-sm font-semibold text-coffee-800">Порция (г)</label>
             <input id="weight_grams" name="weight_grams" type="number" min="0" step="1" placeholder="например 250" class="mt-2 w-full rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
+          </div>
+          <div class="md:col-span-2 rounded-xl border border-coffee-200/80 p-4">
+            <p class="text-sm font-semibold text-coffee-800">Объёмы и цены (напитки)</p>
+            <p class="mt-1 text-sm text-coffee-500">
+              Несколько вариантов: укажите мл и цену в каждой строке. Поле «Цена» сверху — минимальная из вариантов, обновляется при сохранении.
+            </p>
+            <div id="volume-options-list" class="mt-3 space-y-2"></div>
+            <button
+              type="button"
+              id="btn-add-volume-option"
+              class="mt-2 rounded-lg border border-dashed border-coffee-300 px-3 py-1.5 text-sm font-medium text-coffee-700 transition hover:bg-coffee-50"
+            >
+              + Добавить объём
+            </button>
           </div>
           <div>
             <label for="category_id" class="block text-sm font-semibold text-coffee-800">Категория</label>
@@ -315,17 +377,23 @@
           <button id="btn-refresh-dishes" type="button" class="rounded-full border border-coffee-400 px-4 py-2 text-sm font-medium text-coffee-800 transition hover:bg-coffee-100">Обновить</button>
         </div>
         <div id="mobile-list-switcher">
-          <button id="btn-mobile-season-list" type="button" class="mobile-switch-btn is-active">В сезоне</button>
-          <button id="btn-mobile-all-list" type="button" class="mobile-switch-btn">Все блюда</button>
+          <button id="btn-mobile-season-list" type="button" class="mobile-switch-btn is-active">Текущий сезон</button>
+          <button id="btn-mobile-all-list" type="button" class="mobile-switch-btn">Актуальное меню</button>
         </div>
         <div id="season-list-wrap">
           <div id="season-dishes-list" class="max-h-[36vh] space-y-2 overflow-auto pr-1"></div>
         </div>
         <div id="all-list-wrap">
-          <h3 id="section-all-dishes" class="mt-5 font-display text-lg font-semibold text-coffee-900">Все блюда</h3>
+          <h3 id="section-all-dishes" class="mt-5 font-display text-lg font-semibold text-coffee-900">Актуальное меню сейчас</h3>
+          <p class="mt-1 text-sm text-coffee-600">По умолчанию: база + блюда активного сезона.</p>
+          <label class="mt-2 inline-flex items-center gap-2 text-sm text-coffee-700">
+            <input id="show-full-catalog" type="checkbox" class="h-4 w-4 rounded border-coffee-300 text-coffee-700 focus:ring-coffee-500/40" />
+            Показать весь каталог (включая блюда других сезонов)
+          </label>
           <div id="dishes-list" class="mt-2 max-h-[26vh] space-y-2 overflow-auto pr-1"></div>
         </div>
       </section>
+
     </div>
 
     <div id="alert" class="mt-6 hidden rounded-2xl border p-4 text-sm" role="status"></div>
@@ -361,16 +429,20 @@
     const existingDishSelect = document.getElementById('existing_dish_id');
     const cloneCheckbox = document.getElementById('clone-existing');
     const clonePickerWrap = document.getElementById('clone-picker-wrap');
+    const placementBaseRadio = document.getElementById('placement-base');
+    const placementSeasonalRadio = document.getElementById('placement-seasonal');
+    const alsoAddToSeasonCheckbox = document.getElementById('also-add-to-season');
+    const alsoSeasonWrap = document.getElementById('also-season-wrap');
     const dishesListEl = document.getElementById('dishes-list');
     const seasonDishesListEl = document.getElementById('season-dishes-list');
     const seasonListWrapEl = document.getElementById('season-list-wrap');
     const allListWrapEl = document.getElementById('all-list-wrap');
     const mobileSeasonListBtn = document.getElementById('btn-mobile-season-list');
     const mobileAllListBtn = document.getElementById('btn-mobile-all-list');
+    const showFullCatalogCheckbox = document.getElementById('show-full-catalog');
     const seasonHintEl = document.getElementById('season-hint');
     const activeSeasonSelect = document.getElementById('active-season-select');
     const seasonNameInput = document.getElementById('season-name');
-    const seasonSlugInput = document.getElementById('season-slug');
     const imageInput = document.getElementById('image_file');
     const videoInput = document.getElementById('video_file');
     const imagePreview = document.getElementById('image_preview');
@@ -498,6 +570,21 @@
       }
     }
 
+    function getPlacementMode() {
+      return placementSeasonalRadio && placementSeasonalRadio.checked ? 'seasonal' : 'base';
+    }
+
+    function syncPlacementUi() {
+      const mode = getPlacementMode();
+      if (!alsoSeasonWrap) return;
+      if (mode === 'seasonal') {
+        alsoSeasonWrap.style.display = 'none';
+        alsoAddToSeasonCheckbox.checked = true;
+      } else {
+        alsoSeasonWrap.style.display = 'inline-flex';
+      }
+    }
+
     function setFormModeEdit(dishId) {
       editingDishId = dishId;
       submitBtn.textContent = 'Сохранить';
@@ -544,14 +631,111 @@
       renderSubcategoriesForCategory(categorySelect.value);
     }
 
+    const volumeOptionsList = document.getElementById('volume-options-list');
+    const btnAddVolumeOption = document.getElementById('btn-add-volume-option');
+
+    function clearVolumeOptionRows() {
+      volumeOptionsList.innerHTML = '';
+    }
+
+    function addVolumeOptionRow(ml, pr) {
+      const row = document.createElement('div');
+      row.className = 'volume-option-row flex flex-wrap items-end gap-2';
+      const mlId = 'vo-ml-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+      row.innerHTML = `
+        <div class="min-w-0 flex-1">
+          <label class="block text-xs font-medium text-coffee-600" for="${mlId}">мл</label>
+          <input type="number" data-vo-ml min="0" max="2000" step="1" id="${mlId}" class="mt-0.5 w-full rounded-lg border border-coffee-300 px-3 py-2 text-sm" placeholder="200" value="${ml != null && ml !== '' ? String(ml) : ''}" />
+        </div>
+        <div class="min-w-0 flex-1">
+          <span class="block text-xs font-medium text-coffee-600">₽</span>
+          <input type="number" data-vo-pr min="0" step="1" class="mt-0.5 w-full rounded-lg border border-coffee-300 px-3 py-2 text-sm" placeholder="цена" value="${pr != null && pr !== '' ? String(pr) : ''}" />
+        </div>
+        <button type="button" data-vo-remove class="shrink-0 rounded-lg border border-coffee-300 px-2 py-1 text-coffee-600 hover:bg-coffee-100" title="Убрать">×</button>
+      `;
+      row.querySelector('[data-vo-remove]').addEventListener('click', () => {
+        row.remove();
+      });
+      volumeOptionsList.appendChild(row);
+    }
+
+    function fillVolumeOptionsFromDish(dish) {
+      clearVolumeOptionRows();
+      const list = (dish.volume_options && dish.volume_options.length) ? dish.volume_options : null;
+      if (list) {
+        list
+          .slice()
+          .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+          .forEach((o) => addVolumeOptionRow(o.volume_ml, o.price));
+        return;
+      }
+      if (dish.volume_ml != null) {
+        addVolumeOptionRow(dish.volume_ml, dish.price);
+        return;
+      }
+    }
+
+    function collectVolumeOptionsFromList() {
+      const rows = volumeOptionsList.querySelectorAll('.volume-option-row');
+      const out = [];
+      let i = 0;
+      rows.forEach((row) => {
+        const mlIn = row.querySelector('[data-vo-ml]');
+        const prIn = row.querySelector('[data-vo-pr]');
+        const ml = mlIn && mlIn.value.trim() ? parseInt(mlIn.value, 10) : NaN;
+        const pr = prIn && prIn.value.trim() ? parseInt(prIn.value, 10) : NaN;
+        if (!Number.isNaN(ml) && ml >= 0 && !Number.isNaN(pr) && pr >= 0) {
+          out.push({ volume_ml: ml, price: pr, sort_order: i });
+          i += 1;
+        }
+      });
+      return out;
+    }
+
+    function dishFieldsForApi(dish) {
+      const vo = (dish.volume_options && dish.volume_options.length)
+        ? dish.volume_options
+            .slice()
+            .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+            .map((o, k) => ({
+              volume_ml: o.volume_ml,
+              price: o.price,
+              sort_order: o.sort_order != null ? o.sort_order : k,
+            }))
+        : [];
+      return {
+        name: dish.name,
+        price: dish.price,
+        description: dish.description || null,
+        calories: dish.calories || null,
+        image_url: dish.image_url || null,
+        video_url: dish.video_url || null,
+        subcategory_id: dish.subcategory_id || null,
+        weight_grams: dish.weight_grams || null,
+        volume_options: vo,
+        volume_ml: vo.length ? null : (dish.volume_ml != null ? dish.volume_ml : null),
+      };
+    }
+
+    if (btnAddVolumeOption) {
+      btnAddVolumeOption.addEventListener('click', () => addVolumeOptionRow('', ''));
+    }
+
     function fillFormFromDish(dish) {
       document.getElementById('name').value = dish.name || '';
       document.getElementById('price').value = dish.price != null ? String(dish.price) : '';
       document.getElementById('weight_grams').value = dish.weight_grams != null ? String(dish.weight_grams) : '';
+      fillVolumeOptionsFromDish(dish);
       document.getElementById('description').value = dish.description || '';
       document.getElementById('calories').value = dish.calories || '';
       document.getElementById('image_url').value = dish.image_url || '';
       document.getElementById('video_url').value = dish.video_url || '';
+      if (dish.is_base_menu) {
+        placementBaseRadio.checked = true;
+      } else {
+        placementSeasonalRadio.checked = true;
+      }
+      syncPlacementUi();
       imageInput.value = '';
       videoInput.value = '';
       resetPreviews();
@@ -563,10 +747,15 @@
 
     function collectPayload() {
       const name = document.getElementById('name').value.trim();
+      const vOpts = collectVolumeOptionsFromList();
       const priceRaw = document.getElementById('price').value;
-      const price = parseInt(priceRaw, 10);
+      let price = parseInt(priceRaw, 10);
+      if (vOpts.length > 0) {
+        price = Math.min(...vOpts.map((o) => o.price));
+        document.getElementById('price').value = String(price);
+      }
       if (!name || Number.isNaN(price) || price < 0) {
-        showAlert('err', 'Заполните название и корректную цену.');
+        showAlert('err', 'Заполните название и корректную цену (при вариантах объёма укажите мл и цену в каждой строке).');
         return null;
       }
       const body = {
@@ -576,13 +765,19 @@
         calories: null,
         image_url: null,
         video_url: null,
+        is_base_menu: getPlacementMode() === 'base',
         subcategory_id: null,
         weight_grams: null,
+        volume_ml: null,
+        volume_options: vOpts.length > 0 ? vOpts : [],
       };
       const wg = document.getElementById('weight_grams').value.trim();
       if (wg !== '') {
         const n = parseInt(wg, 10);
         if (!Number.isNaN(n) && n >= 0) body.weight_grams = n;
+      }
+      if (vOpts.length > 0) {
+        body.volume_ml = null;
       }
       const desc = document.getElementById('description').value.trim();
       if (desc) body.description = desc;
@@ -624,6 +819,17 @@
         }
         rootEl.appendChild(section);
       }
+    }
+
+
+    function createMenuScopeBlock(title) {
+      const block = document.createElement('section');
+      block.className = 'menu-scope-block';
+      const heading = document.createElement('h4');
+      heading.className = 'menu-scope-title font-display';
+      heading.textContent = title;
+      block.appendChild(heading);
+      return block;
     }
 
     async function uploadFile(file) {
@@ -689,25 +895,68 @@
 
       dishesListEl.innerHTML = '';
       const seasonDishIds = new Set(seasonDishes.map((d) => d.id));
-      renderGroupedList(dishesListEl, dishes, (dish) => {
+      const onlyActual = !showFullCatalogCheckbox.checked;
+      const sourceDishes = onlyActual ? dishes.filter((dish) => dish.is_base_menu || seasonDishIds.has(dish.id)) : dishes;
+      if (!sourceDishes.length) {
+        dishesListEl.innerHTML = '<p class="text-sm text-coffee-500">Нет блюд для выбранного режима отображения.</p>';
+        renderListMode();
+        return;
+      }
+
+      const buildDishRow = (dish) => {
         const row = document.createElement('article');
         row.className = 'rounded-xl border border-coffee-200 p-3';
         const inSeason = seasonDishIds.has(dish.id);
+        const badge = dish.is_base_menu
+          ? '<span class="pill pill-base">основное</span>'
+          : '<span class="pill pill-seasonal">только сезон</span>';
         row.innerHTML = `
           <div class="dish-row">
             <div>
-              <p class="font-semibold text-coffee-900">${dish.name}</p>
+              <div class="mb-1 flex flex-wrap items-center gap-2">
+                <p class="font-semibold text-coffee-900">${dish.name}</p>
+                ${badge}
+              </div>
               <p class="text-sm text-coffee-600">${dish.price} ₽${dish.subcategory_name ? ' · ' + dish.subcategory_name : ''}</p>
             </div>
             <div class="dish-actions">
               <button type="button" data-action="${inSeason ? 'remove-season' : 'add-season'}" data-id="${dish.id}" class="rounded-full border px-3 py-1 text-xs font-medium ${inSeason ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-emerald-300 text-emerald-700 hover:bg-emerald-50'}">${inSeason ? 'Убрать из сезона' : 'Добавить в сезон'}</button>
-              <button type="button" data-action="edit" data-id="${dish.id}" class="rounded-full border border-coffee-300 px-3 py-1 text-xs font-medium text-coffee-800 hover:bg-coffee-100">Редактировать</button>
-              <button type="button" data-action="delete" data-id="${dish.id}" class="rounded-full border border-red-300 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-50">Удалить</button>
+              <button type="button" data-action="toggle-more" data-id="${dish.id}" class="rounded-full border border-coffee-300 px-3 py-1 text-xs font-medium text-coffee-800 hover:bg-coffee-100">Ещё</button>
             </div>
+          </div>
+          <div class="more-actions mt-2 hidden flex flex-wrap gap-2">
+            ${dish.is_base_menu
+              ? '<button type="button" data-action="remove-base" data-id="' + dish.id + '" class="rounded-full border border-orange-300 px-3 py-1 text-xs font-medium text-orange-700 hover:bg-orange-50">Убрать из основного</button>'
+              : '<button type="button" data-action="add-base" data-id="' + dish.id + '" class="rounded-full border border-blue-300 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-50">Добавить в основное</button>'}
+            <button type="button" data-action="edit" data-id="${dish.id}" class="rounded-full border border-coffee-300 px-3 py-1 text-xs font-medium text-coffee-800 hover:bg-coffee-100">Редактировать</button>
+            <button type="button" data-action="delete" data-id="${dish.id}" class="rounded-full border border-red-300 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-50">Удалить</button>
           </div>
         `;
         return row;
-      });
+      };
+
+      if (onlyActual) {
+        const seasonalAdditions = sourceDishes.filter((dish) => !dish.is_base_menu && seasonDishIds.has(dish.id));
+        const baseItems = sourceDishes.filter((dish) => dish.is_base_menu);
+
+        dishesListEl.innerHTML = '';
+        if (seasonalAdditions.length) {
+          const seasonalBlock = createMenuScopeBlock('Сезонное меню');
+          const seasonalWrap = document.createElement('div');
+          renderGroupedList(seasonalWrap, seasonalAdditions, buildDishRow);
+          seasonalBlock.appendChild(seasonalWrap);
+          dishesListEl.appendChild(seasonalBlock);
+        }
+        if (baseItems.length) {
+          const baseBlock = createMenuScopeBlock('Основное меню');
+          const baseWrap = document.createElement('div');
+          renderGroupedList(baseWrap, baseItems, buildDishRow);
+          baseBlock.appendChild(baseWrap);
+          dishesListEl.appendChild(baseBlock);
+        }
+      } else {
+        renderGroupedList(dishesListEl, sourceDishes, buildDishRow);
+      }
       renderListMode();
     }
 
@@ -742,7 +991,7 @@
       }
       seasonDishes = await res.json();
       if (!seasonDishes.length) {
-        seasonDishesListEl.innerHTML = '<p class="text-sm text-coffee-500">В сезоне пока нет блюд.</p>';
+        seasonDishesListEl.innerHTML = '<p class="text-sm text-coffee-500">Сезонных добавок пока нет. Добавьте блюда через кнопку "Добавить в сезон".</p>';
         renderListMode();
         return;
       }
@@ -753,7 +1002,10 @@
         row.innerHTML = `
           <div class="dish-row">
             <div>
-              <p class="font-semibold text-coffee-900">${dish.name}</p>
+              <div class="mb-1 flex flex-wrap items-center gap-2">
+                <p class="font-semibold text-coffee-900">${dish.name}</p>
+                <span class="pill pill-seasonal">в активном сезоне</span>
+              </div>
               <p class="text-sm text-coffee-600">${dish.price} ₽${dish.subcategory_name ? ' · ' + dish.subcategory_name : ''}</p>
             </div>
             <button type="button" data-action="remove-season" data-id="${dish.id}" class="rounded-full border border-amber-300 px-3 py-1 text-xs font-medium text-amber-700 hover:bg-amber-50">Убрать из сезона</button>
@@ -803,13 +1055,21 @@
     cancelEditBtn.addEventListener('click', () => {
       formEl.reset();
       setFormModeCreate();
+      placementBaseRadio.checked = true;
+      alsoAddToSeasonCheckbox.checked = false;
+      syncPlacementUi();
       resetPreviews();
+      clearVolumeOptionRows();
       renderSubcategoriesForCategory(categorySelect.value);
     });
 
     document.getElementById('reset-form-btn').addEventListener('click', () => {
       setFormModeCreate();
+      placementBaseRadio.checked = true;
+      alsoAddToSeasonCheckbox.checked = false;
+      syncPlacementUi();
       resetPreviews();
+      clearVolumeOptionRows();
       categorySelect.value = '';
       renderSubcategoriesForCategory('');
     });
@@ -821,6 +1081,15 @@
       const action = btn.getAttribute('data-action');
       const dish = dishes.find((d) => d.id === dishId);
       if (!dish) return;
+
+      if (action === 'toggle-more') {
+        const card = btn.closest('article');
+        if (!card) return;
+        const more = card.querySelector('.more-actions');
+        if (!more) return;
+        more.classList.toggle('hidden');
+        return;
+      }
 
       if (action === 'edit') {
         fillFormFromDish(dish);
@@ -838,6 +1107,24 @@
         const token = getTokenOrWarn();
         if (!token) return;
         try {
+          if (action === 'add-season' && dish.is_base_menu) {
+            const updatePayload = { ...dishFieldsForApi(dish), is_base_menu: false };
+            const updateRes = await fetch(url(`/admin/dishes/${dishId}`), {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-Token': token,
+              },
+              body: JSON.stringify(updatePayload),
+            });
+            if (!updateRes.ok) {
+              const updateText = await updateRes.text();
+              showAlert('err', 'Не удалось перевести блюдо в сезонный режим: ' + parseErrorText(updateText));
+              return;
+            }
+            dish.is_base_menu = false;
+          }
+
           const endpoint = url(`/admin/seasons/${seasonId}/dishes/${dishId}`);
           const res = await fetch(endpoint, {
             method: action === 'add-season' ? 'POST' : 'DELETE',
@@ -853,6 +1140,60 @@
             return;
           }
           showToast(action === 'add-season' ? 'Блюдо добавлено в сезон.' : 'Блюдо убрано из сезона.');
+          await loadSeasonDishes();
+          await loadDishes();
+        } catch (err) {
+          showAlert('err', 'Сеть: ' + (err.message || err));
+        }
+        return;
+      }
+
+      if (action === 'add-base') {
+        const token = getTokenOrWarn();
+        if (!token) return;
+        try {
+          const updatePayload = { ...dishFieldsForApi(dish), is_base_menu: true };
+          const updateRes = await fetch(url(`/admin/dishes/${dishId}`), {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Admin-Token': token,
+            },
+            body: JSON.stringify(updatePayload),
+          });
+          if (!updateRes.ok) {
+            const updateText = await updateRes.text();
+            showAlert('err', 'Не удалось добавить блюдо в основное меню: ' + parseErrorText(updateText));
+            return;
+          }
+          showToast('Блюдо добавлено в основное меню.');
+          await loadSeasonDishes();
+          await loadDishes();
+        } catch (err) {
+          showAlert('err', 'Сеть: ' + (err.message || err));
+        }
+        return;
+      }
+
+      if (action === 'remove-base') {
+        const token = getTokenOrWarn();
+        if (!token) return;
+        try {
+          const updatePayload = { ...dishFieldsForApi(dish), is_base_menu: false };
+          const updateRes = await fetch(url(`/admin/dishes/${dishId}`), {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Admin-Token': token,
+            },
+            body: JSON.stringify(updatePayload),
+          });
+          if (!updateRes.ok) {
+            const updateText = await updateRes.text();
+            showAlert('err', 'Не удалось убрать блюдо из основного меню: ' + parseErrorText(updateText));
+            return;
+          }
+          showToast('Блюдо убрано из основного меню.');
           await loadSeasonDishes();
           await loadDishes();
         } catch (err) {
@@ -898,6 +1239,11 @@
         renderListMode();
       });
     }
+    if (showFullCatalogCheckbox) {
+      showFullCatalogCheckbox.addEventListener('change', loadDishes);
+    }
+    if (placementBaseRadio) placementBaseRadio.addEventListener('change', syncPlacementUi);
+    if (placementSeasonalRadio) placementSeasonalRadio.addEventListener('change', syncPlacementUi);
 
     seasonDishesListEl.addEventListener('click', async (e) => {
       const btn = e.target.closest('button[data-action="remove-season"]');
@@ -956,13 +1302,41 @@
       }
     });
 
+    document.getElementById('btn-delete-season').addEventListener('click', async () => {
+      const seasonId = activeSeasonSelect.value ? parseInt(activeSeasonSelect.value, 10) : null;
+      const token = getTokenOrWarn();
+      if (!token || !seasonId) {
+        showAlert('err', 'Выберите сезон для удаления.');
+        return;
+      }
+      const season = seasons.find((s) => s.id === seasonId);
+      const seasonName = season ? season.name : `#${seasonId}`;
+      if (!window.confirm(`Удалить сезон "${seasonName}"?`)) return;
+      try {
+        const res = await fetch(url(`/admin/seasons/${seasonId}`), {
+          method: 'DELETE',
+          headers: { 'X-Admin-Token': token },
+        });
+        const text = await res.text();
+        if (!res.ok) {
+          showAlert('err', 'Ошибка удаления сезона: ' + parseErrorText(text));
+          return;
+        }
+        showToast(`Сезон "${seasonName}" удален.`);
+        await loadSeasons();
+        await loadSeasonDishes();
+        await loadDishes();
+      } catch (err) {
+        showAlert('err', 'Сеть: ' + (err.message || err));
+      }
+    });
+
     document.getElementById('btn-create-season').addEventListener('click', async () => {
       const token = getTokenOrWarn();
       if (!token) return;
       const name = seasonNameInput.value.trim();
-      const slug = seasonSlugInput.value.trim();
-      if (!name || !slug) {
-        showAlert('err', 'Заполните название и slug сезона.');
+      if (!name) {
+        showAlert('err', 'Заполните название сезона.');
         return;
       }
       try {
@@ -972,7 +1346,11 @@
             'Content-Type': 'application/json',
             'X-Admin-Token': token,
           },
-          body: JSON.stringify({ name, slug, sort_order: seasons.length + 1, is_active: false }),
+          body: JSON.stringify({
+            name,
+            sort_order: seasons.length + 1,
+            is_active: false
+          }),
         });
         const text = await res.text();
         if (!res.ok) {
@@ -981,7 +1359,6 @@
         }
         showToast('Сезон создан.');
         seasonNameInput.value = '';
-        seasonSlugInput.value = '';
         await loadSeasons();
       } catch (err) {
         showAlert('err', 'Сеть: ' + (err.message || err));
@@ -1014,9 +1391,14 @@
 
         const method = editingDishId ? 'PUT' : 'POST';
         const activeSeasonId = getActiveSeasonId();
+        const shouldAttachSeason = getPlacementMode() === 'seasonal' || !!alsoAddToSeasonCheckbox.checked;
+        if (!editingDishId && shouldAttachSeason && !activeSeasonId) {
+          showAlert('err', 'Для сезонного добавления сначала выберите активный сезон.');
+          return;
+        }
         const endpoint = editingDishId
           ? `/admin/dishes/${editingDishId}`
-          : activeSeasonId
+          : (shouldAttachSeason && activeSeasonId)
             ? `/admin/dishes?season_id=${activeSeasonId}`
             : '/admin/dishes';
         const res = await fetch(url(endpoint), {
@@ -1036,11 +1418,15 @@
         showToast(editingDishId ? `Блюдо #${data.id} обновлено.` : `Блюдо добавлено, id=${data.id}.`);
         formEl.reset();
         setFormModeCreate();
+        placementBaseRadio.checked = true;
+        alsoAddToSeasonCheckbox.checked = false;
+        syncPlacementUi();
         resetPreviews();
+        clearVolumeOptionRows();
         categorySelect.value = '';
         renderSubcategoriesForCategory('');
-        await loadDishes();
         await loadSeasonDishes();
+        await loadDishes();
       } catch (err) {
         showAlert('err', 'Сеть: ' + (err.message || err));
       } finally {
@@ -1056,6 +1442,7 @@
         await loadDishes();
       }
       renderListMode();
+      syncPlacementUi();
     })();
   </script>
 </body>

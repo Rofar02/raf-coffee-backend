@@ -133,6 +133,23 @@
       overflow-y: auto;
       padding-right: 4px;
     }
+    .modal-vol-btn {
+      border: 1px solid rgba(111, 78, 55, 0.35);
+      border-radius: 9999px;
+      padding: 8px 14px;
+      font-size: 15px;
+      background: rgba(255, 255, 255, 0.75);
+      color: #3f2f25;
+      transition: background 0.15s ease, box-shadow 0.15s ease;
+    }
+    .modal-vol-btn:hover {
+      background: rgba(255, 255, 255, 0.95);
+    }
+    .modal-vol-btn.is-active {
+      background: rgba(111, 78, 55, 0.2);
+      box-shadow: 0 0 0 2px rgba(111, 78, 55, 0.45);
+      font-weight: 600;
+    }
   </style>
 </head>
 <body class="bg-white font-sans text-black antialiased">
@@ -208,7 +225,9 @@
       <div id="modal-media" class="mb-5 hidden overflow-hidden rounded-xl"></div>
 
       <h2 id="modal-title" class="font-display pr-10 text-2xl font-semibold text-[#3f2f25]"></h2>
-      <p id="modal-meta" class="mt-2 text-lg font-semibold text-[#5b4334]"></p>
+      <p id="modal-portion" class="mt-2 text-base font-medium text-[#5b4334]"></p>
+      <div id="modal-volumes" class="mt-3 hidden flex flex-wrap gap-2"></div>
+      <p id="modal-price" class="mt-2 text-2xl font-bold tabular-nums text-[#3f2f25]"></p>
 
       <div id="modal-description-block" class="mt-5 hidden">
         <p class="text-xs font-semibold uppercase tracking-wide text-[#7a5c49]">Описание</p>
@@ -312,10 +331,54 @@
       return n + '\u00a0г';
     }
 
-    /** В списке меню — только название, граммы и цена (без фото). Подробности — в модалке по клику. */
-    function renderDishRow(dish) {
+    function formatVolumeMl(dish) {
+      if (dish.volume_ml == null || dish.volume_ml === '') return '';
+      const n = Number(dish.volume_ml);
+      if (Number.isNaN(n)) return '';
+      return n + '\u00a0мл';
+    }
+
+    function getVolumeOptions(dish) {
+      if (dish.volume_options && dish.volume_options.length > 0) {
+        return dish.volume_options
+          .slice()
+          .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0) || a.volume_ml - b.volume_ml);
+      }
+      if (dish.volume_ml != null && dish.volume_ml !== '') {
+        return [{ volume_ml: Number(dish.volume_ml), price: Number(dish.price), sort_order: 0, id: null }];
+      }
+      return [];
+    }
+
+    function minPriceForDish(dish) {
+      const vo = getVolumeOptions(dish);
+      if (vo.length) return Math.min(...vo.map((x) => Number(x.price)));
+      return Number(dish.price);
+    }
+
+    /** Строка списка: порция (диапазон мл или г). */
+    function listPortionCell(dish) {
       const w = formatWeight(dish);
-      const weightCell = w || '—';
+      const vo = getVolumeOptions(dish);
+      if (w) return w;
+      if (vo.length === 0) return '';
+      if (vo.length === 1) return vo[0].volume_ml + '\u00a0мл';
+      const mls = vo.map((x) => x.volume_ml);
+      return Math.min(...mls) + '–' + Math.max(...mls) + '\u00a0мл';
+    }
+
+    function listPriceCell(dish) {
+      const vo = getVolumeOptions(dish);
+      if (vo.length > 1) return 'от ' + formatPrice(minPriceForDish(dish));
+      if (vo.length === 1) return formatPrice(vo[0].price);
+      return formatPrice(dish.price);
+    }
+
+    /** В списке меню — название, порция (г/мл) и цена (без фото). Подробности — в модалке по клику. */
+    function renderDishRow(dish) {
+      const portionStr = listPortionCell(dish);
+      const weightCell = portionStr || '—';
+      const priceStr = listPriceCell(dish);
 
       return `
         <article
@@ -329,15 +392,19 @@
           </span>
           <div class="flex shrink-0 flex-wrap items-baseline gap-4 sm:justify-end">
             <span class="text-sm tabular-nums text-coffee-600">${weightCell}</span>
-            <span class="min-w-[5.5rem] text-right text-lg font-semibold tabular-nums text-coffee-900">${formatPrice(dish.price)}</span>
+            <span class="min-w-[5.5rem] text-right text-lg font-semibold tabular-nums text-coffee-900">${priceStr}</span>
           </div>
         </article>
       `;
     }
 
-    function categoryTabKey(catLabel) {
-      const s = String(catLabel || '').toLowerCase();
-      const drinkMarkers = ['напит', 'кофе', 'чай', 'лимонад', 'сок', 'коктейл', 'drink', 'coffee', 'tea'];
+    function categoryTabKey(catLabel, subLabel) {
+      const s = (String(catLabel || '') + ' ' + String(subLabel || '')).toLowerCase();
+      const drinkMarkers = [
+        'напит', 'кофе', 'чай', 'лимонад', 'сок', 'коктейл', 'смуз', 'смузи', 'молок', 'раф', 'какао',
+        'морс', 'фреш', 'глинт', 'тоник', 'колд', 'холодн', 'бар',
+        'drink', 'coffee', 'tea', 'latte', 'capp',
+      ];
       return drinkMarkers.some((m) => s.includes(m)) ? 'drinks' : 'food';
     }
 
@@ -355,8 +422,8 @@
     function flattenSubcategories(groups) {
       const result = [];
       for (const cat of groups) {
-        const mobileTab = categoryTabKey(cat.label);
         for (const sub of cat.subs) {
+          const mobileTab = categoryTabKey(cat.label, sub.label);
           result.push({
             key: `${cat.id ?? 'cat'}:${sub.id ?? sub.label}`,
             categoryId: cat.id,
@@ -715,16 +782,69 @@
       return null;
     }
 
+    var modalDish = null;
+    var modalSelectedVolIndex = 0;
+
+    function applyModalVolumeSelection() {
+      if (!modalDish) return;
+      const vo = getVolumeOptions(modalDish);
+      const opt = vo[modalSelectedVolIndex];
+      const volWrap = document.getElementById('modal-volumes');
+      if (volWrap) {
+        const btns = volWrap.querySelectorAll('.modal-vol-btn');
+        btns.forEach((b, i) => {
+          b.classList.toggle('is-active', i === modalSelectedVolIndex);
+        });
+      }
+      if (opt) {
+        document.getElementById('modal-portion').textContent = String(opt.volume_ml) + ' мл';
+        document.getElementById('modal-price').textContent = formatPrice(opt.price);
+      }
+    }
+
     async function openModal(dish) {
       const currentRequestId = ++modalOpenRequestId;
       const overlay = document.getElementById('modal-overlay');
       const panel = document.getElementById('modal-panel');
       document.getElementById('modal-title').textContent = dish.name;
-      const metaParts = [];
-      const w = formatWeight(dish);
-      if (w) metaParts.push(w);
-      metaParts.push(formatPrice(dish.price));
-      document.getElementById('modal-meta').textContent = metaParts.join(' · ');
+      modalDish = dish;
+      const vo = getVolumeOptions(dish);
+      const portionEl = document.getElementById('modal-portion');
+      const priceEl = document.getElementById('modal-price');
+      const volWrap = document.getElementById('modal-volumes');
+
+      if (vo.length > 1) {
+        volWrap.classList.remove('hidden');
+        volWrap.innerHTML = vo
+          .map(
+            (opt, i) =>
+              `<button type="button" class="modal-vol-btn${i === 0 ? ' is-active' : ''}" data-vol-idx="${i}">${opt.volume_ml} мл</button>`
+          )
+          .join('');
+        volWrap.querySelectorAll('[data-vol-idx]').forEach((btn) => {
+          btn.addEventListener('click', function () {
+            modalSelectedVolIndex = parseInt(btn.getAttribute('data-vol-idx'), 10);
+            applyModalVolumeSelection();
+          });
+        });
+        modalSelectedVolIndex = 0;
+        applyModalVolumeSelection();
+      } else {
+        volWrap.classList.add('hidden');
+        volWrap.innerHTML = '';
+        const w = formatWeight(dish);
+        if (vo.length === 1) {
+          portionEl.textContent = vo[0].volume_ml + ' мл';
+          priceEl.textContent = formatPrice(vo[0].price);
+        } else {
+          const parts = [];
+          if (w) parts.push(w);
+          const v = formatVolumeMl(dish);
+          if (v) parts.push(v);
+          portionEl.textContent = parts.length ? parts.join(' · ') : '—';
+          priceEl.textContent = formatPrice(dish.price);
+        }
+      }
 
       const descBlock = document.getElementById('modal-description-block');
       const descEl = document.getElementById('modal-description');

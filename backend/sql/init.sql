@@ -16,11 +16,23 @@ CREATE TABLE IF NOT EXISTS dishes (
     name VARCHAR(200) NOT NULL,
     price INTEGER NOT NULL CHECK (price >= 0),
     weight_grams INTEGER CHECK (weight_grams IS NULL OR weight_grams >= 0),
+    volume_ml INTEGER CHECK (volume_ml IS NULL OR (volume_ml >= 0 AND volume_ml <= 2000)),
     description VARCHAR(1000),
     calories TEXT,
     image_url TEXT,
     video_url TEXT,
+    is_base_menu BOOLEAN NOT NULL DEFAULT TRUE,
     subcategory_id INTEGER REFERENCES subcategories(id) ON DELETE SET NULL
+);
+
+-- Варианты объёма/цены для напитков (на одну позицию — несколько стаканов)
+CREATE TABLE IF NOT EXISTS dish_volume_options (
+    id SERIAL PRIMARY KEY,
+    dish_id INTEGER NOT NULL REFERENCES dishes(id) ON DELETE CASCADE,
+    volume_ml INTEGER NOT NULL CHECK (volume_ml >= 0 AND volume_ml <= 2000),
+    price INTEGER NOT NULL CHECK (price >= 0),
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    UNIQUE (dish_id, volume_ml)
 );
 
 CREATE TABLE IF NOT EXISTS menu_seasons (

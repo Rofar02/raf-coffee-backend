@@ -1,5 +1,7 @@
 from pathlib import Path
+import re
 from typing import List
+import unicodedata
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
@@ -34,10 +36,25 @@ _EXT_BY_CONTENT_TYPE = {
     "video/quicktime": ".mov",
 }
 
+_CYR_TO_LAT = {
+    "а": "a", "б": "b", "в": "v", "г": "g", "д": "d", "е": "e", "ё": "e", "ж": "zh",
+    "з": "z", "и": "i", "й": "y", "к": "k", "л": "l", "м": "m", "н": "n", "о": "o",
+    "п": "p", "р": "r", "с": "s", "т": "t", "у": "u", "ф": "f", "х": "h", "ц": "ts",
+    "ч": "ch", "ш": "sh", "щ": "sch", "ъ": "", "ы": "y", "ь": "", "э": "e", "ю": "yu", "я": "ya",
+}
+
 
 class SeasonDishAttachPayload(BaseModel):
     sort_order: int = 0
     is_visible: bool = True
+
+
+def _slugify(value: str) -> str:
+    raw = (value or "").strip().lower()
+    translit = "".join(_CYR_TO_LAT.get(ch, ch) for ch in raw)
+    normalized = unicodedata.normalize("NFKD", translit).encode("ascii", "ignore").decode("ascii")
+    slug = re.sub(r"[^a-z0-9]+", "-", normalized).strip("-")
+    return slug or "season"
 
 
 @router.get("/subcategories", response_model=List[SubcategoryOption])
@@ -49,7 +66,7 @@ async def list_subcategories(
     return await repo.list_subcategories()
 
 
-@router.post("/dishes")
+@router.post("/dishes", response_model=MenuItem)
 async def add_dish(
     dish: DishCreate,
     season_id: int | None = None,
@@ -62,7 +79,10 @@ async def add_dish(
     dish_id = await service.add_dish(data)
     if season_id is not None:
         await service.attach_dish_to_season(season_id=season_id, dish_id=dish_id)
-    return Dish(id=dish_id, **data)
+    out = await repo.get_dish_by_id(dish_id)
+    if not out:
+        raise HTTPException(status_code=500, detail="Dish not found after create")
+    return MenuItem(**out)
 
 
 @router.get("/dishes", response_model=List[MenuItem])
@@ -74,7 +94,7 @@ async def list_dishes(
     return await repo.get_all()
 
 
-@router.put("/dishes/{dish_id}", response_model=Dish)
+@router.put("/dishes/{dish_id}", response_model=MenuItem)
 async def update_dish(
     dish_id: int,
     dish: DishUpdate,
@@ -87,7 +107,10 @@ async def update_dish(
     updated = await service.update_dish(dish_id, data)
     if not updated:
         raise HTTPException(status_code=404, detail="Dish not found")
-    return Dish(id=dish_id, **data)
+    out = await repo.get_dish_by_id(dish_id)
+    if not out:
+        raise HTTPException(status_code=404, detail="Dish not found")
+    return MenuItem(**out)
 
 
 @router.delete("/dishes/{dish_id}")
@@ -122,7 +145,19 @@ async def create_season(
 ):
     repo = DishRepository(pool)
     service = MenuService(repo)
-    created = await service.create_season(season.model_dump())
+    payload = season.model_dump()
+    existing = await service.list_seasons()
+    existing_slugs = {str(row.get("slug") or "").strip().lower() for row in existing}
+
+    base_slug = _slugify(payload.get("slug") or payload.get("name") or "season")
+    final_slug = base_slug
+    idx = 2
+    while final_slug in existing_slugs:
+        final_slug = f"{base_slug}-{idx}"
+        idx += 1
+    payload["slug"] = final_slug
+
+    created = await service.create_season(payload)
     return Season(**created)
 
 
@@ -153,6 +188,23 @@ async def activate_season(
     if not ok:
         raise HTTPException(status_code=404, detail="Season not found")
     return {"ok": True, "active_season_id": season_id}
+
+
+@router.delete("/seasons/{season_id}")
+async def delete_season(
+    season_id: int,
+    _: str = Depends(verify_admin_token),
+    pool=Depends(get_pool),
+):
+    repo = DishRepository(pool)
+    service = MenuService(repo)
+    result = await service.delete_season(season_id)
+    if not result.get("ok"):
+        reason = result.get("reason")
+        if reason == "last_season":
+            raise HTTPException(status_code=400, detail="Cannot delete last season")
+        raise HTTPException(status_code=404, detail="Season not found")
+    return {"ok": True, "deleted_season_id": season_id}
 
 
 @router.get("/seasons/{season_id}/dishes", response_model=List[MenuItem])
