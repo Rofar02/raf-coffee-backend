@@ -207,6 +207,12 @@
     .admin-tab.is-active { background: #490900; color: #fff; border-color: #490900; }
     .admin-tax-table th, .admin-tax-table td { padding: 8px 10px; text-align: left; vertical-align: top; }
     .admin-tax-table tr:nth-child(even) { background: rgba(255, 255, 255, 0.5); }
+    #panel-help .help-prose h3 { font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif; font-size: 1.05rem; font-weight: 700; color: #490900; margin: 0 0 0.5rem 0; }
+    #panel-help .help-prose p, #panel-help .help-prose li { color: #490900; }
+    #panel-help .help-prose ul { list-style: disc; padding-left: 1.25rem; }
+    #panel-help .help-prose ol { list-style: decimal; padding-left: 1.25rem; }
+    #panel-help .help-prose .help-block { margin-bottom: 1.25rem; }
+    #panel-help .help-prose a { text-decoration: underline; color: #303f20; }
   </style>
 </head>
 <body class="min-h-screen bg-coffee-50 font-sans text-coffee-900 antialiased">
@@ -234,6 +240,7 @@
         <button type="button" class="admin-tab" data-panel="taxonomy">Рубрики</button>
         <button type="button" class="admin-tab" data-panel="dish">Форма блюда</button>
         <button type="button" class="admin-tab" data-panel="lists">Списки блюд</button>
+        <button type="button" class="admin-tab" data-panel="help">Справка</button>
       </div>
     </section>
 
@@ -500,6 +507,58 @@
             />
           </div>
           <div id="dishes-list" class="mt-2 max-h-[26vh] space-y-2 overflow-auto pr-1"></div>
+        </div>
+      </section>
+    </div>
+
+    <div id="panel-help" class="admin-panel mb-8">
+      <section class="help-prose rounded-2xl border border-coffee-200 bg-coffee-50 p-5 shadow-sm" aria-label="Справка по админке">
+        <h2 class="mb-3 font-display text-xl font-bold text-coffee-900">Как пользоваться панелью</h2>
+        <p class="mb-4 text-sm text-coffee-600">Краткий порядок работы. Все запросы к API идут с заголовком <code class="rounded bg-coffee-200/60 px-1.5 py-0.5 text-xs">X-Admin-Token</code> — токен задаётся на сервере (переменная <code class="rounded bg-coffee-200/60 px-1.5 py-0.5 text-xs">ADMIN_TOKEN</code> в Docker / окружении).</p>
+
+        <div class="help-block">
+          <h3>1. Токен и доступ</h3>
+          <ol class="mt-1 space-y-1 text-sm leading-relaxed">
+            <li>Вставьте токен в поле. Кнопка «Сохранить в браузере» хранит его только в этом устройстве/браузере (локально).</li>
+            <li>«Синхронизировать всё» подгружает подкатегории, сезоны и списки блюд — нажмите после ввода токена или при «пустых» селекторах.</li>
+            <li>«Сброс кеша меню» нужен, если вы меняли данные <strong>напрямую в PostgreSQL</strong> на сервере: иначе витрина меню на сайте может показывать старое (кеш в Redis, до ~5 минут).</li>
+          </ol>
+        </div>
+
+        <div class="help-block">
+          <h3>2. Сезоны</h3>
+          <p class="mt-1 text-sm leading-relaxed">В «Текущий сезон» отображаются сезоны из базы. Один из них отмечен как активный — его блюда попадают в публичное меню (вместе с основным каталогом, если блюда туда помечены). «Сделать активным» — переключить активный сезон. Создать — новая строка в списке. Удалить можно любой сезон, <strong>кроме единственного</strong> в базе. После правок смотрите подсказки на странице — они совпадают с выбранным сезоном в селекторе.</p>
+        </div>
+
+        <div class="help-block">
+          <h3>3. Рубрики (подкатегории)</h3>
+          <p class="mt-1 text-sm leading-relaxed">Верхний уровень — только «Кухня» и «Напитки» (задаётся в базе, здесь не редактируется). В этой вкладке вы создаёте <strong>рубрики внутри категории</strong> (завтраки, кофе и т.д.), меняете порядок, переименовываете, при необходимости переносите рубрику в другую категорию. У блюд в меню витрина группируется по рубрике — без рубрики блюдо привязать к разделу нельзя.</p>
+        </div>
+
+        <div class="help-block">
+          <h3>4. Форма блюда</h3>
+          <ul class="mt-1 space-y-1 text-sm leading-relaxed">
+            <li><strong>Куда класть</strong>: основной каталог, сезон (активный) или сразу и то и другое — чекбоксами в блоке «Куда добавить блюдо».</li>
+            <li>Выберите <strong>категорию</strong> и <strong>рубрику</strong> (сначала создайте рубрику во вкладке «Рубрики»).</li>
+            <li>Несколько объёмов/цен для напитков — в блоке «Объёмы и цены»; для блюд с одной ценой достаточно полей цена и, при необходимости, граммы или мл.</li>
+            <li>Картинка/видео: загрузка файла или внешняя ссылка. Сохранение отправляет JSON на API (файл при загрузке уходит на <code class="text-xs">/admin/upload</code>).</li>
+            <li>Редактирование: в «Списки блюд» нажмите «Правка» у позиции — форма заполнится; после сохранения снова «Синхронизировать» при сомнениях.</li>
+          </ul>
+        </div>
+
+        <div class="help-block">
+          <h3>5. Списки блюд</h3>
+          <p class="mt-1 text-sm leading-relaxed">Два списка: блюда <strong>выбранного (активного) сезона</strong> и <strong>актуальное меню сейчас</strong> (как на сайте: база + активный сезон; опция «весь каталог» показывает больше для отладки). Поиск фильтрует по названию. Кнопки: в сезон / из сезона, в основной каталог, удаление — работают через API, после действия списки обновляйте кнопкой «Обновить» или «Синхронизировать».</p>
+        </div>
+
+        <div class="help-block">
+          <h3>6. Полный сброс базы на сервере</h3>
+          <p class="mt-1 text-sm leading-relaxed">Это делается не из браузера, а по SSH, скриптом <code class="text-xs">backend/sql/reset_all_data_kitchen_drink.sql</code> в PostgreSQL, затем сброс кеша меню (кнопка на этой странице) или рестарт Redis. Подробности в деплой-доке проекта. Перед сбросом сделайте бэкап <code class="text-xs">pg_dump</code>.</p>
+        </div>
+
+        <div class="help-block rounded-xl border border-coffee-200/80 bg-white/60 p-3">
+          <h3>Безопасность</h3>
+          <p class="mt-1 text-sm leading-relaxed">Не пересылайте токен в мессенджерах, не публикуйте в репозитории. Меняйте токен, если подозрение на утечку. Публичный сайт открыт без токена; API админки — только с верным <code class="text-xs">X-Admin-Token</code>.</p>
         </div>
       </section>
     </div>
