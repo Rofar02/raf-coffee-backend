@@ -16,7 +16,7 @@
       border-radius: 12px;
       padding: 9px 12px;
       font-size: 14px;
-      color: #2f241d;
+      color: #490900; /* точный тёмный тон логотипа */
       transition: background-color 150ms ease, box-shadow 150ms ease;
     }
     .admin-nav-link:hover {
@@ -29,8 +29,9 @@
       top: 50%;
       transform: translate(-50%, -50%);
       z-index: 80;
-      background: rgba(32, 23, 19, 0.96);
-      color: #fff;
+      background: rgba(240, 238, 233, 0.98);
+      color: #490900; /* точный тёмный тон логотипа */
+      border: 1px solid rgba(73, 9, 0, 0.18);
       border-radius: 14px;
       padding: 12px 18px;
       font-size: 14px;
@@ -63,11 +64,11 @@
         padding: 8px 10px;
         font-size: 13px;
         font-weight: 600;
-        color: #3f2f25;
+        color: #490900; /* точный тёмный тон логотипа */
         background: #fff;
       }
       .mobile-switch-btn.is-active {
-        background: #3f2f25;
+        background: #490900; /* точный тёмный тон логотипа */
         color: #fff;
       }
       .dish-group {
@@ -145,7 +146,7 @@
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: rgba(63, 47, 37, 0.72);
+      color: rgba(73, 9, 0, 0.72);
     }
     .menu-scope-block {
       border: 1px solid rgba(0, 0, 0, 0.1);
@@ -159,7 +160,7 @@
       text-align: center;
       font-size: 1.2rem;
       font-weight: 700;
-      color: #3f2f25;
+      color: #490900; /* точный тёмный тон логотипа */
       letter-spacing: 0.01em;
     }
     @media (max-width: 640px) {
@@ -177,18 +178,18 @@
     }
     .pill-base {
       background: #edf7ed;
-      color: #1f6b2f;
+      color: #490900; /* точный тёмный тон логотипа */
       border: 1px solid #b9dfc0;
     }
     .pill-seasonal {
       background: #fff3e8;
-      color: #8a4b10;
+      color: #490900; /* точный тёмный тон логотипа */
       border: 1px solid #f2d0af;
     }
   </style>
 </head>
 <body class="min-h-screen bg-coffee-50 font-sans text-coffee-900 antialiased">
-  <header class="border-b border-coffee-200 bg-white">
+  <header class="border-b border-coffee-200 bg-coffee-50/95 backdrop-blur-sm">
     <div class="mx-auto flex max-w-2xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
       <a href="/" class="flex items-center gap-2 text-sm font-medium text-coffee-700 hover:text-coffee-900">
         ← На сайт
@@ -199,12 +200,12 @@
 
   <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-10">
     <div class="mb-8">
-      <img src="/static/new_logo_rafchik.png" alt="" class="mb-4 h-12 w-auto sm:h-14" />
+      <img src="/static/logo_raf_new.png" alt="" class="mb-4 h-12 w-auto sm:h-14" />
       <h1 class="font-display text-2xl font-bold text-coffee-900">Управление меню</h1>
       <p class="mt-2 text-coffee-600">Создание, редактирование и удаление блюд через API админки.</p>
     </div>
 
-    <section id="section-nav" class="mb-6 rounded-2xl border border-coffee-200 bg-white p-4 shadow-sm">
+    <section id="section-nav" class="mb-6 rounded-2xl border border-coffee-200 bg-coffee-50 p-4 shadow-sm">
       <p class="mb-3 text-sm font-semibold text-coffee-800">Быстрая навигация</p>
       <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
         <button type="button" class="admin-nav-link" data-target="#section-token">Токен</button>
@@ -216,7 +217,7 @@
     </section>
 
     <!-- Токен -->
-    <section id="section-token" class="mb-8 rounded-2xl border border-coffee-200 bg-white p-5 shadow-sm">
+    <section id="section-token" class="mb-8 rounded-2xl border border-coffee-200 bg-coffee-50 p-5 shadow-sm">
       <label for="token" class="block text-sm font-semibold text-coffee-800">Токен администратора</label>
       <input
         id="token"
@@ -244,7 +245,7 @@
       <p id="token-hint" class="mt-2 text-sm text-coffee-500"></p>
     </section>
 
-    <section id="section-seasons" class="mb-8 rounded-2xl border border-coffee-200 bg-white p-5 shadow-sm">
+    <section id="section-seasons" class="mb-8 rounded-2xl border border-coffee-200 bg-coffee-50 p-5 shadow-sm">
       <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div>
           <label for="active-season-select" class="block text-sm font-semibold text-coffee-800">Текущий сезон</label>
@@ -253,7 +254,7 @@
               <option value="">— выберите сезон —</option>
             </select>
             <button id="btn-activate-season" type="button" class="rounded-xl border border-coffee-400 px-4 py-2 text-sm font-medium text-coffee-800 transition hover:bg-coffee-100">Сделать активным</button>
-            <button id="btn-delete-season" type="button" class="rounded-xl border border-red-300 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50">Удалить сезон</button>
+            <button id="btn-delete-season" type="button" class="rounded-xl border border-coffee-300 px-4 py-2 text-sm font-medium text-coffee-900 transition hover:bg-coffee-100">Удалить сезон</button>
           </div>
           <p id="season-hint" class="mt-2 text-sm text-coffee-500"></p>
         </div>
@@ -261,14 +262,14 @@
           <p class="block text-sm font-semibold text-coffee-800">Создать сезон</p>
           <div class="mt-2 grid gap-2 sm:grid-cols-2">
             <input id="season-name" placeholder="Название" class="rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
-            <button id="btn-create-season" type="button" class="rounded-xl bg-coffee-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-coffee-900">Создать</button>
+            <button id="btn-create-season" type="button" class="rounded-xl bg-coffee-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-coffee-950">Создать</button>
           </div>
         </div>
       </div>
     </section>
 
     <div class="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-      <form id="form-dish" class="space-y-6 rounded-2xl border border-coffee-200 bg-white p-5 shadow-sm">
+      <form id="form-dish" class="space-y-6 rounded-2xl border border-coffee-200 bg-coffee-50 p-5 shadow-sm">
         <div id="section-form" class="h-0"></div>
         <div class="rounded-xl border border-coffee-200 bg-coffee-50/60 p-4">
           <label class="inline-flex items-center gap-2 text-sm font-medium text-coffee-800">
@@ -281,7 +282,7 @@
               <option value="">— выберите блюдо —</option>
             </select>
           </div>
-          <div class="mt-3 rounded-lg border border-coffee-200 bg-white p-3">
+          <div class="mt-3 rounded-lg border border-coffee-200 bg-white/70 p-3">
             <p class="mb-2 text-sm font-semibold text-coffee-800">Куда добавить блюдо</p>
             <label class="inline-flex items-center gap-2 text-sm text-coffee-800">
               <input id="placement-base" type="radio" name="dish-placement" value="base" checked class="h-4 w-4 border-coffee-300 text-coffee-700 focus:ring-coffee-500/40" />
@@ -365,13 +366,13 @@
         </div>
 
         <div class="flex flex-wrap gap-3 pt-2">
-          <button id="submit-btn" type="submit" class="rounded-full bg-coffee-800 px-8 py-3 font-semibold text-white shadow-md transition hover:bg-coffee-900">Сохранить</button>
+          <button id="submit-btn" type="submit" class="rounded-full bg-coffee-800 px-8 py-3 font-semibold text-white shadow-md transition hover:bg-coffee-950">Сохранить</button>
           <button id="cancel-edit-btn" type="button" class="hidden rounded-full border border-coffee-400 px-6 py-3 font-medium text-coffee-800 transition hover:bg-coffee-100">Отменить редактирование</button>
           <button type="reset" id="reset-form-btn" class="rounded-full border border-coffee-400 px-6 py-3 font-medium text-coffee-800 transition hover:bg-coffee-100">Очистить форму</button>
         </div>
       </form>
 
-      <section class="rounded-2xl border border-coffee-200 bg-white p-5 shadow-sm">
+      <section class="rounded-2xl border border-coffee-200 bg-coffee-50 p-5 shadow-sm">
         <div class="mb-3 flex items-center justify-between gap-3">
           <h2 id="section-season-dishes" class="font-display text-xl font-semibold text-coffee-900">Блюда активного сезона</h2>
           <button id="btn-refresh-dishes" type="button" class="rounded-full border border-coffee-400 px-4 py-2 text-sm font-medium text-coffee-800 transition hover:bg-coffee-100">Обновить</button>
@@ -479,12 +480,19 @@
     });
 
     function showAlert(kind, text) {
-      alertEl.classList.remove('border-green-200', 'bg-green-50', 'text-green-900', 'border-red-200', 'bg-red-50', 'text-red-900');
-      if (kind === 'ok') {
-        alertEl.classList.add('border-green-200', 'bg-green-50', 'text-green-900');
-      } else {
-        alertEl.classList.add('border-red-200', 'bg-red-50', 'text-red-900');
-      }
+      alertEl.classList.remove(
+        'border-green-200',
+        'bg-green-50',
+        'text-green-900',
+        'border-red-200',
+        'bg-red-50',
+        'text-red-900',
+        'border-coffee-200',
+        'border-coffee-300',
+        'bg-coffee-50',
+        'text-coffee-900'
+      );
+      alertEl.classList.add('border-coffee-300', 'bg-coffee-50', 'text-coffee-900');
       alertEl.textContent = text;
       alertEl.classList.remove('hidden');
     }
@@ -882,7 +890,7 @@
       const res = await fetch(url('/admin/dishes'), { headers: { 'X-Admin-Token': token } });
       if (!res.ok) {
         const text = await res.text();
-        dishesListEl.innerHTML = '<p class="text-sm text-red-700">Ошибка: ' + parseErrorText(text) + '</p>';
+        dishesListEl.innerHTML = '<p class="text-sm text-coffee-900">Ошибка: ' + parseErrorText(text) + '</p>';
         return;
       }
       dishes = await res.json();
@@ -920,16 +928,16 @@
               <p class="text-sm text-coffee-600">${dish.price} ₽${dish.subcategory_name ? ' · ' + dish.subcategory_name : ''}</p>
             </div>
             <div class="dish-actions">
-              <button type="button" data-action="${inSeason ? 'remove-season' : 'add-season'}" data-id="${dish.id}" class="rounded-full border px-3 py-1 text-xs font-medium ${inSeason ? 'border-amber-300 text-amber-700 hover:bg-amber-50' : 'border-emerald-300 text-emerald-700 hover:bg-emerald-50'}">${inSeason ? 'Убрать из сезона' : 'Добавить в сезон'}</button>
+              <button type="button" data-action="${inSeason ? 'remove-season' : 'add-season'}" data-id="${dish.id}" class="rounded-full border border-coffee-300 px-3 py-1 text-xs font-medium text-coffee-900 hover:bg-coffee-100">${inSeason ? 'Убрать из сезона' : 'Добавить в сезон'}</button>
               <button type="button" data-action="toggle-more" data-id="${dish.id}" class="rounded-full border border-coffee-300 px-3 py-1 text-xs font-medium text-coffee-800 hover:bg-coffee-100">Ещё</button>
             </div>
           </div>
           <div class="more-actions mt-2 hidden flex flex-wrap gap-2">
             ${dish.is_base_menu
               ? '<button type="button" data-action="remove-base" data-id="' + dish.id + '" class="rounded-full border border-orange-300 px-3 py-1 text-xs font-medium text-orange-700 hover:bg-orange-50">Убрать из основного</button>'
-              : '<button type="button" data-action="add-base" data-id="' + dish.id + '" class="rounded-full border border-blue-300 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-50">Добавить в основное</button>'}
+              : '<button type="button" data-action="add-base" data-id="' + dish.id + '" class="rounded-full border border-coffee-300 px-3 py-1 text-xs font-medium text-coffee-900 hover:bg-coffee-100">Добавить в основное</button>'}
             <button type="button" data-action="edit" data-id="${dish.id}" class="rounded-full border border-coffee-300 px-3 py-1 text-xs font-medium text-coffee-800 hover:bg-coffee-100">Редактировать</button>
-            <button type="button" data-action="delete" data-id="${dish.id}" class="rounded-full border border-red-300 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-50">Удалить</button>
+            <button type="button" data-action="delete" data-id="${dish.id}" class="rounded-full border border-coffee-300 px-3 py-1 text-xs font-medium text-coffee-900 hover:bg-coffee-100">Удалить</button>
           </div>
         `;
         return row;
@@ -986,7 +994,7 @@
       const res = await fetch(url(`/admin/seasons/${seasonId}/dishes`), { headers: { 'X-Admin-Token': token } });
       if (!res.ok) {
         const text = await res.text();
-        seasonDishesListEl.innerHTML = '<p class="text-sm text-red-700">Ошибка: ' + parseErrorText(text) + '</p>';
+        seasonDishesListEl.innerHTML = '<p class="text-sm text-coffee-900">Ошибка: ' + parseErrorText(text) + '</p>';
         return;
       }
       seasonDishes = await res.json();
@@ -1008,7 +1016,7 @@
               </div>
               <p class="text-sm text-coffee-600">${dish.price} ₽${dish.subcategory_name ? ' · ' + dish.subcategory_name : ''}</p>
             </div>
-            <button type="button" data-action="remove-season" data-id="${dish.id}" class="rounded-full border border-amber-300 px-3 py-1 text-xs font-medium text-amber-700 hover:bg-amber-50">Убрать из сезона</button>
+            <button type="button" data-action="remove-season" data-id="${dish.id}" class="rounded-full border border-coffee-300 px-3 py-1 text-xs font-medium text-coffee-900 hover:bg-coffee-100">Убрать из сезона</button>
           </div>
         `;
         return row;

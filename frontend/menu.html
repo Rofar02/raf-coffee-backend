@@ -52,29 +52,45 @@
       }
     }
     .nav-btn {
+      box-sizing: border-box;
       width: 100%;
       border: 1px solid rgba(0, 0, 0, 0.1);
-      background: #fff;
+      background: #f0eee9; /* Cloud Dancer */
       border-radius: 14px;
       padding: 10px 14px;
       font-size: 15px;
       line-height: 1.2;
-      color: #000;
+      color: #490900; /* точный тёмный тон логотипа */
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
       transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
     }
     .nav-btn:hover {
       transform: translateY(-1px);
-      background: #fafafa;
+      background: #ebe7df;
       box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+    }
+    .nav-btn.is-active:hover {
+      background: #e6e0d6;
+      box-shadow:
+        0 6px 14px rgba(0, 0, 0, 0.08),
+        inset 0 0 0 2px rgba(73, 9, 0, 0.45);
     }
     .nav-btn:active {
       transform: translateY(1px);
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
     }
+    .nav-btn.is-active:active {
+      box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.07),
+        inset 0 0 0 2px rgba(73, 9, 0, 0.45);
+    }
+    /* Внешнее кольцо (box-shadow) обрезалось у overflow; inset — внутри кнопки, обводит блок целиком */
     .nav-btn.is-active {
       font-weight: 600;
-      box-shadow: 0 0 0 2px rgba(111, 78, 55, 0.35), 0 2px 6px rgba(0, 0, 0, 0.06);
+      background: #ece8e0;
+      box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.08),
+        inset 0 0 0 2px rgba(73, 9, 0, 0.4);
     }
     #desktop-sub-nav { max-height: calc(100vh - 11rem); overflow-y: auto; padding-right: 4px; }
     .nav-group {
@@ -93,7 +109,7 @@
       letter-spacing: 0.12em;
       font-size: 12px;
       font-weight: 700;
-      color: rgba(0, 0, 0, 0.62);
+      color: rgba(73, 9, 0, 0.62);
     }
     .nav-group-items {
       display: grid;
@@ -101,15 +117,36 @@
     }
     #desktop-tabs { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
     #mobile-nav-toggle {
+      display: flex;
       width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
       border: 1px solid rgba(0, 0, 0, 0.12);
       border-radius: 14px;
-      background: #fff;
-      color: #000;
+      background: #f0eee9; /* Cloud Dancer */
+      color: #490900; /* точный тёмный тон логотипа */
       font-weight: 600;
       padding: 11px 14px;
       text-align: left;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    #mobile-nav-toggle .nav-toggle-label {
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    #mobile-nav-toggle .nav-toggle-icon {
+      display: flex;
+      flex-shrink: 0;
+      color: #490900;
+      opacity: 0.75;
+      transition: transform 0.2s ease;
+    }
+    #mobile-nav-toggle.is-open .nav-toggle-icon {
+      transform: rotate(180deg);
+    }
+    #mobile-nav-toggle .nav-toggle-icon svg {
+      display: block;
     }
     #mobile-nav-panel {
       display: none;
@@ -139,7 +176,7 @@
       padding: 8px 14px;
       font-size: 15px;
       background: rgba(255, 255, 255, 0.75);
-      color: #3f2f25;
+      color: #490900; /* точный тёмный тон логотипа */
       transition: background 0.15s ease, box-shadow 0.15s ease;
     }
     .modal-vol-btn:hover {
@@ -152,37 +189,37 @@
     }
   </style>
 </head>
-<body class="bg-white font-sans text-black antialiased">
-  <header class="border-b border-black/10 bg-white">
+<body class="bg-coffee-50 font-sans text-coffee-900 antialiased">
+  <header class="border-b border-black/10 bg-coffee-50/95 backdrop-blur-md">
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-      <a href="/" class="flex items-center gap-3 rounded-xl text-coffee-50 transition hover:opacity-90">
-        <img src="/static/new_logo_rafchik.png" alt="Рафчик" class="h-10 w-auto sm:h-12" width="120" height="48" />
+      <a href="/" class="flex items-center gap-3 rounded-xl text-coffee-900 transition hover:opacity-90">
+        <img src="/static/logo_raf_new.png" alt="Рафчик" class="h-10 w-auto sm:h-12" width="120" height="48" />
       </a>
-      <nav class="flex items-center gap-4 text-sm font-medium text-black">
-        <a href="/" class="rounded-full px-3 py-1.5 transition hover:bg-black/5">Главная</a>
-        <span class="rounded-full bg-black/10 px-3 py-1.5 text-black">Меню</span>
+      <nav class="flex items-center gap-4 text-sm font-medium text-coffee-900">
+        <a href="/" class="rounded-full px-3 py-1.5 transition hover:bg-coffee-900/5">Главная</a>
+        <span class="rounded-full bg-coffee-900/10 px-3 py-1.5 text-coffee-900">Меню</span>
       </nav>
     </div>
   </header>
 
   <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
     <header class="mb-10 text-center">
-      <p class="mb-2 text-sm font-medium uppercase tracking-[0.35em] text-black/50">
+      <p class="mb-2 text-sm font-medium uppercase tracking-[0.35em] text-coffee-900/50">
         Добро пожаловать
       </p>
-      <h1 class="font-display text-3xl font-semibold text-black sm:text-4xl">
+      <h1 class="font-display text-3xl font-semibold text-coffee-900 sm:text-4xl">
         Меню на сегодня
       </h1>
     </header>
 
-    <div id="state-loading" class="rounded-2xl border border-black/10 bg-white p-8 text-center shadow-sm">
-      <p class="text-black/70">Загружаем меню…</p>
+    <div id="state-loading" class="rounded-2xl border border-black/10 bg-coffee-50 p-8 text-center shadow-sm">
+      <p class="text-coffee-900/70">Загружаем меню…</p>
     </div>
-    <div id="state-error" class="hidden rounded-2xl border border-red-200 bg-red-50/95 p-6 text-red-800 shadow-lg backdrop-blur-sm">
+    <div id="state-error" class="hidden rounded-2xl border border-coffee-200 bg-coffee-50/95 p-6 text-coffee-900 shadow-lg backdrop-blur-sm">
       <p class="font-medium">Не удалось загрузить меню</p>
       <p id="state-error-msg" class="mt-2 text-sm"></p>
     </div>
-    <div id="state-empty" class="hidden rounded-2xl border border-black/10 bg-white p-10 text-center text-black/70 shadow-sm">
+    <div id="state-empty" class="hidden rounded-2xl border border-black/10 bg-coffee-50 p-10 text-center text-coffee-900/70 shadow-sm">
       Пока нет позиций в меню. Загляните чуть позже.
     </div>
 
@@ -199,7 +236,7 @@
     <div
       id="modal-panel"
       class="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl p-6 shadow-2xl ring-1 ring-black/5"
-      style="background: linear-gradient(165deg, rgba(251,246,238,0.98) 0%, rgba(236,225,208,0.96) 44%, rgba(226,212,191,0.96) 100%);"
+      style="background: linear-gradient(165deg, rgba(255,255,255,0.98) 0%, rgba(253,252,250,0.98) 50%, rgba(248,246,243,0.98) 100%);"
     >
       <button
         type="button"
@@ -214,7 +251,7 @@
 
       <div class="mb-4 flex items-center justify-start">
         <img
-          src="/static/new_logo_rafchik.png"
+          src="/static/logo_raf_new.png"
           alt="Рафчик"
           class="h-12 w-auto sm:h-14"
           width="160"
@@ -224,16 +261,15 @@
 
       <div id="modal-media" class="mb-5 hidden overflow-hidden rounded-xl"></div>
 
-      <h2 id="modal-title" class="font-display pr-10 text-2xl font-semibold text-[#3f2f25]"></h2>
-      <p id="modal-portion" class="mt-2 text-base font-medium text-[#5b4334]"></p>
+      <h2 id="modal-title" class="font-display pr-10 text-2xl font-semibold text-[#303F20]"></h2>
       <div id="modal-volumes" class="mt-3 hidden flex flex-wrap gap-2"></div>
-      <p id="modal-price" class="mt-2 text-2xl font-bold tabular-nums text-[#3f2f25]"></p>
+      <p id="modal-price" class="mt-2 text-2xl font-bold tabular-nums text-coffee-900"></p>
 
       <div id="modal-description-block" class="mt-5 hidden">
-        <p class="text-xs font-semibold uppercase tracking-wide text-[#7a5c49]">Описание</p>
-        <p id="modal-description" class="mt-1 leading-relaxed text-[#4f3a2d]"></p>
+        <p class="text-xs font-semibold uppercase tracking-wide text-coffee-600">Описание</p>
+        <p id="modal-description" class="mt-1 leading-relaxed text-coffee-800"></p>
       </div>
-      <p id="modal-calories" class="mt-4 hidden text-sm font-medium text-[#5b4334]"></p>
+      <p id="modal-calories" class="mt-4 hidden text-sm font-medium text-coffee-800"></p>
 
     </div>
   </div>
@@ -382,7 +418,7 @@
 
       return `
         <article
-          class="group flex cursor-pointer flex-col gap-2 border-b border-coffee-200/70 py-4 last:border-b-0 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6 sm:py-3"
+          class="group flex cursor-pointer flex-col gap-2 rounded-xl border border-coffee-200/70 bg-white px-3 py-4 shadow-sm transition hover:bg-coffee-50/70 hover:shadow sm:flex-row sm:items-baseline sm:justify-between sm:gap-6 sm:px-4 sm:py-3"
           data-dish-id="${dish.id}"
           role="button"
           tabindex="0"
@@ -603,7 +639,10 @@
         if (!toggleBtn || !panel) return;
         const selectedSub = flatSubs.find((s) => s.key === activeSubKey);
         const selectedLabel = selectedSub ? selectedSub.subcategoryLabel : 'Выберите раздел';
-        toggleBtn.textContent = isMobileNavOpen ? `${selectedLabel} ▲` : `${selectedLabel} ▼`;
+        const labelEl = toggleBtn.querySelector('.nav-toggle-label');
+        if (labelEl) labelEl.textContent = selectedLabel;
+        toggleBtn.classList.toggle('is-open', isMobileNavOpen);
+        toggleBtn.setAttribute('aria-expanded', isMobileNavOpen ? 'true' : 'false');
         panel.classList.toggle('is-open', isMobileNavOpen);
       }
 
@@ -618,13 +657,11 @@
 
         content.innerHTML = `
           <section class="rounded-3xl border border-black/10 bg-white p-4 shadow-sm sm:p-8">
-            <h2 class="mb-3 font-display text-xl font-bold text-black sm:text-2xl">
+            <h2 class="mb-3 font-display text-xl font-bold text-coffee-900 sm:text-2xl">
               ${escapeHtml(sub.subcategoryLabel)}
             </h2>
-            <p class="mb-5 text-sm text-black/60">${escapeHtml(sub.categoryLabel)}</p>
-            <div class="rounded-xl border border-coffee-200/50 bg-white/70 px-3 py-1 shadow-inner sm:px-5">
-              ${sub.dishes.map(renderDishRow).join('')}
-            </div>
+            <p class="mb-5 text-sm text-coffee-900/60">${escapeHtml(sub.categoryLabel)}</p>
+            ${sub.dishes.map(renderDishRow).join('')}
           </section>
         `;
         attachDishEvents(content);
@@ -643,7 +680,14 @@
         <div id="menu-layout">
           <section id="menu-nav-panel" class="rounded-3xl border border-black/10 bg-white p-5 shadow-md lg:p-6">
             <div id="mobile-nav-wrap">
-              <button id="mobile-nav-toggle" type="button">Выберите раздел ▼</button>
+              <button id="mobile-nav-toggle" type="button" class="text-left" aria-expanded="false" aria-controls="mobile-nav-panel">
+                <span class="nav-toggle-label">Выберите раздел</span>
+                <span class="nav-toggle-icon" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </span>
+              </button>
               <div id="mobile-nav-panel">
                 <div id="mobile-tabs"></div>
                 <div id="mobile-sub-nav"></div>
@@ -775,7 +819,8 @@
         const img = document.createElement('img');
         img.src = resolveMediaUrl(dish.image_url);
         img.alt = dish.name;
-        img.className = 'max-h-72 w-full object-cover';
+        img.className = 'max-h-72 w-full object-contain';
+        img.style.backgroundColor = 'rgba(0, 0, 0, 0.04)';
         return img;
       }
 
@@ -796,10 +841,7 @@
           b.classList.toggle('is-active', i === modalSelectedVolIndex);
         });
       }
-      if (opt) {
-        document.getElementById('modal-portion').textContent = String(opt.volume_ml) + ' мл';
-        document.getElementById('modal-price').textContent = formatPrice(opt.price);
-      }
+      if (opt) document.getElementById('modal-price').textContent = formatPrice(opt.price);
     }
 
     async function openModal(dish) {
@@ -809,7 +851,6 @@
       document.getElementById('modal-title').textContent = dish.name;
       modalDish = dish;
       const vo = getVolumeOptions(dish);
-      const portionEl = document.getElementById('modal-portion');
       const priceEl = document.getElementById('modal-price');
       const volWrap = document.getElementById('modal-volumes');
 
@@ -832,16 +873,9 @@
       } else {
         volWrap.classList.add('hidden');
         volWrap.innerHTML = '';
-        const w = formatWeight(dish);
         if (vo.length === 1) {
-          portionEl.textContent = vo[0].volume_ml + ' мл';
           priceEl.textContent = formatPrice(vo[0].price);
         } else {
-          const parts = [];
-          if (w) parts.push(w);
-          const v = formatVolumeMl(dish);
-          if (v) parts.push(v);
-          portionEl.textContent = parts.length ? parts.join(' · ') : '—';
           priceEl.textContent = formatPrice(dish.price);
         }
       }

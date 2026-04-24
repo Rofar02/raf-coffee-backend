@@ -4,39 +4,150 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Рафчик — кофейня. Уют, кофе и десерты. Как нас найти и что внутри." />
+  <meta name="theme-color" content="#f0eee9" />
+  <meta name="theme-color" content="#f0eee9" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#f0eee9" media="(prefers-color-scheme: dark)" />
   <title>Рафчик — кофейня</title>
+  <link rel="preconnect" href="https://yandex.ru" />
+  <link rel="preconnect" href="https://yastatic.net" crossorigin />
   <link rel="stylesheet" href="/dist/styles.css" />
+  <!-- Жёсткие границы шапки: без этого логотип может рисоваться в натуральном размере (огромный), навигация — шире экрана -->
+  <style>
+    #site-header {
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+    #site-header .header-inner {
+      min-width: 0;
+      max-width: 100%;
+    }
+    #header-logo {
+      display: block;
+      width: auto;
+      max-width: min(10.5rem, 46vw);
+      height: 1.875rem;
+      max-height: 1.875rem;
+      object-fit: contain;
+    }
+    @media (min-width: 640px) {
+      #header-logo {
+        height: 3.5rem;
+        max-height: 3.5rem;
+        max-width: 12rem;
+      }
+    }
+    @media (max-width: 767.98px) {
+      #site-nav {
+        display: none !important;
+      }
+    }
+    @media (min-width: 768px) {
+      #site-nav {
+        display: flex !important;
+      }
+    }
+    #welcome-screen {
+      height: 100vh;
+      height: 100dvh;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+    @media (max-width: 1023.98px) {
+      /* На телефоне: первый экран полноэкранный, но без перекрытия остального контента. */
+      #welcome-screen {
+        position: relative !important;
+        inset: auto !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        min-height: 100vh !important;
+        min-height: 100dvh !important;
+      }
+      #welcome-video {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+      }
+      #welcome-overlay {
+        padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px)) !important;
+      }
+    }
+    /* Затемняем только верх следующего блока до первого скролла. */
+    #home-content {
+      position: relative;
+    }
+    #home-content::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 300px;
+      pointer-events: none;
+      background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.92) 0%,
+        rgba(0, 0, 0, 0.72) 45%,
+        rgba(0, 0, 0, 0.42) 75%,
+        rgba(0, 0, 0, 0) 100%
+      );
+      opacity: 0;
+      transition: opacity 220ms ease;
+      z-index: 2;
+    }
+    body.is-at-top #home-content::before {
+      opacity: 1;
+    }
+    body:not(.is-at-top) #home-content::before {
+      opacity: 0;
+    }
+    /* Утилита .grid сильнее [hidden] — без этого видны оба адреса */
+    [data-cafe-place] .place-for-cafe[hidden] {
+      display: none !important;
+    }
+    a[href^="#"] {
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
 </head>
 <body class="bg-coffee-50 font-sans text-coffee-900 antialiased">
   <!-- Шапка: цвета как у логотипа — тёмный кофейный + кремовый фон -->
-  <header id="site-header" class="sticky top-0 z-40 border-b border-coffee-200/80 bg-coffee-50/95 backdrop-blur-md transition-colors duration-300">
-    <div class="mx-auto flex max-w-6xl items-center justify-between gap-6 px-4 py-4 sm:px-6">
-      <a href="/" class="flex shrink-0 items-center gap-2">
+  <header id="site-header" class="fixed top-0 z-40 w-full border-b border-coffee-200/80 bg-coffee-50/95 backdrop-blur-md transition-colors duration-300">
+    <div
+      class="header-inner mx-auto flex w-full min-w-0 max-w-6xl flex-nowrap items-center justify-between gap-2 overflow-x-hidden px-3 py-3 sm:gap-6 sm:px-6 sm:py-5"
+    >
+      <a href="/" class="flex min-w-0 shrink-0 items-center gap-2 overflow-hidden">
         <img
-          src="/static/new_logo_rafchik.png"
+          id="header-logo"
+          src="/static/logo_raf_new.png"
           alt="Рафчик"
-          class="h-11 w-auto sm:h-14"
+          class="w-auto shrink-0 transition-[filter] duration-300"
           width="140"
           height="56"
         />
       </a>
-      <nav id="site-nav" class="flex flex-1 flex-wrap items-center justify-center gap-1 text-xs font-medium text-coffee-800 sm:justify-end sm:gap-2 sm:text-sm">
-        <a href="#about" class="rounded-full px-2 py-1.5 sm:px-3 sm:py-2 transition hover:bg-coffee-200/50">О нас</a>
-        <a href="#place" class="rounded-full px-2 py-1.5 sm:px-3 sm:py-2 transition hover:bg-coffee-200/50">Как добраться</a>
-        <a href="#interior" class="rounded-full px-2 py-1.5 sm:px-3 sm:py-2 transition hover:bg-coffee-200/50">Интерьер</a>
+      <!-- Ниже md якоря скрываем — иначе на широком телефоне шапка в несколько строк; с планшета+ ссылки на месте -->
+      <nav
+        id="site-nav"
+        class="min-h-0 min-w-0 flex-1 flex-nowrap items-center justify-end gap-2 text-sm font-medium text-coffee-800"
+      >
+        <a href="#about" class="shrink-0 whitespace-nowrap rounded-full px-3 py-2 transition hover:bg-coffee-200/50">О нас</a>
+        <a href="#interior" class="shrink-0 whitespace-nowrap rounded-full px-3 py-2 transition hover:bg-coffee-200/50">Интерьер</a>
+        <a href="#place" class="shrink-0 whitespace-nowrap rounded-full px-3 py-2 transition hover:bg-coffee-200/50">Как добраться</a>
       </nav>
       <a
         id="menu-link"
         href="/menu.html"
-        class="rounded-full bg-coffee-800 px-4 py-2.5 text-sm font-semibold text-coffee-50 shadow-sm transition hover:bg-coffee-900"
+        class="shrink-0 whitespace-nowrap rounded-full bg-coffee-800 px-3 py-1.5 text-xs font-semibold leading-none text-white shadow-sm transition hover:bg-coffee-950 sm:px-4 sm:py-2.5 sm:leading-normal sm:text-sm"
       >
         Меню
       </a>
     </div>
   </header>
-
   <main>
-    <section id="welcome-screen" class="relative flex items-end justify-center overflow-hidden bg-black" style="min-height: calc(100vh - var(--header-height, 80px));">
+    <section
+      id="welcome-screen"
+      class="relative flex items-end justify-center overflow-hidden bg-black"
+    >
       <video
         id="welcome-video"
         class="absolute inset-0 h-full w-full object-contain"
@@ -48,16 +159,31 @@
         webkit-playsinline
         preload="auto"
       ></video>
-      <div class="relative z-10 flex w-full flex-col items-center bg-gradient-to-t from-black/75 via-black/35 to-transparent px-6 pb-10 pt-28 text-center text-white">
-        <p class="text-base font-medium sm:text-lg">Прокрутите вниз, чтобы перейти к информации</p>
+      <div
+        id="welcome-overlay"
+        class="relative z-10 flex w-full max-h-full flex-col items-center justify-end px-4 pb-8 pt-10 text-center text-white sm:px-6 sm:pb-10 sm:pt-20 md:pt-28"
+      >
+        <div
+          id="welcome-scroll-hint"
+          class="flex max-h-60 flex-col items-center overflow-hidden transition-[max-height,opacity] duration-300 ease-out"
+        >
+          <p class="text-base font-medium sm:text-lg">Прокрутите вниз, чтобы перейти к информации</p>
+          <p class="mt-4 max-w-sm text-xs leading-relaxed text-white/90 sm:hidden">
+            <a href="#about" class="rounded-sm underline decoration-white/30 underline-offset-2 hover:decoration-white/70">О нас</a>
+            <span class="px-1.5 text-white/35">·</span>
+            <a href="#interior" class="rounded-sm underline decoration-white/30 underline-offset-2 hover:decoration-white/70">Интерьер</a>
+            <span class="px-1.5 text-white/35">·</span>
+            <a href="#place" class="rounded-sm underline decoration-white/30 underline-offset-2 hover:decoration-white/70">Как добраться</a>
+          </p>
+        </div>
       </div>
     </section>
 
     <!-- Герой -->
-    <section id="home-content" class="border-b border-coffee-200/60 bg-gradient-to-b from-white to-coffee-50 px-4 py-16 sm:px-6 sm:py-24">
+    <section id="home-content" class="border-b border-coffee-200/60 bg-white px-4 py-16 sm:px-6 sm:py-24">
       <div class="mx-auto max-w-3xl text-center">
         <img
-          src="/static/new_logo_rafchik.png"
+          src="/static/logo_raf_new.png"
           alt=""
           class="mx-auto mb-8 h-24 w-auto sm:h-32"
           width="200"
@@ -72,7 +198,7 @@
         <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
           <a
             href="/menu.html"
-            class="inline-flex rounded-full bg-coffee-800 px-8 py-3 text-base font-semibold text-white shadow-md transition hover:bg-coffee-900"
+            class="inline-flex rounded-full bg-coffee-800 px-8 py-3 text-base font-semibold text-white shadow-md transition hover:bg-coffee-950"
           >
             Смотреть меню
           </a>
@@ -86,8 +212,32 @@
       </div>
     </section>
 
+    <section class="mb-20 bg-white px-2 py-12 sm:mb-24 sm:px-4 sm:py-14">
+      <div class="mx-auto max-w-[110rem] p-3 sm:p-5 lg:p-6">
+        <h2 class="mb-5 text-center font-display text-2xl font-bold text-coffee-900 sm:mb-6 sm:text-3xl">Наши преимущества</h2>
+        <div class="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+        <article class="flex flex-col items-center px-2 py-3 text-center sm:px-4">
+          <img src="/static/emblems/Зерно.svg" alt="" class="h-[3.25rem] w-[3.25rem] object-contain sm:h-14 sm:w-14" width="56" height="56" />
+          <p class="mt-3 text-lg font-semibold text-coffee-900 sm:text-xl">Speciality зерно</p>
+        </article>
+        <article class="flex flex-col items-center px-2 py-3 text-center sm:px-4">
+          <img src="/static/emblems/Кедровый орех.svg" alt="" class="h-[3.25rem] w-[3.25rem] object-contain sm:h-14 sm:w-14" width="56" height="56" />
+          <p class="mt-3 text-lg font-semibold text-coffee-900 sm:text-xl">Используем натуральные<br />ингредиенты</p>
+        </article>
+        <article class="flex flex-col items-center px-2 py-3 text-center sm:px-4">
+          <img src="/static/emblems/Сковородка.svg" alt="" class="h-[3.25rem] w-[3.25rem] object-contain sm:h-14 sm:w-14" width="56" height="56" />
+          <p class="mt-3 text-lg font-semibold text-coffee-900 sm:text-xl">Завтракаем весь день</p>
+        </article>
+        <article class="flex flex-col items-center px-2 py-3 text-center sm:px-4">
+          <img src="/static/emblems/Лапка.svg" alt="" class="h-[3.25rem] w-[3.25rem] object-contain sm:h-14 sm:w-14" width="56" height="56" />
+          <p class="mt-3 text-lg font-semibold text-coffee-900 sm:text-xl">Любим животных</p>
+        </article>
+        </div>
+      </div>
+    </section>
+
     <!-- О нас — замените текст на свой -->
-    <section id="about" class="scroll-mt-24 px-4 py-16 sm:px-6 sm:py-20">
+    <section id="about" class="scroll-mt-24 px-4 pt-2 pb-16 sm:px-6 sm:pt-4 sm:pb-20">
       <div class="mx-auto max-w-3xl">
         <h2 class="font-display text-2xl font-bold text-coffee-900 sm:text-3xl">О кофейне</h2>
         <p class="mt-2 h-1 w-16 rounded-full bg-coffee-700"></p>
@@ -102,64 +252,193 @@
       </div>
     </section>
 
-    <!-- Локация — подставьте адрес и часы -->
-    <section id="place" class="scroll-mt-24 border-y border-coffee-200/80 bg-white px-4 py-16 sm:px-6 sm:py-20">
-      <div class="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2 lg:gap-16">
-        <div>
-          <h2 class="font-display text-2xl font-bold text-coffee-900 sm:text-3xl">Как добраться</h2>
-          <p class="mt-2 h-1 w-16 rounded-full bg-coffee-700"></p>
-          <address class="mt-8 not-italic text-lg leading-relaxed text-coffee-800">
-            <p class="font-semibold text-coffee-900">Адрес</p>
-            <p class="mt-2">г. Москва, ул. Примерная, д. 1</p>
-            <p class="mt-1 text-coffee-600">Вход со двора / ориентир — «замените на ваш адрес»</p>
-            <p class="mt-6 font-semibold text-coffee-900">Часы работы</p>
-            <p class="mt-2">Пн–Пт 8:00–21:00</p>
-            <p>Сб–Вс 9:00–22:00</p>
-          </address>
-          <p class="mt-8 text-sm text-coffee-600">
-            Карту можно вставить сюда ссылкой на Яндекс или Google Maps — блок ниже оставлен под iframe или кнопку «Построить маршрут».
+    <!-- Интерьер: выбор кофейни связан с блоком «Как добраться» ниже (скрипт) -->
+    <section
+      id="interior"
+      class="scroll-mt-24 border-t border-coffee-200/80 bg-white px-4 py-16 sm:px-6 sm:py-20"
+    >
+      <div class="mx-auto max-w-5xl">
+        <h2 class="font-display text-2xl font-bold text-coffee-900 sm:text-3xl">Интерьер</h2>
+        <p class="mt-2 h-1 w-16 rounded-full bg-coffee-700"></p>
+
+        <div class="interior-tabs mt-4" data-interior-tabs>
+          <p class="font-display text-sm font-semibold text-coffee-800 sm:text-base">Наши кофейни</p>
+          <p class="mt-1 max-w-xl text-sm leading-relaxed text-coffee-600 sm:text-base">
+            Выберите точку: обновятся и фотографии зала, и адрес в разделе «Как добраться» ниже.
           </p>
-          <a
-            href="https://yandex.ru/maps"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="mt-4 inline-flex rounded-xl border border-coffee-300 bg-coffee-50 px-4 py-3 text-sm font-medium text-coffee-800 transition hover:border-coffee-500"
+          <div
+            class="interior-tabs-row mt-4 flex w-full max-w-2xl flex-row items-stretch gap-2 sm:mt-5 sm:gap-3 md:gap-4"
+            role="tablist"
+            aria-label="Наши кофейни"
           >
-            Открыть в картах (шаблон)
-          </a>
+            <button
+              type="button"
+              id="tab-interior-kirova-45a"
+              role="tab"
+              aria-selected="true"
+              aria-controls="panel-interior-kirova-45a"
+              class="interior-tab flex min-h-[52px] min-w-0 flex-1 basis-0 items-center justify-center rounded-2xl border-2 border-coffee-800 bg-coffee-800 px-2.5 py-3.5 text-center font-display text-base font-semibold leading-tight text-white shadow-sm transition active:scale-[0.99] sm:min-h-[56px] sm:rounded-full sm:px-5 sm:py-4 sm:leading-normal sm:text-lg md:min-h-[60px] md:px-6 md:py-5 md:text-xl"
+            >
+              Кирова 45а
+            </button>
+            <button
+              type="button"
+              id="tab-interior-kirova-12"
+              role="tab"
+              aria-selected="false"
+              aria-controls="panel-interior-kirova-12"
+              class="interior-tab flex min-h-[52px] min-w-0 flex-1 basis-0 items-center justify-center rounded-2xl border-2 border-coffee-200/90 bg-white/85 px-2.5 py-3.5 text-center font-display text-base font-medium leading-tight text-coffee-800 transition hover:border-coffee-500 hover:bg-coffee-100/90 active:scale-[0.99] sm:min-h-[56px] sm:rounded-full sm:px-5 sm:py-4 sm:leading-normal sm:text-lg md:min-h-[60px] md:px-6 md:py-5 md:text-xl"
+            >
+              Кирова 12
+            </button>
+          </div>
         </div>
-        <div class="flex min-h-[220px] items-center justify-center rounded-2xl border-2 border-dashed border-coffee-300 bg-coffee-100/50 p-8 text-center text-coffee-600">
-          <p>Место под карту или фото входа в кофейню</p>
+
+        <div class="interior-panels">
+          <div
+            id="panel-interior-kirova-45a"
+            role="tabpanel"
+            aria-labelledby="tab-interior-kirova-45a"
+            class="mt-6"
+          >
+            <p class="max-w-3xl text-base leading-relaxed text-coffee-800 sm:text-lg">
+              Первая кофейня: компактный зал, столы у окна, удобно и «на бегу» с кофе, и с ноутбуком. Тёплые оттенки дерева и мягкий свет — фирменный уют «Рафчика».
+            </p>
+            <div class="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-5">
+              <div
+                class="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl bg-coffee-200/40 text-center text-sm text-coffee-600 ring-1 ring-coffee-200/80"
+                data-interior-placeholder
+              >
+                <span>Фото интерьера · Кирова 45а</span>
+              </div>
+              <div
+                class="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl bg-coffee-200/40 text-center text-sm text-coffee-600 ring-1 ring-coffee-200/80"
+                data-interior-placeholder
+              >
+                <span>Фото зала / бар · Кирова 45а</span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            id="panel-interior-kirova-12"
+            role="tabpanel"
+            aria-labelledby="tab-interior-kirova-12"
+            class="mt-6"
+            hidden
+          >
+            <p class="max-w-3xl text-base leading-relaxed text-coffee-800 sm:text-lg">
+              Вторая точка: просторнее посадка, тот же кофе и десерты, своё сочетание света и зоны для встреч. Заходите — найдёте «свой» угол.
+            </p>
+            <div class="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-5">
+              <div
+                class="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl bg-coffee-200/40 text-center text-sm text-coffee-600 ring-1 ring-coffee-200/80"
+                data-interior-placeholder
+              >
+                <span>Фото интерьера · Кирова 12</span>
+              </div>
+              <div
+                class="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl bg-coffee-200/40 text-center text-sm text-coffee-600 ring-1 ring-coffee-200/80"
+                data-interior-placeholder
+              >
+                <span>Фото зала · Кирова 12</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Интерьер -->
-    <section id="interior" class="scroll-mt-24 px-4 py-16 sm:px-6 sm:py-20">
-      <div class="mx-auto max-w-5xl">
-        <h2 class="font-display text-2xl font-bold text-coffee-900 sm:text-3xl">Интерьер</h2>
+    <section
+      id="place"
+      class="scroll-mt-24 border-b border-coffee-200/80 border-t border-coffee-200/50 bg-coffee-50/90 px-4 py-16 sm:px-6 sm:py-20"
+      data-cafe-place
+    >
+      <div class="cafe-place mx-auto max-w-5xl" role="region" aria-label="Адрес и схема проезда">
+        <h2 class="font-display text-2xl font-bold text-coffee-900 sm:text-3xl">Как добраться</h2>
         <p class="mt-2 h-1 w-16 rounded-full bg-coffee-700"></p>
-        <p class="mt-8 max-w-3xl text-lg leading-relaxed text-coffee-800">
-          Светлое дерево, мягкий свет и немного зелени — чтобы было уютно и в будни, и в выходные. Ниже — места под фото зала (подключите свои снимки в папке сайта).
-        </p>
-        <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <div class="flex aspect-[4/3] items-center justify-center rounded-2xl bg-coffee-200/40 text-center text-sm text-coffee-600 ring-1 ring-coffee-200/80">
-            Фото 1
+        <p class="mt-2 text-sm text-coffee-600">Показан адрес к той кофейне, которую вы выбрали в разделе «Интерьер».</p>
+
+        <div
+          class="place-for-cafe mt-6 grid gap-10 lg:grid-cols-2 lg:items-start lg:gap-12"
+          data-cafe-idx="0"
+        >
+            <div>
+              <address class="not-italic text-lg leading-relaxed text-coffee-800">
+                <p class="font-semibold text-coffee-900">Адрес</p>
+                <p class="mt-2">Кирова 45а</p>
+                <p class="mt-1 text-coffee-600">Ориентир у входа — уточните при публикации.</p>
+                <p class="mt-6 font-semibold text-coffee-900">Часы работы</p>
+                <p class="mt-2">Пн–Пт 8:00–21:00</p>
+                <p>Сб–Вс 9:00–22:00</p>
+              </address>
+              <a
+                href="https://yandex.ru/maps/?um=constructor%3Abcc48115e407c941bd64905a501e541abcc1889599c3c087301c79879de4dade&amp;source=constructor"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="relative z-10 mt-4 inline-flex rounded-xl border border-coffee-300 bg-coffee-50/80 px-4 py-3 text-sm font-medium text-coffee-800 transition hover:border-coffee-500"
+                >Построить маршрут</a>
+            </div>
+            <div class="min-w-0">
+              <div class="overflow-hidden rounded-2xl ring-1 ring-coffee-200/80">
+                <iframe
+                  id="map-embed-45a"
+                  title="Карта — Кирова 45а"
+                  class="mx-auto w-full max-w-[500px] border-0"
+                  width="500"
+                  height="400"
+                  loading="eager"
+                  fetchpriority="high"
+                  referrerpolicy="no-referrer-when-downgrade"
+                  src="https://yandex.ru/map-widget/v1/?um=constructor%3Abcc48115e407c941bd64905a501e541abcc1889599c3c087301c79879de4dade&amp;source=constructor"
+                ></iframe>
+              </div>
+            </div>
           </div>
-          <div class="flex aspect-[4/3] items-center justify-center rounded-2xl bg-coffee-200/40 text-center text-sm text-coffee-600 ring-1 ring-coffee-200/80">
-            Фото 2
-          </div>
-          <div class="flex aspect-[4/3] items-center justify-center rounded-2xl bg-coffee-200/40 text-center text-sm text-coffee-600 ring-1 ring-coffee-200/80 sm:col-span-2 lg:col-span-1">
-            Фото 3
-          </div>
+
+          <div
+            class="place-for-cafe mt-6 grid gap-10 lg:grid-cols-2 lg:items-start lg:gap-12"
+            data-cafe-idx="1"
+            hidden
+          >
+            <div>
+              <address class="not-italic text-lg leading-relaxed text-coffee-800">
+                <p class="font-semibold text-coffee-900">Адрес</p>
+                <p class="mt-2">Кирова 12</p>
+                <p class="mt-1 text-coffee-600">Ориентир у входа — уточните при публикации.</p>
+                <p class="mt-6 font-semibold text-coffee-900">Часы работы</p>
+                <p class="mt-2">Пн–Пт 8:00–21:00</p>
+                <p>Сб–Вс 9:00–22:00</p>
+              </address>
+              <a
+                href="https://yandex.ru/maps/?um=constructor%3A8210349a47cc913d142d98ebdcb337b96abf25698f0bbf00d29eb875ef0bbf97&amp;source=constructor"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="relative z-10 mt-4 inline-flex rounded-xl border border-coffee-300 bg-coffee-50/80 px-4 py-3 text-sm font-medium text-coffee-800 transition hover:border-coffee-500"
+                >Построить маршрут</a>
+            </div>
+            <div class="min-w-0">
+              <div class="overflow-hidden rounded-2xl ring-1 ring-coffee-200/80">
+                <iframe
+                  id="map-embed-12"
+                  title="Карта — Кирова 12"
+                  class="mx-auto w-full max-w-[479px] border-0"
+                  width="479"
+                  height="326"
+                  loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade"
+                  data-map-src="https://yandex.ru/map-widget/v1/?um=constructor%3A8210349a47cc913d142d98ebdcb337b96abf25698f0bbf00d29eb875ef0bbf97&amp;source=constructor"
+                ></iframe>
+              </div>
+            </div>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="border-t border-coffee-200 bg-coffee-100/80 px-4 py-10 sm:px-6">
+  <footer class="border-t border-coffee-200/80 bg-coffee-50 px-4 py-10 sm:px-6">
     <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 sm:flex-row">
-      <img src="/static/new_logo_rafchik.png" alt="" class="h-10 w-auto opacity-90" width="120" height="40" />
+      <img src="/static/logo_raf_new.png" alt="" class="h-10 w-auto opacity-90" width="120" height="40" />
       <p class="text-center text-sm text-coffee-700 sm:text-right">
         © Рафчик, 2026 · <a href="/menu.html" class="font-medium text-coffee-900 underline-offset-2 hover:underline">Меню</a>
         · <a href="/admin.html" class="text-coffee-600 underline-offset-2 hover:text-coffee-900 hover:underline">Админ</a>
@@ -169,52 +448,160 @@
   <script>
     (function () {
       const welcomeScreen = document.getElementById('welcome-screen');
-      const video = document.getElementById('welcome-video');
       const siteHeader = document.getElementById('site-header');
       const siteNav = document.getElementById('site-nav');
       const menuLink = document.getElementById('menu-link');
+      const headerLogo = document.getElementById('header-logo');
+      const welcomeScrollHint = document.getElementById('welcome-scroll-hint');
 
-      if (!welcomeScreen || !video || !siteHeader || !siteNav || !menuLink) return;
+      if (!welcomeScreen || !siteHeader || !siteNav || !menuLink) return;
 
       function syncHeaderHeightVar() {
-        const headerHeight = siteHeader.offsetHeight || 80;
-        document.documentElement.style.setProperty('--header-height', headerHeight + 'px');
+        let h = siteHeader.offsetHeight;
+        if (!h || h > 200) h = 72;
+        document.documentElement.style.setProperty('--header-height', h + 'px');
       }
 
-      function updateVideoFitMode() {
-        const isNarrowScreen = window.matchMedia('(max-width: 768px)').matches;
-        // Vertical source looks better filled on phone; on desktop keep full frame visible.
-        video.style.objectFit = isNarrowScreen ? 'cover' : 'contain';
+      /** Скрываем подсказку и мобильные якоря, как только начали листать вниз. */
+      function updateWelcomeScrollHint() {
+        const hide = window.scrollY > 32;
+        if (welcomeScrollHint) {
+          if (hide) {
+            welcomeScrollHint.classList.remove('max-h-60');
+            welcomeScrollHint.classList.add('max-h-0', 'pointer-events-none', 'opacity-0');
+          } else {
+            welcomeScrollHint.classList.remove('max-h-0', 'pointer-events-none', 'opacity-0');
+            welcomeScrollHint.classList.add('max-h-60');
+          }
+          welcomeScrollHint.setAttribute('aria-hidden', hide ? 'true' : 'false');
+        }
       }
 
-      video.play().catch(() => {});
+      function updateTopStateClass() {
+        document.body.classList.toggle('is-at-top', window.scrollY <= 1);
+      }
 
       function updateHeaderTheme() {
         const isOnWelcome = window.scrollY < (welcomeScreen.offsetHeight - 120);
         if (isOnWelcome) {
-          siteHeader.style.backgroundColor = 'rgba(0, 0, 0, 0.55)';
-          siteHeader.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+          siteHeader.style.backgroundColor = 'transparent';
+          siteHeader.style.borderColor = 'transparent';
           siteNav.style.color = '#f7f3ec';
-          menuLink.style.backgroundColor = 'rgba(255, 255, 255, 0.18)';
-          menuLink.style.color = '#ffffff';
+          menuLink.style.backgroundColor = 'rgba(48, 63, 32, 0.92)';
+          menuLink.style.color = '#fff';
+          if (headerLogo) {
+            /* Белая версия на тёмной шапке над видео (исходник остаётся цветным ниже) */
+            headerLogo.style.filter = 'brightness(0) invert(1)';
+          }
         } else {
           siteHeader.style.backgroundColor = '';
           siteHeader.style.borderColor = '';
           siteNav.style.color = '';
           menuLink.style.backgroundColor = '';
           menuLink.style.color = '';
+          if (headerLogo) {
+            headerLogo.style.filter = '';
+          }
         }
       }
 
-      window.addEventListener('scroll', updateHeaderTheme, { passive: true });
+      function onScroll() {
+        updateWelcomeScrollHint();
+        updateTopStateClass();
+        updateHeaderTheme();
+      }
+      document.querySelectorAll('a[href^="#"]').forEach((link) => {
+        link.addEventListener('click', () => {
+          requestAnimationFrame(() => link.blur());
+        });
+      });
+      window.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', () => {
         syncHeaderHeightVar();
-        updateVideoFitMode();
-        updateHeaderTheme();
+        onScroll();
       });
       syncHeaderHeightVar();
-      updateVideoFitMode();
-      updateHeaderTheme();
+      onScroll();
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          syncHeaderHeightVar();
+          onScroll();
+        });
+      });
+    })();
+  </script>
+  <script>
+    (function () {
+      const root = document.querySelector('[data-interior-tabs]');
+      if (!root) return;
+      const placeRoot = document.querySelector('[data-cafe-place]');
+      const placeBlocks = placeRoot
+        ? Array.from(placeRoot.querySelectorAll('.place-for-cafe[data-cafe-idx]'))
+        : [];
+      const tabs = Array.from(root.querySelectorAll('[role="tab"]'));
+      const panels = tabs
+        .map((tab) => document.getElementById(tab.getAttribute('aria-controls') || ''))
+        .filter(Boolean);
+
+      const tabOn = [
+        'bg-coffee-800',
+        'border-coffee-800',
+        'text-white',
+        'font-semibold',
+        'shadow-sm',
+      ];
+      const tabOff = [
+        'bg-white/85',
+        'border-coffee-200/90',
+        'text-coffee-800',
+        'font-medium',
+        'hover:border-coffee-500',
+        'hover:bg-coffee-100/90',
+      ];
+
+      function activate(index) {
+        tabs.forEach((tab, i) => {
+          const on = i === index;
+          tab.setAttribute('aria-selected', on ? 'true' : 'false');
+          tab.setAttribute('tabindex', on ? '0' : '-1');
+          tabOn.forEach((c) => tab.classList.toggle(c, on));
+          tabOff.forEach((c) => tab.classList.toggle(c, !on));
+        });
+        panels.forEach((panel, i) => {
+          panel.hidden = i !== index;
+        });
+        placeBlocks.forEach((block) => {
+          const n = parseInt(block.getAttribute('data-cafe-idx') || '', 10);
+          const on = n === index;
+          block.hidden = !on;
+          block.classList.toggle('hidden', !on);
+        });
+        if (index === 1) {
+          const m12 = document.getElementById('map-embed-12');
+          if (m12 && m12.dataset.mapSrc && !m12.dataset.mapLoaded) {
+            m12.src = m12.dataset.mapSrc;
+            m12.dataset.mapLoaded = '1';
+          }
+        }
+      }
+
+      tabs.forEach((tab, i) => {
+        tab.addEventListener('click', () => activate(i));
+        tab.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            activate((i + 1) % tabs.length);
+            tabs[(i + 1) % tabs.length].focus();
+          }
+          if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            const next = (i - 1 + tabs.length) % tabs.length;
+            activate(next);
+            tabs[next].focus();
+          }
+        });
+      });
+      activate(0);
     })();
   </script>
 </body>

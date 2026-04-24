@@ -4,6 +4,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Единый цвет текста, совпадающий с тёмным тоном логотипа */
+@layer base {
+  :root {
+    --logo-text: #490900;
+  }
+  body {
+    color: var(--logo-text);
+  }
+}
+
+@layer utilities {
+  .text-coffee-500,
+  .text-coffee-600,
+  .text-coffee-700,
+  .text-coffee-800,
+  .text-coffee-900 {
+    color: var(--logo-text);
+  }
+}
+
 /* Фон без внешних картинок: градиент + лёгкая «зернистость» чистым CSS */
 @layer components {
   /* Фон меню: более тёмный Pantone-like deep coffee */
