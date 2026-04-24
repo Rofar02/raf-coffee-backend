@@ -1,0 +1,2 @@
+-- См. `purge_bar_and_pivo.sql` — там сначала UPDATE dishes (снятие subcategory_id), иначе FK не даст удалить рубрику.
+-- Кратко для совместимости: используйте purge_bar_and_pivo.sql, не только DELETE из categories.

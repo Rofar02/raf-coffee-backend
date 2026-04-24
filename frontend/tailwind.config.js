@@ -29,9 +29,11 @@ module.exports = {
         },
       },
       fontFamily: {
-        /* Совпадает с @font-face в src/rafchik-fonts.css */
-        display: ['Rafchik', 'Georgia', 'Cambria', 'Times New Roman', 'serif'],
-        sans: ['Rafchik', 'system-ui', 'Segoe UI', 'Roboto', 'sans-serif'],
+        /* Rafchik в файлах часто без кириллицы — не ставим его в sans/display, иначе «?» вместо русских букв. */
+        display: ['Georgia', 'Cambria', 'Times New Roman', 'serif'],
+        sans: ['system-ui', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        /* Только латиница/цифры в макетах; кириллица уйдёт на Georgia по цепочке */
+        raf: ['Rafchik', 'Georgia', 'Cambria', 'serif'],
       },
     },
   },

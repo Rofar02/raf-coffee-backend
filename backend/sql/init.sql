@@ -52,41 +52,20 @@ CREATE TABLE IF NOT EXISTS season_dishes (
     PRIMARY KEY (season_id, dish_id)
 );
 
--- Демо-дерево меню (только если таблицы пустые — первый запуск init)
+-- Старт без подкатегорий: их добавляют в админке. Две категории верхнего уровня.
 INSERT INTO categories (name, sort_order)
 SELECT v.name, v.sort_order
 FROM (VALUES
-    ('Сезонное предложение', 1),
-    ('Бар', 2),
-    ('Кухня', 3)
+    ('Кухня', 1),
+    ('Напитки', 2)
 ) AS v(name, sort_order)
 WHERE NOT EXISTS (SELECT 1 FROM categories LIMIT 1);
 
-INSERT INTO subcategories (category_id, name, sort_order)
-SELECT c.id, v.sub_name, v.sort_order
-FROM (VALUES
-    ('Сезонное предложение', 'Кофе', 1),
-    ('Сезонное предложение', 'Смузи', 2),
-    ('Бар', 'Чёрный кофе', 1),
-    ('Бар', 'Альтернатива', 2),
-    ('Бар', 'Не кофе', 3),
-    ('Бар', 'Классика', 4),
-    ('Бар', 'Авторские рафы', 5),
-    ('Кухня', 'Сытные блюда', 1),
-    ('Кухня', 'Сэндвичи', 2),
-    ('Кухня', 'Салаты', 3),
-    ('Кухня', 'Закуски', 4),
-    ('Кухня', 'Сладкие блюда', 5)
-) AS v(cat_name, sub_name, sort_order)
-JOIN categories c ON c.name = v.cat_name
-WHERE NOT EXISTS (SELECT 1 FROM subcategories LIMIT 1);
-
+-- Один активный сезон; дополнительные — через админку
 INSERT INTO menu_seasons (name, slug, is_active, sort_order)
 SELECT v.name, v.slug, v.is_active, v.sort_order
 FROM (VALUES
-    ('Базовый сезон', 'default', TRUE, 1),
-    ('Лето 2026', 'summer-2026', FALSE, 2),
-    ('Осень 2026', 'autumn-2026', FALSE, 3)
+    ('Базовый сезон', 'default', TRUE, 1)
 ) AS v(name, slug, is_active, sort_order)
 WHERE NOT EXISTS (SELECT 1 FROM menu_seasons LIMIT 1);
 

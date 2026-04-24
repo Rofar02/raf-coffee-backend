@@ -15,6 +15,9 @@
   font-weight: 400;
   font-style: normal;
   font-display: swap;
+  /* Rafchik без кириллицы: без unicode-range браузер подставляет «вопросики» вместо русских букв.
+     Кириллица (U+0400+) и прочие блоки — цепочкой уходят на system-ui / Georgia в tailwind.config. */
+  unicode-range: U+0000-03FF;
 }
 
 /*
@@ -26,5 +29,6 @@
   font-weight: 700;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0000-03FF;
 }
 */

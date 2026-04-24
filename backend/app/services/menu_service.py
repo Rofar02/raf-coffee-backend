@@ -4,7 +4,7 @@ from decimal import Decimal
 from ..repositories.dish_repository import DishRepository
 from ..core.redis_client import get_redis
 
-MENU_CACHE_KEY = "menu:v6"
+MENU_CACHE_KEY = "menu:v7"
 
 
 def _json_default(obj):

@@ -284,7 +284,12 @@ class DishRepository:
             try:
                 rows = await conn.fetch(
                     """
-                    SELECT s.id, c.id AS category_id, c.name AS category_name, s.name AS subcategory_name
+                    SELECT
+                        s.id,
+                        c.id AS category_id,
+                        c.name AS category_name,
+                        s.name AS subcategory_name,
+                        s.sort_order
                     FROM subcategories s
                     JOIN categories c ON c.id = s.category_id
                     ORDER BY c.sort_order NULLS LAST, c.id, s.sort_order NULLS LAST, s.id
@@ -293,6 +298,102 @@ class DishRepository:
                 return [dict(row) for row in rows]
             except (UndefinedTableError, UndefinedColumnError):
                 return []
+
+    async def list_categories(self) -> List[Dict[str, Any]]:
+        async with self.pool.acquire() as conn:
+            try:
+                rows = await conn.fetch(
+                    """
+                    SELECT id, name, sort_order
+                    FROM categories
+                    ORDER BY sort_order NULLS LAST, id
+                    """
+                )
+                return [dict(row) for row in rows]
+            except (UndefinedTableError, UndefinedColumnError):
+                return []
+
+    async def get_category_by_id(self, category_id: int) -> Optional[Dict[str, Any]]:
+        async with self.pool.acquire() as conn:
+            try:
+                row = await conn.fetchrow(
+                    "SELECT id, name, sort_order FROM categories WHERE id = $1",
+                    category_id,
+                )
+                return dict(row) if row else None
+            except (UndefinedTableError, UndefinedColumnError):
+                return None
+
+    async def create_subcategory(self, category_id: int, name: str, sort_order: int) -> Dict[str, Any]:
+        async with self.pool.acquire() as conn:
+            row = await conn.fetchrow(
+                """
+                INSERT INTO subcategories (category_id, name, sort_order)
+                VALUES ($1, $2, $3)
+                RETURNING id, category_id, name, sort_order
+                """,
+                category_id,
+                name,
+                sort_order,
+            )
+            r = dict(row)
+            cname = await conn.fetchval("SELECT name FROM categories WHERE id = $1", category_id)
+            r["category_name"] = cname or ""
+            r["subcategory_name"] = r.pop("name")
+            return r
+
+    async def get_subcategory_by_id(self, subcategory_id: int) -> Optional[Dict[str, Any]]:
+        async with self.pool.acquire() as conn:
+            try:
+                row = await conn.fetchrow(
+                    """
+                    SELECT
+                        s.id,
+                        c.id AS category_id,
+                        c.name AS category_name,
+                        s.name AS subcategory_name,
+                        s.sort_order
+                    FROM subcategories s
+                    JOIN categories c ON c.id = s.category_id
+                    WHERE s.id = $1
+                    """,
+                    subcategory_id,
+                )
+                return dict(row) if row else None
+            except (UndefinedTableError, UndefinedColumnError):
+                return None
+
+    async def update_subcategory(
+        self,
+        subcategory_id: int,
+        category_id: int | None,
+        name: str | None,
+        sort_order: int | None,
+    ) -> bool:
+        if category_id is None and name is None and sort_order is None:
+            return False
+        async with self.pool.acquire() as conn:
+            row = await conn.fetchrow(
+                """
+                UPDATE subcategories
+                SET
+                    category_id = COALESCE($2, category_id),
+                    name = COALESCE($3, name),
+                    sort_order = COALESCE($4, sort_order)
+                WHERE id = $1
+                RETURNING id
+                """,
+                subcategory_id,
+                category_id,
+                name,
+                sort_order,
+            )
+            return row is not None
+
+    async def delete_subcategory(self, subcategory_id: int) -> bool:
+        async with self.pool.acquire() as conn:
+            res = await conn.execute("DELETE FROM subcategories WHERE id = $1", subcategory_id)
+            return res.endswith("1")
 
     async def get_menu_items_for_active_season(self) -> List[Dict[str, Any]]:
         async with self.pool.acquire() as conn:

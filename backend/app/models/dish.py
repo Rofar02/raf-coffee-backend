@@ -60,6 +60,25 @@ class SubcategoryOption(BaseModel):
     category_id: int
     category_name: str
     subcategory_name: str
+    sort_order: int = 0
+
+
+class CategoryItem(BaseModel):
+    id: int
+    name: str
+    sort_order: int
+
+
+class SubcategoryCreateBody(BaseModel):
+    category_id: int = Field(..., ge=1)
+    name: str = Field(..., min_length=1, max_length=200)
+    sort_order: int = Field(0, ge=0, le=9999)
+
+
+class SubcategoryUpdateBody(BaseModel):
+    category_id: Optional[int] = Field(None, ge=1)
+    name: Optional[str] = Field(None, min_length=1, max_length=200)
+    sort_order: Optional[int] = Field(None, ge=0, le=9999)
 
 
 class SeasonBase(BaseModel):

@@ -10,6 +10,7 @@ from app.core.database import get_pool
 from app.repositories.dish_repository import DishRepository
 from app.services.menu_service import MenuService
 from app.models.dish import (
+    CategoryItem,
     DishCreate,
     Dish,
     DishUpdate,
@@ -18,7 +19,9 @@ from app.models.dish import (
     SeasonCreate,
     SeasonUpdate,
     SeasonDishLink,
+    SubcategoryCreateBody,
     SubcategoryOption,
+    SubcategoryUpdateBody,
 )
 from app.core.auth import verify_admin_token
 
@@ -64,6 +67,84 @@ async def list_subcategories(
 ):
     repo = DishRepository(pool)
     return await repo.list_subcategories()
+
+
+@router.get("/categories", response_model=List[CategoryItem])
+async def list_categories(
+    _: str = Depends(verify_admin_token),
+    pool=Depends(get_pool),
+):
+    repo = DishRepository(pool)
+    rows = await repo.list_categories()
+    return [CategoryItem(**r) for r in rows]
+
+
+@router.post("/flush-menu-cache")
+async def admin_flush_menu_cache(
+    _: str = Depends(verify_admin_token),
+    pool=Depends(get_pool),
+):
+    """Сбрасывает Redis-кеш публичного меню. Нужен после ручного SQL в PostgreSQL (кэш иначе до 5 мин)."""
+    repo = DishRepository(pool)
+    service = MenuService(repo)
+    await service.clear_menu_cache()
+    return {"ok": True}
+
+
+@router.post("/subcategories", response_model=SubcategoryOption)
+async def create_subcategory(
+    body: SubcategoryCreateBody,
+    _: str = Depends(verify_admin_token),
+    pool=Depends(get_pool),
+):
+    repo = DishRepository(pool)
+    cat = await repo.get_category_by_id(body.category_id)
+    if not cat:
+        raise HTTPException(status_code=400, detail="Category not found")
+    row = await repo.create_subcategory(body.category_id, body.name, body.sort_order)
+    return SubcategoryOption(**row)
+
+
+@router.put("/subcategories/{subcategory_id}", response_model=SubcategoryOption)
+async def update_subcategory(
+    subcategory_id: int,
+    body: SubcategoryUpdateBody,
+    _: str = Depends(verify_admin_token),
+    pool=Depends(get_pool),
+):
+    repo = DishRepository(pool)
+    data = body.model_dump(exclude_none=True)
+    if not data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    if data.get("category_id") is not None:
+        cat = await repo.get_category_by_id(int(data["category_id"]))
+        if not cat:
+            raise HTTPException(status_code=400, detail="Category not found")
+    ok = await repo.update_subcategory(
+        subcategory_id,
+        data.get("category_id"),
+        data.get("name"),
+        data.get("sort_order"),
+    )
+    if not ok:
+        raise HTTPException(status_code=404, detail="Subcategory not found")
+    out = await repo.get_subcategory_by_id(subcategory_id)
+    if not out:
+        raise HTTPException(status_code=404, detail="Subcategory not found")
+    return SubcategoryOption(**out)
+
+
+@router.delete("/subcategories/{subcategory_id}")
+async def delete_subcategory(
+    subcategory_id: int,
+    _: str = Depends(verify_admin_token),
+    pool=Depends(get_pool),
+):
+    repo = DishRepository(pool)
+    deleted = await repo.delete_subcategory(subcategory_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Subcategory not found")
+    return {"ok": True, "deleted_id": subcategory_id}
 
 
 @router.post("/dishes", response_model=MenuItem)

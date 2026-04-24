@@ -434,10 +434,16 @@
       `;
     }
 
-    function categoryTabKey(catLabel, subLabel) {
+    function categoryTabKey(categoryId, catLabel, subLabel) {
+      const id = categoryId != null ? Number(categoryId) : null;
+      if (id === 2) return 'drinks';
+      if (id === 1) return 'food';
       const s = (String(catLabel || '') + ' ' + String(subLabel || '')).toLowerCase();
+      if (s.includes('напит') || s.includes('кухн')) {
+        return s.includes('напит') ? 'drinks' : 'food';
+      }
       const drinkMarkers = [
-        'напит', 'кофе', 'чай', 'лимонад', 'сок', 'коктейл', 'смуз', 'смузи', 'молок', 'раф', 'какао',
+        'кофе', 'чай', 'лимонад', 'сок', 'коктейл', 'смуз', 'смузи', 'молок', 'раф', 'какао',
         'морс', 'фреш', 'глинт', 'тоник', 'колд', 'холодн', 'бар',
         'drink', 'coffee', 'tea', 'latte', 'capp',
       ];
@@ -445,7 +451,7 @@
     }
 
     function tabLabel(tabKey) {
-      return tabKey === 'drinks' ? 'Напитки' : 'Еда';
+      return tabKey === 'drinks' ? 'Напитки' : 'Кухня';
     }
 
     function applyNavButtonStyle(btn, isActive) {
@@ -459,7 +465,7 @@
       const result = [];
       for (const cat of groups) {
         for (const sub of cat.subs) {
-          const mobileTab = categoryTabKey(cat.label, sub.label);
+          const mobileTab = categoryTabKey(cat.id, cat.label, sub.label);
           result.push({
             key: `${cat.id ?? 'cat'}:${sub.id ?? sub.label}`,
             categoryId: cat.id,
