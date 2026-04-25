@@ -83,31 +83,36 @@ EOF
 
 ---
 
-## 5) Важно для продакшена: закрыть лишние порты БД и Redis
+## 5) Прод-override compose (чтобы не ломать локалку)
 
-Сейчас compose публикует наружу:
-- `5432:5432` (PostgreSQL)
-- `6379:6379` (Redis)
+В репозитории есть отдельный файл `docker-compose.prod.yml`.
+Он делает две вещи:
+- закрывает наружу порты `postgres`, `redis`, `backend`;
+- оставляет `frontend` только на loopback: `127.0.0.1:8080:80`.
 
-Для продакшена это не нужно и небезопасно. Удали/закомментируй эти `ports` у `postgres` и `redis` в `docker-compose.yml`.
+Локальная разработка остается прежней:
 
-Оставь опубликованными только:
-- `8080:80` у `frontend` (публичный вход)
+```bash
+docker compose up --build
+```
 
-Опционально:
-- убрать `8000:8000` у `backend`, если API снаружи не нужен отдельно (через `frontend` он и так доступен по прокси).
+Прод-запуск на VPS:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
 
 ---
 
-## 6) Запуск проекта
+## 6) Запуск проекта на VPS
 
 ```bash
 cd ~/raf-coffee
-docker compose up -d --build
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 docker compose ps
 ```
 
-Проверки:
+Проверки на сервере:
 
 ```bash
 curl http://127.0.0.1:8080
@@ -118,7 +123,7 @@ curl http://127.0.0.1:8080/ping
 
 ## 7) Домен и SSL (Let's Encrypt)
 
-### Вариант A (проще): SSL на хосте через Nginx
+### Вариант A (рекомендуется): SSL на хосте через Nginx
 
 1. Установи Nginx и Certbot:
 
@@ -126,41 +131,29 @@ curl http://127.0.0.1:8080/ping
 sudo apt install -y nginx certbot python3-certbot-nginx
 ```
 
-2. Настрой DNS: `A`-запись домена на IP VPS.
+2. Настрой DNS у домена в Timeweb:
+- `A` для `rafchik.ru` -> `IP_VPS`
+- `A` для `www` -> `IP_VPS` (или `CNAME` на `rafchik.ru`)
 
-3. Конфиг Nginx (прокси на контейнер `frontend`, который слушает `127.0.0.1:8080`):
+3. Возьми готовый конфиг из репозитория:
+- файл: `deploy/nginx/rafchik.ru.conf`
 
-`/etc/nginx/sites-available/raf-coffee`
-
-```nginx
-server {
-    listen 80;
-    server_name your-domain.ru www.your-domain.ru;
-
-    location / {
-        proxy_pass http://127.0.0.1:8080;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-}
-```
-
-4. Включи конфиг и перезагрузи Nginx:
+Скопируй его на сервер:
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/raf-coffee /etc/nginx/sites-enabled/
+sudo cp deploy/nginx/rafchik.ru.conf /etc/nginx/sites-available/rafchik.ru
+sudo ln -s /etc/nginx/sites-available/rafchik.ru /etc/nginx/sites-enabled/rafchik.ru
 sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-5. Выпусти SSL:
+4. Выпусти SSL:
 
 ```bash
-sudo certbot --nginx -d your-domain.ru -d www.your-domain.ru
+sudo certbot --nginx -d rafchik.ru -d www.rafchik.ru
 ```
 
-Проверка автообновления:
+5. Проверка автообновления сертификатов:
 
 ```bash
 systemctl status certbot.timer
@@ -168,18 +161,25 @@ systemctl status certbot.timer
 
 ---
 
-## 8) Обновление приложения
+## 8) Полезные замечания по безопасности
+
+- Во внешнем фаерволе оставь только `22`, `80`, `443`.
+- `ADMIN_TOKEN` обязательно задай в `.env` сложным значением.
+
+---
+
+## 9) Обновление приложения
 
 ```bash
 cd ~/raf-coffee
 git pull
-docker compose up -d --build
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 docker image prune -f
 ```
 
 ---
 
-## 9) Полезные команды
+## 10) Полезные команды
 
 Статус контейнеров:
 
@@ -207,9 +207,10 @@ docker compose restart
 
 ---
 
-## 10) Мини-чеклист
+## 11) Мини-чеклист
 
 - Внешне открыты только `22`, `80`, `443`.
 - `ADMIN_TOKEN` задан сложный и хранится в `.env`.
-- Порты `5432` и `6379` не опубликованы наружу.
+- Порты `5432`, `6379`, `8000` не опубликованы наружу.
+- `frontend` доступен только локально на сервере (`127.0.0.1:8080`).
 - Настроены бэкапы `postgres_data`.
