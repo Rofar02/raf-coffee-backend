@@ -1,3 +1,4 @@
+import json
 import asyncpg
 from collections import defaultdict
 from typing import Any, Dict, List, Optional
@@ -15,6 +16,7 @@ _SQL_WITH_CATEGORIES = """
         d.description,
         d.calories,
         d.image_url,
+        d.image_urls,
         d.video_url,
         d.is_base_menu,
         d.subcategory_id,
@@ -43,6 +45,7 @@ _SQL_DISHES_ONLY_WITH_SUBCAT = """
         d.description,
         d.calories,
         d.image_url,
+        d.image_urls,
         d.video_url,
         d.is_base_menu,
         d.subcategory_id,
@@ -64,6 +67,7 @@ _SQL_DISHES_MINIMAL = """
         description,
         calories,
         image_url,
+        NULL::text AS image_urls,
         video_url,
         TRUE AS is_base_menu,
         NULL::integer AS subcategory_id,
@@ -84,6 +88,7 @@ _DISH_BY_ID_WITH_CATEGORIES = """
         d.description,
         d.calories,
         d.image_url,
+        d.image_urls,
         d.video_url,
         d.is_base_menu,
         d.subcategory_id,
@@ -106,6 +111,7 @@ _DISH_BY_ID_NO_JOIN = """
         d.description,
         d.calories,
         d.image_url,
+        d.image_urls,
         d.video_url,
         d.is_base_menu,
         d.subcategory_id,
@@ -126,6 +132,7 @@ _SQL_ACTIVE_SEASON_MENU = """
         d.description,
         d.calories,
         d.image_url,
+        d.image_urls,
         d.video_url,
         d.is_base_menu,
         d.subcategory_id,
@@ -157,6 +164,7 @@ _SQL_BASE_MENU_WITH_CATEGORIES = """
         d.description,
         d.calories,
         d.image_url,
+        d.image_urls,
         d.video_url,
         d.is_base_menu,
         d.subcategory_id,
@@ -174,6 +182,46 @@ _SQL_BASE_MENU_WITH_CATEGORIES = """
         s.id NULLS LAST,
         d.id
 """
+
+
+def _normalize_dish_image_row(row: Dict[str, Any]) -> None:
+    raw = row.get("image_urls")
+    urls: List[str] = []
+    if raw is not None and str(raw).strip():
+        try:
+            parsed = json.loads(str(raw))
+            if isinstance(parsed, list):
+                urls = [str(u).strip() for u in parsed if u and str(u).strip()]
+        except json.JSONDecodeError:
+            urls = []
+    if not urls and row.get("image_url"):
+        u = str(row["image_url"]).strip()
+        if u:
+            urls = [u]
+    row["image_urls"] = urls
+    if urls:
+        row["image_url"] = urls[0]
+    else:
+        row["image_url"] = None
+
+
+def _coerce_dish_image_storage(data: dict) -> Optional[str]:
+    """Pops image_urls, sets data['image_url'] to the first; returns JSON for the DB image_urls column."""
+    extra = data.pop("image_urls", None)
+    primary = data.get("image_url")
+    if extra is not None and isinstance(extra, list):
+        clean = [str(u).strip() for u in extra if u and str(u).strip()]
+        if clean:
+            data["image_url"] = clean[0]
+            return json.dumps(clean, ensure_ascii=False)
+        data["image_url"] = None
+        return None
+    if primary and str(primary).strip():
+        u = str(primary).strip()
+        data["image_url"] = u
+        return json.dumps([u], ensure_ascii=False)
+    data["image_url"] = None
+    return None
 
 
 def _normalize_volume_options(raw: Any) -> List[Dict[str, Any]]:
@@ -234,6 +282,8 @@ class DishRepository:
         if not ids:
             for r in rows:
                 r["volume_options"] = []
+            for r in rows:
+                _normalize_dish_image_row(r)
             return
         opts = []
         try:
@@ -263,6 +313,8 @@ class DishRepository:
         except UndefinedTableError:
             for r in rows:
                 r["volume_options"] = []
+            for r in rows:
+                _normalize_dish_image_row(r)
             return
         by_dish: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
         for o in opts:
@@ -281,6 +333,8 @@ class DishRepository:
             by_dish[o["dish_id"]].append(dopt)
         for r in rows:
             r["volume_options"] = by_dish.get(r["id"], [])
+        for r in rows:
+            _normalize_dish_image_row(r)
 
     async def get_all(self) -> List[Dict[str, Any]]:
         async with self.pool.acquire() as conn:
@@ -529,29 +583,55 @@ class DishRepository:
         if opts:
             data["price"] = min(x["price"] for x in opts)
             data["volume_ml"] = None
+        img_json = _coerce_dish_image_storage(data)
         async with self.pool.acquire() as conn:
             try:
-                async with conn.transaction():
-                    row = await conn.fetchrow(
-                        """
-                        INSERT INTO dishes (name, price, weight_grams, volume_ml, description, calories, image_url, video_url, is_base_menu, subcategory_id)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id
-                        """,
-                        data["name"],
-                        data["price"],
-                        data.get("weight_grams"),
-                        data.get("volume_ml"),
-                        data.get("description"),
-                        data.get("calories"),
-                        data.get("image_url"),
-                        data.get("video_url"),
-                        data.get("is_base_menu", True),
-                        data.get("subcategory_id"),
-                    )
-                    dish_id = row["id"]
-                    if opts:
-                        await self._insert_volume_options(conn, dish_id, opts)
-                    return dish_id
+                try:
+                    async with conn.transaction():
+                        row = await conn.fetchrow(
+                            """
+                            INSERT INTO dishes (name, price, weight_grams, volume_ml, description, calories, image_url, image_urls, video_url, is_base_menu, subcategory_id)
+                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id
+                            """,
+                            data["name"],
+                            data["price"],
+                            data.get("weight_grams"),
+                            data.get("volume_ml"),
+                            data.get("description"),
+                            data.get("calories"),
+                            data.get("image_url"),
+                            img_json,
+                            data.get("video_url"),
+                            data.get("is_base_menu", True),
+                            data.get("subcategory_id"),
+                        )
+                        dish_id = row["id"]
+                        if opts:
+                            await self._insert_volume_options(conn, dish_id, opts)
+                        return dish_id
+                except UndefinedColumnError:
+                    # Нельзя делать fallback INSERT в той же транзакции: в Postgres она уже aborted.
+                    async with conn.transaction():
+                        row = await conn.fetchrow(
+                            """
+                            INSERT INTO dishes (name, price, weight_grams, volume_ml, description, calories, image_url, video_url, is_base_menu, subcategory_id)
+                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id
+                            """,
+                            data["name"],
+                            data["price"],
+                            data.get("weight_grams"),
+                            data.get("volume_ml"),
+                            data.get("description"),
+                            data.get("calories"),
+                            data.get("image_url"),
+                            data.get("video_url"),
+                            data.get("is_base_menu", True),
+                            data.get("subcategory_id"),
+                        )
+                        dish_id = row["id"]
+                        if opts:
+                            await self._insert_volume_options(conn, dish_id, opts)
+                        return dish_id
             except UndefinedTableError:
                 row = await conn.fetchrow(
                     """
@@ -577,44 +657,85 @@ class DishRepository:
         if opts:
             data["price"] = min(x["price"] for x in opts)
             data["volume_ml"] = None
+        img_json = _coerce_dish_image_storage(data)
         async with self.pool.acquire() as conn:
             try:
-                async with conn.transaction():
-                    row = await conn.fetchrow(
-                        """
-                        UPDATE dishes
-                        SET
-                            name = $2,
-                            price = $3,
-                            weight_grams = $4,
-                            volume_ml = $5,
-                            description = $6,
-                            calories = $7,
-                            image_url = $8,
-                            video_url = $9,
-                            is_base_menu = $10,
-                            subcategory_id = $11
-                        WHERE id = $1
-                        RETURNING id
-                        """,
-                        dish_id,
-                        data["name"],
-                        data["price"],
-                        data.get("weight_grams"),
-                        data.get("volume_ml"),
-                        data.get("description"),
-                        data.get("calories"),
-                        data.get("image_url"),
-                        data.get("video_url"),
-                        data.get("is_base_menu", True),
-                        data.get("subcategory_id"),
-                    )
-                    if row is None:
-                        return False
-                    await self._delete_volume_options(conn, dish_id)
-                    if opts:
-                        await self._insert_volume_options(conn, dish_id, opts)
-                    return True
+                try:
+                    async with conn.transaction():
+                        row = await conn.fetchrow(
+                            """
+                            UPDATE dishes
+                            SET
+                                name = $2,
+                                price = $3,
+                                weight_grams = $4,
+                                volume_ml = $5,
+                                description = $6,
+                                calories = $7,
+                                image_url = $8,
+                                image_urls = $9,
+                                video_url = $10,
+                                is_base_menu = $11,
+                                subcategory_id = $12
+                            WHERE id = $1
+                            RETURNING id
+                            """,
+                            dish_id,
+                            data["name"],
+                            data["price"],
+                            data.get("weight_grams"),
+                            data.get("volume_ml"),
+                            data.get("description"),
+                            data.get("calories"),
+                            data.get("image_url"),
+                            img_json,
+                            data.get("video_url"),
+                            data.get("is_base_menu", True),
+                            data.get("subcategory_id"),
+                        )
+                        if row is None:
+                            return False
+                        await self._delete_volume_options(conn, dish_id)
+                        if opts:
+                            await self._insert_volume_options(conn, dish_id, opts)
+                        return True
+                except UndefinedColumnError:
+                    async with conn.transaction():
+                        row = await conn.fetchrow(
+                            """
+                            UPDATE dishes
+                            SET
+                                name = $2,
+                                price = $3,
+                                weight_grams = $4,
+                                volume_ml = $5,
+                                description = $6,
+                                calories = $7,
+                                image_url = $8,
+                                video_url = $9,
+                                is_base_menu = $10,
+                                subcategory_id = $11
+                            WHERE id = $1
+                            RETURNING id
+                            """,
+                            dish_id,
+                            data["name"],
+                            data["price"],
+                            data.get("weight_grams"),
+                            data.get("volume_ml"),
+                            data.get("description"),
+                            data.get("calories"),
+                            data.get("image_url"),
+                            data.get("video_url"),
+                            data.get("is_base_menu", True),
+                            data.get("subcategory_id"),
+                        )
+                        if row is None:
+                            return False
+                        await self._delete_volume_options(conn, dish_id)
+                        if opts:
+                            await self._insert_volume_options(conn, dish_id, opts)
+                        return True
             except UndefinedTableError:
                 row = await conn.fetchrow(
                     """
@@ -747,6 +868,7 @@ class DishRepository:
                     d.description,
                     d.calories,
                     d.image_url,
+                    d.image_urls,
                     d.video_url,
                     d.is_base_menu,
                     d.subcategory_id,

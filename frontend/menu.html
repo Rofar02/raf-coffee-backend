@@ -187,6 +187,75 @@
       box-shadow: 0 0 0 2px rgba(111, 78, 55, 0.45);
       font-weight: 600;
     }
+    .modal-carousel {
+      position: relative;
+    }
+    .modal-carousel__frame {
+      position: relative;
+      min-height: 9rem;
+      max-height: min(72vh, 28rem);
+      background: rgba(0, 0, 0, 0.04);
+      border-radius: 0.75rem;
+      overflow: hidden;
+    }
+    .modal-carousel__img {
+      display: block;
+      max-height: min(72vh, 28rem);
+      width: 100%;
+      object-fit: contain;
+    }
+    .modal-carousel__nav {
+      position: absolute;
+      top: 50%;
+      z-index: 2;
+      margin-top: -1.4rem;
+      display: flex;
+      height: 2.8rem;
+      width: 2.8rem;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9999px;
+      border: 1px solid rgba(111, 78, 55, 0.35);
+      background: rgba(255, 255, 255, 0.92);
+      color: #490900;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+    .modal-carousel__nav:hover {
+      background: #fff;
+      transform: scale(1.04);
+    }
+    .modal-carousel__nav:disabled {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    .modal-carousel__nav--prev {
+      left: 0.4rem;
+    }
+    .modal-carousel__nav--next {
+      right: 0.4rem;
+    }
+    .modal-carousel__dots {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.5rem 0.25rem 0;
+    }
+    .modal-carousel__dot {
+      height: 0.45rem;
+      width: 0.45rem;
+      border-radius: 9999px;
+      border: none;
+      padding: 0;
+      background: rgba(111, 78, 55, 0.3);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .modal-carousel__dot[aria-selected='true'] {
+      background: rgba(111, 78, 55, 0.9);
+      transform: scale(1.15);
+    }
   </style>
 </head>
 <body class="bg-coffee-50 font-sans text-coffee-900 antialiased">
@@ -266,7 +335,7 @@
       <p id="modal-price" class="mt-2 text-2xl font-bold tabular-nums text-coffee-900"></p>
 
       <div id="modal-description-block" class="mt-5 hidden">
-        <p class="font-display text-base font-bold tracking-wide text-coffee-800">Описание</p>
+        <p class="font-display text-base font-bold tracking-wide text-coffee-800">Состав</p>
         <p id="modal-description" class="mt-2 leading-relaxed text-coffee-800"></p>
       </div>
       <p id="modal-calories" class="mt-4 hidden text-sm font-medium text-coffee-800"></p>
@@ -736,6 +805,18 @@
     const itemsById = new Map();
     const mediaWarmupCache = [];
     let modalOpenRequestId = 0;
+    var modalCarouselCleanup = null;
+
+    function getDishImageUrls(dish) {
+      if (dish.image_urls && Array.isArray(dish.image_urls) && dish.image_urls.length) {
+        return dish.image_urls.map((u) => String(u).trim()).filter(Boolean);
+      }
+      if (dish.image_url) {
+        const u = String(dish.image_url).trim();
+        return u ? [u] : [];
+      }
+      return [];
+    }
 
     function warmupMedia(items) {
       const seen = new Set();
@@ -744,13 +825,10 @@
 
       for (const dish of items) {
         if (loaded >= maxPreload) break;
-        const rawUrl = dish.video_url || dish.image_url;
-        if (!rawUrl) continue;
-        const url = resolveMediaUrl(rawUrl);
-        if (!url || seen.has(url)) continue;
-        seen.add(url);
-
         if (dish.video_url) {
+          const url = resolveMediaUrl(dish.video_url);
+          if (!url || seen.has(url)) continue;
+          seen.add(url);
           const preloadVideo = document.createElement('video');
           preloadVideo.preload = 'auto';
           preloadVideo.muted = true;
@@ -758,14 +836,22 @@
           preloadVideo.src = url;
           preloadVideo.load();
           mediaWarmupCache.push(preloadVideo);
-        } else {
+          loaded += 1;
+          continue;
+        }
+        const g = getDishImageUrls(dish);
+        for (const raw of g) {
+          if (loaded >= maxPreload) break;
+          const url = resolveMediaUrl(raw);
+          if (!url || seen.has(url)) continue;
+          seen.add(url);
           const preloadImage = new Image();
           preloadImage.decoding = 'async';
           preloadImage.loading = 'eager';
           preloadImage.src = url;
           mediaWarmupCache.push(preloadImage);
+          loaded += 1;
         }
-        loaded += 1;
       }
     }
 
@@ -809,44 +895,127 @@
       });
     }
 
-    function buildMediaElement(dish) {
-      if (dish.video_url) {
-        const v = document.createElement('video');
-        v.src = resolveMediaUrl(dish.video_url);
-        v.controls = false;
-        v.className = 'mx-auto block max-h-[60vh] w-auto max-w-full object-contain';
-        v.playsInline = true;
-        v.setAttribute('playsinline', '');
-        v.setAttribute('muted', '');
-        v.muted = true;
-        v.volume = 0;
-        v.autoplay = true;
-        v.loop = true;
-        v.preload = 'auto';
-        v.style.backgroundColor = 'transparent';
-        v.style.cursor = 'pointer';
-        v.addEventListener('volumechange', function () {
-          if (v.volume > 0 || !v.muted) {
-            v.muted = true;
-            v.volume = 0;
-          }
+    function buildSingleModalVideo(dish) {
+      const v = document.createElement('video');
+      v.src = resolveMediaUrl(dish.video_url);
+      v.controls = false;
+      v.className = 'mx-auto block max-h-[60vh] w-auto max-w-full object-contain';
+      v.playsInline = true;
+      v.setAttribute('playsinline', '');
+      v.setAttribute('muted', '');
+      v.muted = true;
+      v.volume = 0;
+      v.autoplay = true;
+      v.loop = true;
+      v.preload = 'auto';
+      v.style.backgroundColor = 'transparent';
+      v.style.cursor = 'pointer';
+      v.addEventListener('volumechange', function () {
+        if (v.volume > 0 || !v.muted) {
+          v.muted = true;
+          v.volume = 0;
+        }
+      });
+      v.addEventListener('click', function () {
+        v.controls = true;
+      }, { once: true });
+      return v;
+    }
+
+    function buildModalImageCarousel(mediaRoot, imageUrls, dishName) {
+      const wrap = document.createElement('div');
+      wrap.className = 'modal-carousel';
+      wrap.setAttribute('role', 'group');
+      const frame = document.createElement('div');
+      frame.className = 'modal-carousel__frame';
+      const img = document.createElement('img');
+      img.className = 'modal-carousel__img';
+      img.style.backgroundColor = 'rgba(0, 0, 0, 0.04)';
+      let idx = 0;
+      const n = imageUrls.length;
+      const dotsWrap = document.createElement('div');
+      dotsWrap.className = 'modal-carousel__dots';
+      for (let i = 0; i < n; i += 1) {
+        const d = document.createElement('button');
+        d.type = 'button';
+        d.className = 'modal-carousel__dot';
+        d.setAttribute('role', 'tab');
+        d.setAttribute('aria-label', 'Фото ' + (i + 1) + ' из ' + n);
+        d.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+        d.addEventListener('click', () => {
+          idx = i;
+          sync();
         });
-        v.addEventListener('click', function () {
-          v.controls = true;
-        }, { once: true });
+        dotsWrap.appendChild(d);
+      }
+      function sync() {
+        img.src = resolveMediaUrl(imageUrls[idx]);
+        img.alt = n > 1 ? dishName + ' — ' + (idx + 1) + ' / ' + n : dishName;
+        dotsWrap.querySelectorAll('button').forEach((b, i) => {
+          b.setAttribute('aria-selected', i === idx ? 'true' : 'false');
+        });
+      }
+      function go(step) {
+        idx = (idx + step + n) % n;
+        sync();
+      }
+      img.src = resolveMediaUrl(imageUrls[0]);
+      img.alt = dishName;
+      frame.appendChild(img);
+      const prev = document.createElement('button');
+      const next = document.createElement('button');
+      prev.type = 'button';
+      next.type = 'button';
+      prev.className = 'modal-carousel__nav modal-carousel__nav--prev';
+      next.className = 'modal-carousel__nav modal-carousel__nav--next';
+      prev.setAttribute('aria-label', 'Предыдущее фото');
+      next.setAttribute('aria-label', 'Следующее фото');
+      prev.innerHTML = '<span class="text-2xl font-light leading-none" aria-hidden="true">‹</span>';
+      next.innerHTML = '<span class="text-2xl font-light leading-none" aria-hidden="true">›</span>';
+      prev.addEventListener('click', () => go(-1));
+      next.addEventListener('click', () => go(1));
+      frame.appendChild(prev);
+      frame.appendChild(next);
+      wrap.appendChild(frame);
+      wrap.appendChild(dotsWrap);
+      mediaRoot.appendChild(wrap);
+      const onKey = (e) => {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          go(-1);
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          go(1);
+        }
+      };
+      document.addEventListener('keydown', onKey);
+      modalCarouselCleanup = () => document.removeEventListener('keydown', onKey);
+      return img;
+    }
+
+    function mountModalMedia(dish, media) {
+      media.innerHTML = '';
+      if (modalCarouselCleanup) {
+        modalCarouselCleanup();
+        modalCarouselCleanup = null;
+      }
+      if (dish.video_url) {
+        const v = buildSingleModalVideo(dish);
+        media.appendChild(v);
         return v;
       }
-
-      if (dish.image_url) {
-        const img = document.createElement('img');
-        img.src = resolveMediaUrl(dish.image_url);
-        img.alt = dish.name;
-        img.className = 'max-h-72 w-full object-contain';
-        img.style.backgroundColor = 'rgba(0, 0, 0, 0.04)';
-        return img;
+      const urls = getDishImageUrls(dish);
+      if (urls.length === 0) return null;
+      if (urls.length === 1) {
+        const im = document.createElement('img');
+        im.className = 'max-h-72 w-full object-contain';
+        im.style.backgroundColor = 'rgba(0, 0, 0, 0.04)';
+        im.src = resolveMediaUrl(urls[0]);
+        im.alt = dish.name;
+        media.appendChild(im);
+        return im;
       }
-
-      return null;
+      return buildModalImageCarousel(media, urls, dish.name);
     }
 
     var modalDish = null;
@@ -952,8 +1121,7 @@
       }
 
       const media = document.getElementById('modal-media');
-      media.innerHTML = '';
-      const mediaEl = buildMediaElement(dish);
+      const mediaEl = mountModalMedia(dish, media);
       if (!mediaEl) {
         media.classList.add('hidden');
       } else {
@@ -980,6 +1148,10 @@
     }
 
     function closeModal() {
+      if (modalCarouselCleanup) {
+        modalCarouselCleanup();
+        modalCarouselCleanup = null;
+      }
       const overlay = document.getElementById('modal-overlay');
       overlay.classList.add('hidden');
       overlay.classList.remove('flex');

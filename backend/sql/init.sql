@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS dishes (
     description VARCHAR(1000),
     calories TEXT,
     image_url TEXT,
+    image_urls TEXT,
     video_url TEXT,
     is_base_menu BOOLEAN NOT NULL DEFAULT TRUE,
     subcategory_id INTEGER REFERENCES subcategories(id) ON DELETE SET NULL

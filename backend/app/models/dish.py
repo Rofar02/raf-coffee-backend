@@ -39,14 +39,18 @@ class DishBase(BaseModel):
 
 class DishCreate(DishBase):
     volume_options: Optional[List[VolumeOptionIn]] = None
+    image_urls: Optional[List[str]] = None
 
 
 class DishUpdate(DishBase):
     volume_options: Optional[List[VolumeOptionIn]] = None
+    image_urls: Optional[List[str]] = None
+
 
 class Dish(DishBase):
     id: int
     volume_options: List[VolumeOption] = Field(default_factory=list)
+    image_urls: List[str] = Field(default_factory=list, description="Все URL фото по порядку; первый == image_url")
 
 
 class MenuItem(Dish):
