@@ -1887,9 +1887,11 @@
       }
 
       if (action === 'edit') {
+        setActivePanel('dish');
         fillFormFromDish(dish);
         setFormModeEdit(dishId);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const dishPanel = document.getElementById('panel-dish');
+        if (dishPanel) dishPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
       }
 
@@ -2051,9 +2053,11 @@
           showAlert('err', 'Сначала нажмите «Синхронизировать» — не хватает данных о блюде.');
           return;
         }
+        setActivePanel('dish');
         fillFormFromDish(dish);
         setFormModeEdit(dishId);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const dishPanel = document.getElementById('panel-dish');
+        if (dishPanel) dishPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
       }
       if (action !== 'remove-season') return;
