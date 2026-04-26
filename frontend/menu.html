@@ -190,71 +190,220 @@
     .modal-carousel {
       position: relative;
     }
+    .modal-carousel--with-thumbs {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    @media (min-width: 480px) {
+      .modal-carousel--with-thumbs {
+        flex-direction: row;
+        align-items: stretch;
+        gap: 0.65rem;
+      }
+    }
     .modal-carousel__frame {
       position: relative;
       min-height: 9rem;
-      max-height: min(72vh, 28rem);
-      background: rgba(0, 0, 0, 0.04);
-      border-radius: 0.75rem;
-      overflow: hidden;
+      max-height: min(58vh, 24rem);
+      border-radius: 0.5rem;
+      background: rgba(0, 0, 0, 0.03);
     }
-    .modal-carousel__img {
-      display: block;
-      max-height: min(72vh, 28rem);
+    /* «Страницы» фото: свайп / колёсико, как листаешь; snap — по одному снимку */
+    .modal-carousel__pages {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
       width: 100%;
+      height: min(52vh, 20rem);
+      min-height: 8.5rem;
+      box-sizing: border-box;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      /* Горизонталь: карусель; вертикаль: уходит на #modal-panel (не блокируем pan-y) */
+      overscroll-behavior-x: contain;
+      overscroll-behavior-y: auto;
+      touch-action: pan-x pan-y pinch-zoom;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .modal-carousel__pages::-webkit-scrollbar {
+      display: none;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .modal-carousel__pages {
+        scroll-behavior: auto;
+      }
+    }
+    .modal-carousel__page {
+      flex: 0 0 100%;
+      width: 100%;
+      min-width: 0;
+      min-height: 8.5rem;
+      max-height: min(52vh, 20rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      padding: 0.25rem;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+    }
+    .modal-carousel__page img {
+      display: block;
+      max-width: 100%;
+      max-height: min(50vh, 19rem);
+      width: auto;
+      height: auto;
       object-fit: contain;
+      object-position: center;
+      -webkit-user-drag: none;
+      user-select: none;
+    }
+    .modal-carousel__thumbs {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      gap: 0.5rem;
+      padding: 0.35rem 0.2rem 0.45rem;
+      margin: 0 -0.15rem;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: contain;
+      overscroll-behavior-y: auto;
+      touch-action: pan-x pan-y;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      scroll-padding-left: 0.35rem;
+      scroll-padding-right: 0.35rem;
+      /* скрываем полосу, оставляем прокрутку пальцем */
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .modal-carousel__thumbs::-webkit-scrollbar {
+      display: none;
+    }
+    @media (min-width: 480px) {
+      .modal-carousel__thumbs {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        max-height: min(58vh, 22rem);
+        width: 3.5rem;
+        padding: 0.2rem 0;
+        margin: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior-y: contain;
+        touch-action: pan-y;
+        scroll-snap-type: y mandatory;
+        scroll-padding-top: 0.2rem;
+        scroll-padding-bottom: 0.2rem;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(111, 78, 55, 0.35) transparent;
+      }
+      .modal-carousel__thumbs::-webkit-scrollbar {
+        display: block;
+        width: 4px;
+      }
+      .modal-carousel__thumbs::-webkit-scrollbar-thumb {
+        background: rgba(111, 78, 55, 0.35);
+        border-radius: 4px;
+      }
+    }
+    .modal-carousel__thumb {
+      display: block;
+      height: 3.05rem;
+      width: 3.05rem;
+      flex-shrink: 0;
+      border-radius: 0.5rem;
+      border: 2px solid rgba(0, 0, 0, 0.06);
+      padding: 0;
+      overflow: hidden;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.6);
+      box-shadow: 0 1px 3px rgba(73, 9, 0, 0.08);
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      scroll-snap-align: center;
+      scroll-snap-stop: always;
+      touch-action: manipulation;
+    }
+    @media (min-width: 480px) {
+      .modal-carousel__thumb {
+        width: 3.25rem;
+        height: 3.25rem;
+        scroll-snap-align: start;
+      }
+    }
+    .modal-carousel__thumb[aria-selected='true'] {
+      border-color: rgba(111, 78, 55, 0.9);
+      box-shadow:
+        0 0 0 1px rgba(111, 78, 55, 0.25),
+        0 2px 10px rgba(111, 78, 55, 0.2);
+      transform: scale(1.03);
+    }
+    .modal-carousel__thumb:active {
+      transform: scale(0.97);
+    }
+    .modal-carousel__thumb[aria-selected='true']:active {
+      transform: scale(0.99);
+    }
+    .modal-carousel__thumb img {
+      display: block;
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
     }
     .modal-carousel__nav {
       position: absolute;
       top: 50%;
-      z-index: 2;
-      margin-top: -1.4rem;
+      z-index: 4;
+      margin: 0;
+      padding: 0;
       display: flex;
-      height: 2.8rem;
-      width: 2.8rem;
       align-items: center;
       justify-content: center;
+      height: 2.6rem;
+      width: 2.6rem;
+      transform: translateY(-50%);
       border-radius: 9999px;
-      border: 1px solid rgba(111, 78, 55, 0.35);
-      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(111, 78, 55, 0.28);
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       color: #490900;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      transition: background 0.15s ease, transform 0.15s ease;
+      box-shadow: 0 2px 12px rgba(73, 9, 0, 0.12);
+      line-height: 0;
+      transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    }
+    .modal-carousel__nav-icon {
+      display: block;
+      width: 1.05rem;
+      height: 1.05rem;
+      flex-shrink: 0;
     }
     .modal-carousel__nav:hover {
-      background: #fff;
-      transform: scale(1.04);
+      background: rgba(255, 255, 255, 0.98);
+      transform: translateY(-50%) scale(1.04);
     }
     .modal-carousel__nav:disabled {
       opacity: 0.35;
       pointer-events: none;
     }
     .modal-carousel__nav--prev {
-      left: 0.4rem;
+      left: 0.35rem;
     }
     .modal-carousel__nav--next {
-      right: 0.4rem;
+      right: 0.35rem;
     }
-    .modal-carousel__dots {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.4rem;
-      padding: 0.5rem 0.25rem 0;
-    }
-    .modal-carousel__dot {
-      height: 0.45rem;
-      width: 0.45rem;
-      border-radius: 9999px;
-      border: none;
-      padding: 0;
-      background: rgba(111, 78, 55, 0.3);
-      cursor: pointer;
-      transition: background 0.2s, transform 0.2s;
-    }
-    .modal-carousel__dot[aria-selected='true'] {
-      background: rgba(111, 78, 55, 0.9);
-      transform: scale(1.15);
+    /* Телефоны: свайп + миниатюры; стрелки не перекрывают кадр и не ловят ложные тапы */
+    @media (max-width: 639.98px) {
+      .modal-carousel__nav {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -328,11 +477,11 @@
         />
       </div>
 
-      <div id="modal-media" class="mb-5 hidden overflow-hidden rounded-xl"></div>
-
       <h2 id="modal-title" class="font-display pr-10 text-2xl font-semibold text-[#303F20]"></h2>
       <div id="modal-volumes" class="mt-3 hidden flex flex-wrap gap-2"></div>
       <p id="modal-price" class="mt-2 text-2xl font-bold tabular-nums text-coffee-900"></p>
+
+      <div id="modal-media" class="mt-4 hidden max-w-full overflow-hidden rounded-xl"></div>
 
       <div id="modal-description-block" class="mt-5 hidden">
         <p class="font-display text-base font-bold tracking-wide text-coffee-800">Состав</p>
@@ -924,44 +1073,108 @@
 
     function buildModalImageCarousel(mediaRoot, imageUrls, dishName) {
       const wrap = document.createElement('div');
-      wrap.className = 'modal-carousel';
+      wrap.className = 'modal-carousel modal-carousel--with-thumbs';
       wrap.setAttribute('role', 'group');
+      const mainCol = document.createElement('div');
+      mainCol.className = 'min-w-0 flex-1';
       const frame = document.createElement('div');
       frame.className = 'modal-carousel__frame';
-      const img = document.createElement('img');
-      img.className = 'modal-carousel__img';
-      img.style.backgroundColor = 'rgba(0, 0, 0, 0.04)';
-      let idx = 0;
+      const pages = document.createElement('div');
+      pages.className = 'modal-carousel__pages';
+      pages.setAttribute('data-carousel-pages', '');
+
       const n = imageUrls.length;
-      const dotsWrap = document.createElement('div');
-      dotsWrap.className = 'modal-carousel__dots';
+      let firstImg;
       for (let i = 0; i < n; i += 1) {
-        const d = document.createElement('button');
-        d.type = 'button';
-        d.className = 'modal-carousel__dot';
-        d.setAttribute('role', 'tab');
-        d.setAttribute('aria-label', 'Фото ' + (i + 1) + ' из ' + n);
-        d.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
-        d.addEventListener('click', () => {
+        const page = document.createElement('div');
+        page.className = 'modal-carousel__page';
+        const im = document.createElement('img');
+        im.decoding = 'async';
+        im.src = resolveMediaUrl(imageUrls[i]);
+        im.alt = n > 1 ? dishName + ' — ' + (i + 1) + ' / ' + n : dishName;
+        im.setAttribute('draggable', 'false');
+        if (i === 0) firstImg = im;
+        page.appendChild(im);
+        pages.appendChild(page);
+      }
+
+      let idx = 0;
+      const thumbsStrip = document.createElement('div');
+      thumbsStrip.className = 'modal-carousel__thumbs';
+      const thumbBtns = [];
+      for (let i = 0; i < n; i += 1) {
+        const tb = document.createElement('button');
+        tb.type = 'button';
+        tb.className = 'modal-carousel__thumb';
+        tb.setAttribute('role', 'tab');
+        tb.setAttribute('aria-label', 'Фото ' + (i + 1) + ' из ' + n);
+        tb.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+        const tim = document.createElement('img');
+        tim.decoding = 'async';
+        tim.src = resolveMediaUrl(imageUrls[i]);
+        tim.alt = '';
+        tim.setAttribute('draggable', 'false');
+        tb.appendChild(tim);
+        const j = i;
+        tb.addEventListener('click', () => {
+          goToIndex(j, false);
+        });
+        thumbBtns.push(tb);
+        thumbsStrip.appendChild(tb);
+      }
+
+      function scrollActiveThumbIntoView() {
+        const el = thumbBtns[idx];
+        if (!el) return;
+        el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+      }
+
+      function setThumbState(i) {
+        thumbBtns.forEach((b, k) => b.setAttribute('aria-selected', k === i ? 'true' : 'false'));
+        requestAnimationFrame(() => scrollActiveThumbIntoView());
+      }
+
+      function readIndexFromScroll() {
+        const w = pages.clientWidth;
+        if (w < 1) return;
+        const i = Math.max(0, Math.min(n - 1, Math.round(pages.scrollLeft / w)));
+        if (i !== idx) {
           idx = i;
-          sync();
-        });
-        dotsWrap.appendChild(d);
+          setThumbState(i);
+        }
       }
-      function sync() {
-        img.src = resolveMediaUrl(imageUrls[idx]);
-        img.alt = n > 1 ? dishName + ' — ' + (idx + 1) + ' / ' + n : dishName;
-        dotsWrap.querySelectorAll('button').forEach((b, i) => {
-          b.setAttribute('aria-selected', i === idx ? 'true' : 'false');
+
+      let scrollRaf = 0;
+      function onPagesScroll() {
+        if (scrollRaf) cancelAnimationFrame(scrollRaf);
+        scrollRaf = requestAnimationFrame(() => {
+          scrollRaf = 0;
+          readIndexFromScroll();
         });
       }
+
+      function goToIndex(newIdx, instant) {
+        if (newIdx < 0 || newIdx >= n) return;
+        const w = pages.clientWidth;
+        if (w < 0.5) return;
+        idx = newIdx;
+        pages.scrollTo({
+          left: newIdx * w,
+          behavior: instant ? 'auto' : 'smooth',
+        });
+        setThumbState(newIdx);
+      }
+
       function go(step) {
-        idx = (idx + step + n) % n;
-        sync();
+        const newIdx = (idx + step + n) % n;
+        goToIndex(newIdx, false);
       }
-      img.src = resolveMediaUrl(imageUrls[0]);
-      img.alt = dishName;
-      frame.appendChild(img);
+
+      function onPagesResize() {
+        goToIndex(idx, true);
+      }
+
+      frame.appendChild(pages);
       const prev = document.createElement('button');
       const next = document.createElement('button');
       prev.type = 'button';
@@ -970,15 +1183,33 @@
       next.className = 'modal-carousel__nav modal-carousel__nav--next';
       prev.setAttribute('aria-label', 'Предыдущее фото');
       next.setAttribute('aria-label', 'Следующее фото');
-      prev.innerHTML = '<span class="text-2xl font-light leading-none" aria-hidden="true">‹</span>';
-      next.innerHTML = '<span class="text-2xl font-light leading-none" aria-hidden="true">›</span>';
+      const svgL =
+        '<svg class="modal-carousel__nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+        '<path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />' +
+        '</svg>';
+      const svgR =
+        '<svg class="modal-carousel__nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+        '<path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />' +
+        '</svg>';
+      prev.innerHTML = svgL;
+      next.innerHTML = svgR;
       prev.addEventListener('click', () => go(-1));
       next.addEventListener('click', () => go(1));
       frame.appendChild(prev);
       frame.appendChild(next);
-      wrap.appendChild(frame);
-      wrap.appendChild(dotsWrap);
+      mainCol.appendChild(frame);
+      wrap.appendChild(mainCol);
+      wrap.appendChild(thumbsStrip);
       mediaRoot.appendChild(wrap);
+
+      pages.addEventListener('scroll', onPagesScroll, { passive: true });
+
+      const ro =
+        typeof ResizeObserver !== 'undefined'
+          ? new ResizeObserver(() => onPagesResize())
+          : null;
+      if (ro) ro.observe(pages);
+
       const onKey = (e) => {
         if (e.key === 'ArrowLeft') {
           e.preventDefault();
@@ -989,8 +1220,18 @@
         }
       };
       document.addEventListener('keydown', onKey);
-      modalCarouselCleanup = () => document.removeEventListener('keydown', onKey);
-      return img;
+
+      requestAnimationFrame(() => {
+        goToIndex(0, true);
+      });
+
+      modalCarouselCleanup = () => {
+        document.removeEventListener('keydown', onKey);
+        pages.removeEventListener('scroll', onPagesScroll);
+        if (ro) ro.disconnect();
+      };
+
+      return firstImg;
     }
 
     function mountModalMedia(dish, media) {
@@ -1008,10 +1249,11 @@
       if (urls.length === 0) return null;
       if (urls.length === 1) {
         const im = document.createElement('img');
-        im.className = 'max-h-72 w-full object-contain';
-        im.style.backgroundColor = 'rgba(0, 0, 0, 0.04)';
+        im.className = 'block max-h-72 w-full max-w-full rounded-lg object-contain';
         im.src = resolveMediaUrl(urls[0]);
         im.alt = dish.name;
+        im.setAttribute('draggable', 'false');
+        im.setAttribute('loading', 'eager');
         media.appendChild(im);
         return im;
       }
@@ -1021,7 +1263,17 @@
     var modalDish = null;
     var modalSelectedVolIndex = 0;
 
+    function fixGluedKcalAndBju(s) {
+      if (s == null || s === '') return s;
+      // «500.52Белки» из одной строки/поля -> «500.52 Белки»
+      return String(s).replace(
+        /(\d+(?:[.,]\d+)?)([Бб]елк[а-яё]+|Б\/Ж\/У|б\/ж\/у)/gi,
+        '$1 $2',
+      );
+    }
+
     function formatNutritionForVolume(dish, opt) {
+      let out = null;
       if (opt) {
         const kc = opt.nutrition_kcal;
         const bj = opt.nutrition_bju;
@@ -1029,11 +1281,14 @@
           const lines = [];
           if (kc != null && String(kc).trim() !== '') lines.push('Калорийность: ' + kc);
           if (bj != null && String(bj).trim() !== '') lines.push(bj);
-          return lines.join('\n');
+          out = lines.join('\n\n');
         }
       }
-      if (dish && dish.calories) return 'Калорийность: ' + dish.calories;
-      return null;
+      if (out == null && dish && dish.calories) {
+        out = 'Калорийность: ' + dish.calories;
+      }
+      if (out == null) return null;
+      return fixGluedKcalAndBju(out);
     }
 
     function applyModalVolumeSelection() {
@@ -1126,7 +1381,6 @@
         media.classList.add('hidden');
       } else {
         media.classList.remove('hidden');
-        media.appendChild(mediaEl);
       }
 
       overlay.classList.remove('hidden');

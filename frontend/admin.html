@@ -456,19 +456,19 @@
 
         <div class="grid gap-4 md:grid-cols-2">
           <div class="rounded-xl border border-coffee-200 p-4">
-            <label for="image_file" class="block text-sm font-semibold text-coffee-800">Картинка (файл)</label>
-            <input id="image_file" type="file" accept="image/*" class="mt-2 block w-full text-sm text-coffee-700 file:mr-3 file:rounded-full file:border-0 file:bg-coffee-200 file:px-3 file:py-2 file:font-medium file:text-coffee-900 hover:file:bg-coffee-300" />
+            <p class="text-sm font-semibold text-coffee-800">Фото блюда</p>
+            <p class="mt-1 text-xs text-coffee-500">
+              Порядок строк = слайды в карусели на витрине. Первый снимок — основной. Можно вставить ссылку или выбрать файл в строке — при сохранении файл загрузится.
+            </p>
+            <div id="dish-images-list" class="mt-3 space-y-2"></div>
+            <button
+              type="button"
+              id="btn-add-dish-image"
+              class="mt-2 rounded-lg border border-dashed border-coffee-300 px-3 py-1.5 text-sm font-medium text-coffee-700 transition hover:bg-coffee-50"
+            >
+              + Добавить фото
+            </button>
             <img id="image_preview" alt="" class="mt-3 hidden h-36 w-full rounded-lg object-cover" />
-            <label for="dish_gallery_urls" class="mt-3 block text-sm font-semibold text-coffee-800">Фото блюда (URL)</label>
-            <p class="mt-0.5 text-xs text-coffee-500">По одному URL в строке. Порядок = слайды в карусели на витрине. Первый снимок — основной.</p>
-            <textarea
-              id="dish_gallery_urls"
-              name="dish_gallery_urls"
-              rows="4"
-              inputmode="url"
-              placeholder="https://…"
-              class="mt-1 w-full rounded-xl border border-coffee-300 px-4 py-3 font-mono text-sm focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30"
-            ></textarea>
           </div>
           <div class="rounded-xl border border-coffee-200 p-4">
             <label for="video_url" class="block text-sm font-semibold text-coffee-800">Видео (ссылка или файл)</label>
@@ -637,9 +637,10 @@
     const seasonHintEl = document.getElementById('season-hint');
     const activeSeasonSelect = document.getElementById('active-season-select');
     const seasonNameInput = document.getElementById('season-name');
-    const imageInput = document.getElementById('image_file');
     const videoInput = document.getElementById('video_file');
     const imagePreview = document.getElementById('image_preview');
+    const dishImagesList = document.getElementById('dish-images-list');
+    const btnAddDishImage = document.getElementById('btn-add-dish-image');
     const videoPreview = document.getElementById('video_preview');
     const xlsxFileInput = document.getElementById('xlsx_file');
     const btnImportXlsx = document.getElementById('btn-import-xlsx');
@@ -956,13 +957,40 @@
       videoPreview.classList.add('hidden');
     }
 
-    function parseGalleryUrlLines() {
-      const el = document.getElementById('dish_gallery_urls');
-      const t = (el && el.value) || '';
-      return t
-        .split(/[\n\r,]+/)
-        .map((s) => s.trim())
-        .filter(Boolean);
+    function clearDishImageRows() {
+      if (dishImagesList) dishImagesList.innerHTML = '';
+    }
+
+    function collectDishImageUrlsFromInputs() {
+      if (!dishImagesList) return [];
+      const out = [];
+      dishImagesList.querySelectorAll('.dish-image-row').forEach((row) => {
+        const u = row.querySelector('[data-dish-img-url]');
+        const t = u && u.value ? u.value.trim() : '';
+        if (t) out.push(t);
+      });
+      return out;
+    }
+
+    function addDishImageRow(url) {
+      if (!dishImagesList) return;
+      const row = document.createElement('div');
+      const uid = 'dish-img-url-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+      const initial = url != null && String(url).trim() !== '' ? String(url).trim() : '';
+      row.className =
+        'dish-image-row flex w-full max-w-3xl flex-col gap-2 sm:flex-row sm:items-end rounded-lg border border-coffee-200/60 bg-coffee-50/40 p-2';
+      row.innerHTML = `
+        <div class="min-w-0 flex-1">
+          <label class="block text-xs font-medium text-coffee-600" for="${uid}">URL (или пусто + файл справа)</label>
+          <input type="url" id="${uid}" data-dish-img-url class="mt-0.5 w-full rounded-lg border border-coffee-300 bg-white px-3 py-2 text-sm" placeholder="https://…" value="${escAttr(initial)}" />
+        </div>
+        <div class="shrink-0 min-w-0 sm:w-44">
+          <span class="block text-xs font-medium text-coffee-600">Файл</span>
+          <input type="file" accept="image/*" data-dish-img-file class="mt-0.5 block w-full text-sm text-coffee-700 file:mr-2 file:rounded-md file:border-0 file:bg-coffee-200 file:px-2 file:py-1.5 file:font-medium file:text-coffee-900 hover:file:bg-coffee-300" />
+        </div>
+        <button type="button" data-dish-img-remove class="shrink-0 self-end rounded-lg border border-coffee-300 px-2 py-1.5 text-coffee-600 hover:bg-coffee-100" title="Убрать">×</button>
+      `;
+      dishImagesList.appendChild(row);
     }
 
     function resolveAdminMediaPreviewUrl(href) {
@@ -976,14 +1004,31 @@
 
     function syncGalleryImagePreview() {
       if (!imagePreview) return;
-      const lines = parseGalleryUrlLines();
-      if (!lines.length) {
-        imagePreview.classList.add('hidden');
-        imagePreview.removeAttribute('src');
-        return;
+      if (dishImagesList) {
+        const rows = dishImagesList.querySelectorAll('.dish-image-row');
+        for (const row of rows) {
+          const uin = row.querySelector('[data-dish-img-url]');
+          const t = uin && uin.value ? uin.value.trim() : '';
+          if (t) {
+            imagePreview.src = resolveAdminMediaPreviewUrl(t);
+            imagePreview.classList.remove('hidden');
+            return;
+          }
+          const fin = row.querySelector('[data-dish-img-file]');
+          const f = fin && fin.files && fin.files[0];
+          if (f) {
+            try {
+              imagePreview.src = URL.createObjectURL(f);
+            } catch (_) {
+              imagePreview.removeAttribute('src');
+            }
+            imagePreview.classList.remove('hidden');
+            return;
+          }
+        }
       }
-      imagePreview.src = resolveAdminMediaPreviewUrl(lines[0]);
-      imagePreview.classList.remove('hidden');
+      imagePreview.classList.add('hidden');
+      imagePreview.removeAttribute('src');
     }
 
     function renderExistingDishSelect() {
@@ -1337,7 +1382,8 @@
       document.getElementById('calories').value = dish.calories || '';
       {
         const urls = (dish.image_urls && dish.image_urls.length) ? dish.image_urls : (dish.image_url ? [dish.image_url] : []);
-        document.getElementById('dish_gallery_urls').value = urls.join('\n');
+        clearDishImageRows();
+        for (const u of urls) addDishImageRow(u);
       }
       document.getElementById('video_url').value = dish.video_url || '';
       if (dish.is_base_menu) {
@@ -1346,7 +1392,6 @@
         placementSeasonalRadio.checked = true;
       }
       syncPlacementUi();
-      imageInput.value = '';
       videoInput.value = '';
       resetPreviews();
       syncGalleryImagePreview();
@@ -1396,7 +1441,7 @@
       if (desc) body.description = desc;
       const cal = document.getElementById('calories').value.trim();
       if (cal) body.calories = cal;
-      const urlLines = parseGalleryUrlLines();
+      const urlLines = collectDishImageUrlsFromInputs();
       if (urlLines.length) {
         body.image_url = urlLines[0];
         body.image_urls = urlLines;
@@ -1818,21 +1863,31 @@
       setFormModeCreate();
     });
 
-    const dishGalleryTextarea = document.getElementById('dish_gallery_urls');
-    if (dishGalleryTextarea) {
-      dishGalleryTextarea.addEventListener('input', () => {
+    if (dishImagesList) {
+      dishImagesList.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-dish-img-remove]');
+        if (!btn) return;
+        const row = btn.closest('.dish-image-row');
+        if (row) row.remove();
+        syncGalleryImagePreview();
+      });
+      dishImagesList.addEventListener('input', (e) => {
+        if (e.target && e.target.matches && e.target.matches('[data-dish-img-url]')) {
+          syncGalleryImagePreview();
+        }
+      });
+      dishImagesList.addEventListener('change', (e) => {
+        if (e.target && e.target.matches && e.target.matches('[data-dish-img-file]')) {
+          syncGalleryImagePreview();
+        }
+      });
+    }
+    if (btnAddDishImage) {
+      btnAddDishImage.addEventListener('click', () => {
+        addDishImageRow('');
         syncGalleryImagePreview();
       });
     }
-    imageInput.addEventListener('change', () => {
-      const file = imageInput.files && imageInput.files[0];
-      if (!file) {
-        imagePreview.classList.add('hidden');
-        return;
-      }
-      imagePreview.src = URL.createObjectURL(file);
-      imagePreview.classList.remove('hidden');
-    });
 
     videoInput.addEventListener('change', () => {
       const file = videoInput.files && videoInput.files[0];
@@ -1853,6 +1908,7 @@
       syncPlacementUi();
       resetPreviews();
       clearVolumeOptionRows();
+      clearDishImageRows();
       renderSubcategoriesForCategory(categorySelect.value);
       syncDishFormForCategory();
     });
@@ -1864,6 +1920,7 @@
       syncPlacementUi();
       resetPreviews();
       clearVolumeOptionRows();
+      clearDishImageRows();
       categorySelect.value = '';
       renderSubcategoriesForCategory('');
       syncDishFormForCategory();
@@ -2186,15 +2243,19 @@
       alertEl.classList.add('hidden');
 
       try {
-        const imageFile = imageInput.files && imageInput.files[0];
-        if (imageFile) {
-          const uploadedImage = await uploadFile(imageFile);
-          const g = document.getElementById('dish_gallery_urls');
-          if (g) {
-            const cur = g.value.trim();
-            g.value = cur ? cur + '\n' + uploadedImage.url : uploadedImage.url;
-            syncGalleryImagePreview();
+        if (dishImagesList) {
+          for (const row of dishImagesList.querySelectorAll('.dish-image-row')) {
+            const fileIn = row.querySelector('[data-dish-img-file]');
+            const urlIn = row.querySelector('[data-dish-img-url]');
+            if (fileIn && fileIn.files && fileIn.files[0] && urlIn) {
+              const uploaded = await uploadFile(fileIn.files[0]);
+              if (uploaded && uploaded.url) {
+                urlIn.value = uploaded.url;
+                fileIn.value = '';
+              }
+            }
           }
+          syncGalleryImagePreview();
         }
 
         const videoFile = videoInput.files && videoInput.files[0];
@@ -2240,6 +2301,7 @@
         syncPlacementUi();
         resetPreviews();
         clearVolumeOptionRows();
+        clearDishImageRows();
         categorySelect.value = '';
         renderSubcategoriesForCategory('');
         syncDishFormForCategory();
