@@ -63,6 +63,8 @@ services:
   frontend:
     image: nginx:alpine
     container_name: raf-frontend
+    # 8080 — основной. Проброс 80:80 (http://localhost/ без :8080) вынесен в
+    # docker-compose.port80.yaml, чтобы на сервере с nginx на 80 ничего не ломалось.
     ports:
       - "8080:80"
     volumes:

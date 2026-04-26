@@ -5,8 +5,9 @@ from app.repositories.dish_repository import DishRepository
 from app.services.menu_service import MenuService
 from app.models.dish import MenuItem
 
-router = APIRouter(prefix="/menu", tags=["menu"])
+router = APIRouter(prefix="/api/menu", tags=["menu"])
 
+@router.get("", response_model=List[MenuItem])
 @router.get("/", response_model=List[MenuItem])
 async def get_menu(pool=Depends(get_pool)):
     repo = DishRepository(pool)

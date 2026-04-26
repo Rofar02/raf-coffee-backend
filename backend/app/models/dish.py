@@ -54,7 +54,7 @@ class Dish(DishBase):
 
 
 class MenuItem(Dish):
-    """Ответ GET /menu: блюдо с названиями категории и подкатегории (из JOIN)."""
+    """Ответ GET /api/menu/: блюдо с названиями категории и подкатегории (из JOIN)."""
 
     category_id: Optional[int] = None
     category_name: Optional[str] = None

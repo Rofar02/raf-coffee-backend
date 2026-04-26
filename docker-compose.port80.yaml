@@ -1,0 +1,10 @@
+# Опционально: открыть сайт и по http://localhost/ (без :8080) на той же машине.
+# Не класть в прод, где порт 80 занят внешним nginx — см. deploy/nginx/
+#
+#   docker compose -f docker-compose.yml -f docker-compose.port80.yaml up -d
+#   (или: docker compose -f docker-compose.yml -f docker-compose.port80.yaml -f docker-compose.prod.yml up -d
+#    — на сервере обычно port80 НЕ подключают: достаточно 127.0.0.1:8080 и системного nginx)
+services:
+  frontend:
+    ports:
+      - "80:80"
