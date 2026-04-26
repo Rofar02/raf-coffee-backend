@@ -188,13 +188,18 @@ def _normalize_volume_options(raw: Any) -> List[Dict[str, Any]]:
             pr = o.get("price")
             if vm is None or pr is None:
                 continue
-            out.append(
-                {
-                    "volume_ml": int(vm),
-                    "price": int(pr),
-                    "sort_order": int(o.get("sort_order", i)),
-                }
-            )
+            row: Dict[str, Any] = {
+                "volume_ml": int(vm),
+                "price": int(pr),
+                "sort_order": int(o.get("sort_order", i)),
+            }
+            nkc = o.get("nutrition_kcal")
+            nbj = o.get("nutrition_bju")
+            if nkc is not None and str(nkc).strip():
+                row["nutrition_kcal"] = str(nkc).strip()
+            if nbj is not None and str(nbj).strip():
+                row["nutrition_bju"] = str(nbj).strip()
+            out.append(row)
         except (TypeError, ValueError):
             continue
     return out
@@ -233,29 +238,47 @@ class DishRepository:
         opts = []
         try:
             async with self.pool.acquire() as conn:
-                opts = await conn.fetch(
-                    """
-                    SELECT id, dish_id, volume_ml, price, sort_order
-                    FROM dish_volume_options
-                    WHERE dish_id = ANY($1::int[])
-                    ORDER BY sort_order, volume_ml, id
-                    """,
-                    ids,
-                )
+                try:
+                    opts = await conn.fetch(
+                        """
+                        SELECT
+                            id, dish_id, volume_ml, price, sort_order,
+                            nutrition_kcal, nutrition_bju
+                        FROM dish_volume_options
+                        WHERE dish_id = ANY($1::int[])
+                        ORDER BY sort_order, volume_ml, id
+                        """,
+                        ids,
+                    )
+                except UndefinedColumnError:
+                    opts = await conn.fetch(
+                        """
+                        SELECT id, dish_id, volume_ml, price, sort_order
+                        FROM dish_volume_options
+                        WHERE dish_id = ANY($1::int[])
+                        ORDER BY sort_order, volume_ml, id
+                        """,
+                        ids,
+                    )
         except UndefinedTableError:
             for r in rows:
                 r["volume_options"] = []
             return
         by_dish: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
         for o in opts:
-            by_dish[o["dish_id"]].append(
-                {
-                    "id": o["id"],
-                    "volume_ml": o["volume_ml"],
-                    "price": o["price"],
-                    "sort_order": o["sort_order"],
-                }
-            )
+            dopt: Dict[str, Any] = {
+                "id": o["id"],
+                "volume_ml": o["volume_ml"],
+                "price": o["price"],
+                "sort_order": o["sort_order"],
+            }
+            nkc = o.get("nutrition_kcal")
+            nbj = o.get("nutrition_bju")
+            if nkc is not None and str(nkc).strip():
+                dopt["nutrition_kcal"] = str(nkc).strip()
+            if nbj is not None and str(nbj).strip():
+                dopt["nutrition_bju"] = str(nbj).strip()
+            by_dish[o["dish_id"]].append(dopt)
         for r in rows:
             r["volume_options"] = by_dish.get(r["id"], [])
 
@@ -324,6 +347,38 @@ class DishRepository:
             except (UndefinedTableError, UndefinedColumnError):
                 return None
 
+    async def get_category_by_name(self, name: str) -> Optional[Dict[str, Any]]:
+        async with self.pool.acquire() as conn:
+            try:
+                row = await conn.fetchrow(
+                    """
+                    SELECT id, name, sort_order
+                    FROM categories
+                    WHERE lower(name) = lower($1)
+                    LIMIT 1
+                    """,
+                    name,
+                )
+                return dict(row) if row else None
+            except (UndefinedTableError, UndefinedColumnError):
+                return None
+
+    async def create_category(self, name: str, sort_order: int = 0) -> Optional[Dict[str, Any]]:
+        async with self.pool.acquire() as conn:
+            try:
+                row = await conn.fetchrow(
+                    """
+                    INSERT INTO categories (name, sort_order)
+                    VALUES ($1, $2)
+                    RETURNING id, name, sort_order
+                    """,
+                    name,
+                    sort_order,
+                )
+                return dict(row) if row else None
+            except (UndefinedTableError, UndefinedColumnError):
+                return None
+
     async def create_subcategory(self, category_id: int, name: str, sort_order: int) -> Dict[str, Any]:
         async with self.pool.acquire() as conn:
             row = await conn.fetchrow(
@@ -341,6 +396,29 @@ class DishRepository:
             r["category_name"] = cname or ""
             r["subcategory_name"] = r.pop("name")
             return r
+
+    async def get_subcategory_by_name(self, category_id: int, name: str) -> Optional[Dict[str, Any]]:
+        async with self.pool.acquire() as conn:
+            try:
+                row = await conn.fetchrow(
+                    """
+                    SELECT
+                        s.id,
+                        c.id AS category_id,
+                        c.name AS category_name,
+                        s.name AS subcategory_name,
+                        s.sort_order
+                    FROM subcategories s
+                    JOIN categories c ON c.id = s.category_id
+                    WHERE s.category_id = $1 AND lower(s.name) = lower($2)
+                    LIMIT 1
+                    """,
+                    category_id,
+                    name,
+                )
+                return dict(row) if row else None
+            except (UndefinedTableError, UndefinedColumnError):
+                return None
 
     async def get_subcategory_by_id(self, subcategory_id: int) -> Optional[Dict[str, Any]]:
         async with self.pool.acquire() as conn:
@@ -415,16 +493,35 @@ class DishRepository:
         if not options:
             return
         for o in options:
-            await conn.execute(
-                """
-                INSERT INTO dish_volume_options (dish_id, volume_ml, price, sort_order)
-                VALUES ($1, $2, $3, $4)
-                """,
-                dish_id,
-                o["volume_ml"],
-                o["price"],
-                o["sort_order"],
-            )
+            nkc = o.get("nutrition_kcal")
+            nbj = o.get("nutrition_bju")
+            nkc = str(nkc).strip() if nkc is not None and str(nkc).strip() else None
+            nbj = str(nbj).strip() if nbj is not None and str(nbj).strip() else None
+            try:
+                await conn.execute(
+                    """
+                    INSERT INTO dish_volume_options
+                        (dish_id, volume_ml, price, sort_order, nutrition_kcal, nutrition_bju)
+                    VALUES ($1, $2, $3, $4, $5, $6)
+                    """,
+                    dish_id,
+                    o["volume_ml"],
+                    o["price"],
+                    o["sort_order"],
+                    nkc,
+                    nbj,
+                )
+            except UndefinedColumnError:
+                await conn.execute(
+                    """
+                    INSERT INTO dish_volume_options (dish_id, volume_ml, price, sort_order)
+                    VALUES ($1, $2, $3, $4)
+                    """,
+                    dish_id,
+                    o["volume_ml"],
+                    o["price"],
+                    o["sort_order"],
+                )
 
     async def create(self, dish_data: dict) -> int:
         data = dict(dish_data)
@@ -554,6 +651,29 @@ class DishRepository:
         async with self.pool.acquire() as conn:
             result = await conn.execute("DELETE FROM dishes WHERE id = $1", dish_id)
             return result.endswith("1")
+
+    async def find_dish_by_name_and_subcategory(
+        self, name: str, subcategory_id: Optional[int]
+    ) -> Optional[Dict[str, Any]]:
+        async with self.pool.acquire() as conn:
+            row = await conn.fetchrow(
+                """
+                SELECT id
+                FROM dishes
+                WHERE lower(name) = lower($1)
+                AND (
+                    ($2::int IS NULL AND subcategory_id IS NULL)
+                    OR subcategory_id = $2
+                )
+                ORDER BY id
+                LIMIT 1
+                """,
+                name,
+                subcategory_id,
+            )
+            if not row:
+                return None
+            return await self.get_dish_by_id(int(row["id"]))
 
     async def list_seasons(self) -> List[Dict[str, Any]]:
         async with self.pool.acquire() as conn:

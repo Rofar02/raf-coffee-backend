@@ -32,6 +32,8 @@ CREATE TABLE IF NOT EXISTS dish_volume_options (
     volume_ml INTEGER NOT NULL CHECK (volume_ml >= 0 AND volume_ml <= 2000),
     price INTEGER NOT NULL CHECK (price >= 0),
     sort_order INTEGER NOT NULL DEFAULT 0,
+    nutrition_kcal TEXT,
+    nutrition_bju TEXT,
     UNIQUE (dish_id, volume_ml)
 );
 

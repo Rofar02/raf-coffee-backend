@@ -9,6 +9,8 @@ class VolumeOptionIn(BaseModel):
     volume_ml: int = Field(..., ge=0, le=2000)
     price: int = Field(..., ge=0)
     sort_order: int = Field(0, ge=0, le=9999)
+    nutrition_kcal: Optional[str] = None
+    nutrition_bju: Optional[str] = None
 
 
 class VolumeOption(BaseModel):
@@ -18,6 +20,8 @@ class VolumeOption(BaseModel):
     volume_ml: int = Field(..., ge=0, le=2000)
     price: int = Field(..., ge=0)
     sort_order: int = Field(0, ge=0, le=9999)
+    nutrition_kcal: Optional[str] = None
+    nutrition_bju: Optional[str] = None
 
 
 class DishBase(BaseModel):

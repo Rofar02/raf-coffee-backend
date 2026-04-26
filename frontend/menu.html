@@ -266,8 +266,8 @@
       <p id="modal-price" class="mt-2 text-2xl font-bold tabular-nums text-coffee-900"></p>
 
       <div id="modal-description-block" class="mt-5 hidden">
-        <p class="text-xs font-semibold uppercase tracking-wide text-coffee-600">Описание</p>
-        <p id="modal-description" class="mt-1 leading-relaxed text-coffee-800"></p>
+        <p class="font-display text-base font-bold tracking-wide text-coffee-800">Описание</p>
+        <p id="modal-description" class="mt-2 leading-relaxed text-coffee-800"></p>
       </div>
       <p id="modal-calories" class="mt-4 hidden text-sm font-medium text-coffee-800"></p>
 
@@ -374,6 +374,13 @@
       return n + '\u00a0мл';
     }
 
+    /** Напитки — в списке показываем только мл; кухня и остальное — граммы */
+    function isDrinksCategory(dish) {
+      if (dish.category_id != null && Number(dish.category_id) === 2) return true;
+      const n = String(dish.category_name || '').toLowerCase();
+      return n.includes('напит');
+    }
+
     function getVolumeOptions(dish) {
       if (dish.volume_options && dish.volume_options.length > 0) {
         return dish.volume_options
@@ -382,6 +389,12 @@
       }
       if (dish.volume_ml != null && dish.volume_ml !== '') {
         return [{ volume_ml: Number(dish.volume_ml), price: Number(dish.price), sort_order: 0, id: null }];
+      }
+      if (isDrinksCategory(dish) && dish.weight_grams != null && dish.weight_grams !== '') {
+        const w = Number(dish.weight_grams);
+        if (!Number.isNaN(w)) {
+          return [{ volume_ml: w, price: Number(dish.price), sort_order: 0, id: null }];
+        }
       }
       return [];
     }
@@ -392,15 +405,18 @@
       return Number(dish.price);
     }
 
-    /** Строка списка: порция (диапазон мл или г). */
+    /** Строка списка: для напитков — мл; для кухни и прочего — г. */
     function listPortionCell(dish) {
-      const w = formatWeight(dish);
-      const vo = getVolumeOptions(dish);
-      if (w) return w;
-      if (vo.length === 0) return '';
-      if (vo.length === 1) return vo[0].volume_ml + '\u00a0мл';
-      const mls = vo.map((x) => x.volume_ml);
-      return Math.min(...mls) + '–' + Math.max(...mls) + '\u00a0мл';
+      if (isDrinksCategory(dish)) {
+        const vo = getVolumeOptions(dish);
+        if (vo.length > 0) {
+          if (vo.length === 1) return vo[0].volume_ml + '\u00a0мл';
+          const mls = vo.map((x) => x.volume_ml);
+          return Math.min(...mls) + '–' + Math.max(...mls) + '\u00a0мл';
+        }
+        return formatVolumeMl(dish) || '';
+      }
+      return formatWeight(dish) || '';
     }
 
     function listPriceCell(dish) {
@@ -410,7 +426,7 @@
       return formatPrice(dish.price);
     }
 
-    /** В списке меню — название, порция (г/мл) и цена (без фото). Подробности — в модалке по клику. */
+    /** В списке меню — название, порция (для напитков мл, для кухни г) и цена. Подробности — в модалке. */
     function renderDishRow(dish) {
       const portionStr = listPortionCell(dish);
       const weightCell = portionStr || '—';
@@ -836,6 +852,21 @@
     var modalDish = null;
     var modalSelectedVolIndex = 0;
 
+    function formatNutritionForVolume(dish, opt) {
+      if (opt) {
+        const kc = opt.nutrition_kcal;
+        const bj = opt.nutrition_bju;
+        if ((kc != null && String(kc).trim() !== '') || (bj != null && String(bj).trim() !== '')) {
+          const lines = [];
+          if (kc != null && String(kc).trim() !== '') lines.push('Калорийность: ' + kc);
+          if (bj != null && String(bj).trim() !== '') lines.push(bj);
+          return lines.join('\n');
+        }
+      }
+      if (dish && dish.calories) return 'Калорийность: ' + dish.calories;
+      return null;
+    }
+
     function applyModalVolumeSelection() {
       if (!modalDish) return;
       const vo = getVolumeOptions(modalDish);
@@ -848,6 +879,16 @@
         });
       }
       if (opt) document.getElementById('modal-price').textContent = formatPrice(opt.price);
+      const calEl = document.getElementById('modal-calories');
+      const nut = formatNutritionForVolume(modalDish, opt);
+      if (nut) {
+        calEl.textContent = nut;
+        calEl.classList.remove('hidden');
+        calEl.classList.add('whitespace-pre-line');
+      } else {
+        calEl.textContent = '';
+        calEl.classList.add('hidden');
+      }
     }
 
     async function openModal(dish) {
@@ -875,14 +916,13 @@
           });
         });
         modalSelectedVolIndex = 0;
-        applyModalVolumeSelection();
       } else {
         volWrap.classList.add('hidden');
         volWrap.innerHTML = '';
-        if (vo.length === 1) {
-          priceEl.textContent = formatPrice(vo[0].price);
-        } else {
+        if (vo.length === 0) {
           priceEl.textContent = formatPrice(dish.price);
+        } else {
+          modalSelectedVolIndex = 0;
         }
       }
 
@@ -896,13 +936,19 @@
         descBlock.classList.add('hidden');
       }
 
-      const calEl = document.getElementById('modal-calories');
-      if (dish.calories) {
-        calEl.textContent = 'Калорийность: ' + dish.calories;
-        calEl.classList.remove('hidden');
+      if (vo.length > 0) {
+        applyModalVolumeSelection();
       } else {
-        calEl.textContent = '';
-        calEl.classList.add('hidden');
+        const calEl = document.getElementById('modal-calories');
+        const nut = formatNutritionForVolume(dish, null);
+        if (nut) {
+          calEl.textContent = nut;
+          calEl.classList.remove('hidden');
+          calEl.classList.add('whitespace-pre-line');
+        } else {
+          calEl.textContent = '';
+          calEl.classList.add('hidden');
+        }
       }
 
       const media = document.getElementById('modal-media');

@@ -4,7 +4,7 @@ from decimal import Decimal
 from ..repositories.dish_repository import DishRepository
 from ..core.redis_client import get_redis
 
-MENU_CACHE_KEY = "menu:v7"
+MENU_CACHE_KEY = "menu:v8"
 
 
 def _json_default(obj):
@@ -59,6 +59,8 @@ class MenuService:
                             "volume_ml": int(vm),
                             "price": int(row.get("price", 0)),
                             "sort_order": 0,
+                            "nutrition_kcal": None,
+                            "nutrition_bju": None,
                         }
                     ]
                 except (TypeError, ValueError):

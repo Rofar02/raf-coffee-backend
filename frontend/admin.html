@@ -296,6 +296,23 @@
         </button>
       </div>
       <p id="token-hint" class="mt-2 text-sm text-coffee-500"></p>
+      <div class="mt-4 rounded-xl border border-coffee-200 bg-white/80 p-4">
+        <p class="text-sm font-semibold text-coffee-800">Импорт меню из XLSX</p>
+        <p class="mt-1 text-xs text-coffee-600">Минимум: колонка <code>name</code> + <code>price</code> (или <code>volume_options</code>). Включите «Блоки разделов», если в файле крупные заголовки (например Кухня / Напитки) и подзаголовки (Сладкие, Сытные), а под ними строки с ценой. Если в названии <strong>крупного раздела или подраздела</strong> есть слово <strong>спешл</strong> (или <code>special</code> как отдельное слово), позиции под ним идут в <strong>активный сезон</strong>, а не в базовое меню; перед импортом выберите/создайте сезон и сделайте его активным.</p>
+        <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <input id="xlsx_file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="block w-full text-sm text-coffee-700 file:mr-3 file:rounded-full file:border-0 file:bg-coffee-200 file:px-3 file:py-2 file:font-medium file:text-coffee-900 hover:file:bg-coffee-300" />
+          <button type="button" id="btn-import-xlsx" class="rounded-full border border-coffee-500 bg-coffee-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-coffee-950">Импорт XLSX</button>
+        </div>
+        <label class="mt-3 inline-flex items-center gap-2 text-sm text-coffee-800">
+          <input id="xlsx_hierarchical_mode" type="checkbox" class="h-4 w-4 rounded border-coffee-300 text-coffee-700 focus:ring-coffee-500/40" />
+          Блоки разделов в колонке названия (крупный раздел → подраздел → позиции с ценой)
+        </label>
+        <label class="mt-3 inline-flex items-center gap-2 text-sm text-coffee-800">
+          <input id="xlsx_strict_mode" type="checkbox" checked class="h-4 w-4 rounded border-coffee-300 text-coffee-700 focus:ring-coffee-500/40" />
+          Строгий режим (если есть ошибка в строках — ничего не применять)
+        </label>
+        <pre id="xlsx-import-result" class="mt-3 hidden whitespace-pre-wrap rounded-lg border border-coffee-200 bg-coffee-50 p-3 text-xs text-coffee-800"></pre>
+      </div>
     </section>
     </div>
 
@@ -399,13 +416,13 @@
             <label for="calories" class="block text-sm font-semibold text-coffee-800">Калории</label>
             <input id="calories" name="calories" placeholder="например 250 ккал" class="mt-2 w-full rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
           </div>
-          <div>
+          <div id="wrap-portion-grams">
             <label for="weight_grams" class="block text-sm font-semibold text-coffee-800">Порция (г)</label>
             <input id="weight_grams" name="weight_grams" type="number" min="0" step="1" placeholder="например 250" class="mt-2 w-full rounded-xl border border-coffee-300 px-4 py-3 focus:border-coffee-600 focus:outline-none focus:ring-2 focus:ring-coffee-500/30" />
           </div>
-          <div class="md:col-span-2 rounded-xl border border-coffee-200/80 p-4">
+          <div id="wrap-volume-block" class="md:col-span-2 rounded-xl border border-coffee-200/80 p-4">
             <p class="text-sm font-semibold text-coffee-800">Объёмы и цены (напитки)</p>
-            <p class="mt-1 text-sm text-coffee-500">
+            <p id="volume-block-hint" class="mt-1 text-sm text-coffee-500">
               Несколько вариантов: укажите мл и цену в каждой строке. Поле «Цена» сверху — минимальная из вариантов, обновляется при сохранении.
             </p>
             <div id="volume-options-list" class="mt-3 space-y-2"></div>
@@ -615,6 +632,11 @@
     const videoInput = document.getElementById('video_file');
     const imagePreview = document.getElementById('image_preview');
     const videoPreview = document.getElementById('video_preview');
+    const xlsxFileInput = document.getElementById('xlsx_file');
+    const btnImportXlsx = document.getElementById('btn-import-xlsx');
+    const xlsxHierarchicalModeCheckbox = document.getElementById('xlsx_hierarchical_mode');
+    const xlsxStrictModeCheckbox = document.getElementById('xlsx_strict_mode');
+    const xlsxImportResult = document.getElementById('xlsx-import-result');
 
     let subcategories = [];
     let adminCategories = [];
@@ -788,6 +810,73 @@
           showAlert('err', 'Сеть: ' + (e.message || e));
         } finally {
           btnFlushMenuCache.disabled = false;
+        }
+      });
+    }
+
+    function renderImportResult(payload, ok) {
+      if (!xlsxImportResult) return;
+      xlsxImportResult.classList.remove('hidden');
+      xlsxImportResult.textContent = JSON.stringify(payload, null, 2);
+      xlsxImportResult.classList.toggle('border-red-200', !ok);
+      xlsxImportResult.classList.toggle('bg-red-50', !ok);
+      xlsxImportResult.classList.toggle('text-red-900', !ok);
+      xlsxImportResult.classList.toggle('border-coffee-200', ok);
+      xlsxImportResult.classList.toggle('bg-coffee-50', ok);
+      xlsxImportResult.classList.toggle('text-coffee-800', ok);
+    }
+
+    if (btnImportXlsx) {
+      btnImportXlsx.addEventListener('click', async () => {
+        const token = getTokenOrWarn();
+        if (!token) return;
+        const file = xlsxFileInput && xlsxFileInput.files && xlsxFileInput.files[0];
+        if (!file) {
+          showAlert('err', 'Выберите .xlsx файл для импорта.');
+          return;
+        }
+        if (!/\.xlsx$/i.test(file.name)) {
+          showAlert('err', 'Поддерживаются только .xlsx файлы.');
+          return;
+        }
+
+        const fd = new FormData();
+        fd.append('file', file);
+        const strictMode = !!(xlsxStrictModeCheckbox && xlsxStrictModeCheckbox.checked);
+        const hierarchicalMode = !!(xlsxHierarchicalModeCheckbox && xlsxHierarchicalModeCheckbox.checked);
+        const endpoint = url(
+          `/admin/import-xlsx?strict=${strictMode ? 'true' : 'false'}&hierarchical=${hierarchicalMode ? 'true' : 'false'}`,
+        );
+
+        btnImportXlsx.disabled = true;
+        try {
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'X-Admin-Token': token },
+            body: fd,
+          });
+          const text = await res.text();
+          let payload;
+          try {
+            payload = JSON.parse(text);
+          } catch (_) {
+            payload = { raw: text };
+          }
+          if (!res.ok) {
+            renderImportResult(payload, false);
+            showAlert('err', 'Импорт не выполнен: ' + parseErrorText(text));
+            return;
+          }
+          renderImportResult(payload, true);
+          showToast(`Импорт завершен: создано ${payload.created}, обновлено ${payload.updated}.`);
+          await loadSubcategories();
+          await loadSeasonDishes();
+          await loadDishes();
+        } catch (e) {
+          renderImportResult({ error: String(e && e.message ? e.message : e) }, false);
+          showAlert('err', 'Сеть: ' + (e.message || e));
+        } finally {
+          btnImportXlsx.disabled = false;
         }
       });
     }
@@ -976,6 +1065,7 @@
         }
       }
       renderSubcategoriesForCategory(categorySelect.value);
+      syncDishFormForCategory();
     }
 
     function fillTaxSubcatCategorySelect() {
@@ -1027,28 +1117,82 @@
 
     const volumeOptionsList = document.getElementById('volume-options-list');
     const btnAddVolumeOption = document.getElementById('btn-add-volume-option');
+    const volumeBlockHint = document.getElementById('volume-block-hint');
+
+    function isDrinksCategoryFromDish(dish) {
+      if (dish.category_id != null && Number(dish.category_id) === 2) return true;
+      return String(dish.category_name || '').toLowerCase().includes('напит');
+    }
+
+    function isDrinksCategoryFromSelect() {
+      const v = categorySelect.value;
+      if (v && Number(v) === 2) return true;
+      const opt = categorySelect.options[categorySelect.selectedIndex];
+      const t = opt && opt.textContent ? opt.textContent.toLowerCase() : '';
+      return t.includes('напит');
+    }
+
+    function syncDishFormForCategory() {
+      const wrapGrams = document.getElementById('wrap-portion-grams');
+      const wrapVol = document.getElementById('wrap-volume-block');
+      if (!wrapGrams || !wrapVol) return;
+      const drinks = isDrinksCategoryFromSelect();
+      const voCount = volumeOptionsList.querySelectorAll('.volume-option-row').length;
+      const showVol = drinks || voCount > 0;
+      wrapGrams.classList.toggle('hidden', drinks);
+      wrapVol.classList.toggle('hidden', !showVol);
+      if (volumeBlockHint) {
+        if (drinks) {
+          volumeBlockHint.textContent =
+            'Несколько вариантов: укажите мл и цену в каждой строке. Поле «Цена» сверху — минимальная из вариантов, обновляется при сохранении.';
+        } else if (showVol) {
+          volumeBlockHint.textContent =
+            'Обычно для кухни не нужен. Удалите строки, если не используется; иначе укажите мл и цену. Порция в граммах — в поле выше.';
+        } else {
+          volumeBlockHint.textContent =
+            'Несколько вариантов: укажите мл и цену в каждой строке. Поле «Цена» сверху — минимальная из вариантов, обновляется при сохранении.';
+        }
+      }
+    }
 
     function clearVolumeOptionRows() {
       volumeOptionsList.innerHTML = '';
     }
 
-    function addVolumeOptionRow(ml, pr) {
+    function addVolumeOptionRow(ml, pr, nkc, nbj) {
       const row = document.createElement('div');
-      row.className = 'volume-option-row flex flex-wrap items-end gap-2';
+      row.className = 'volume-option-row flex w-full max-w-3xl flex-col gap-2 rounded-lg border border-coffee-200/60 bg-coffee-50/40 p-2';
       const mlId = 'vo-ml-' + Date.now() + '-' + Math.random().toString(16).slice(2);
       row.innerHTML = `
+        <div class="flex flex-wrap items-end gap-2">
         <div class="min-w-0 flex-1">
           <label class="block text-xs font-medium text-coffee-600" for="${mlId}">мл</label>
-          <input type="number" data-vo-ml min="0" max="2000" step="1" id="${mlId}" class="mt-0.5 w-full rounded-lg border border-coffee-300 px-3 py-2 text-sm" placeholder="200" value="${ml != null && ml !== '' ? String(ml) : ''}" />
+          <input type="number" data-vo-ml min="0" max="2000" step="1" id="${mlId}" class="mt-0.5 w-full rounded-lg border border-coffee-300 bg-white px-3 py-2 text-sm" placeholder="200" value="${ml != null && ml !== '' ? String(ml) : ''}" />
         </div>
         <div class="min-w-0 flex-1">
           <span class="block text-xs font-medium text-coffee-600">₽</span>
-          <input type="number" data-vo-pr min="0" step="1" class="mt-0.5 w-full rounded-lg border border-coffee-300 px-3 py-2 text-sm" placeholder="цена" value="${pr != null && pr !== '' ? String(pr) : ''}" />
+          <input type="number" data-vo-pr min="0" step="1" class="mt-0.5 w-full rounded-lg border border-coffee-300 bg-white px-3 py-2 text-sm" placeholder="цена" value="${pr != null && pr !== '' ? String(pr) : ''}" />
         </div>
-        <button type="button" data-vo-remove class="shrink-0 rounded-lg border border-coffee-300 px-2 py-1 text-coffee-600 hover:bg-coffee-100" title="Убрать">×</button>
+        <button type="button" data-vo-remove class="shrink-0 self-end rounded-lg border border-coffee-300 px-2 py-1 text-coffee-600 hover:bg-coffee-100" title="Убрать">×</button>
+        </div>
+        <div class="grid grid-cols-1 gap-1 sm:grid-cols-2 sm:gap-2">
+          <div>
+            <span class="block text-xs font-medium text-coffee-600">Ккал (под выбранный объём)</span>
+            <input type="text" data-vo-nkc class="w-full rounded-lg border border-coffee-300 bg-white px-2 py-1.5 text-xs" placeholder="напр. 111.2" value="" />
+          </div>
+          <div>
+            <span class="block text-xs font-medium text-coffee-600">БЖУ (под объём)</span>
+            <input type="text" data-vo-nbj class="w-full rounded-lg border border-coffee-300 bg-white px-2 py-1.5 text-xs" placeholder="Белки — …" value="" />
+          </div>
+        </div>
       `;
+      const nkcI = row.querySelector('[data-vo-nkc]');
+      const nbjI = row.querySelector('[data-vo-nbj]');
+      if (nkcI && nkc != null && nkc !== undefined) nkcI.value = String(nkc);
+      if (nbjI && nbj != null && nbj !== undefined) nbjI.value = String(nbj);
       row.querySelector('[data-vo-remove]').addEventListener('click', () => {
         row.remove();
+        syncDishFormForCategory();
       });
       volumeOptionsList.appendChild(row);
     }
@@ -1060,11 +1204,17 @@
         list
           .slice()
           .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
-          .forEach((o) => addVolumeOptionRow(o.volume_ml, o.price));
+          .forEach((o) => addVolumeOptionRow(o.volume_ml, o.price, o.nutrition_kcal, o.nutrition_bju));
         return;
       }
       if (dish.volume_ml != null) {
         addVolumeOptionRow(dish.volume_ml, dish.price);
+        return;
+      }
+      if (isDrinksCategoryFromDish(dish) && dish.weight_grams != null) {
+        addVolumeOptionRow(dish.weight_grams, dish.price);
+        const wgEl = document.getElementById('weight_grams');
+        if (wgEl) wgEl.value = '';
         return;
       }
     }
@@ -1078,8 +1228,15 @@
         const prIn = row.querySelector('[data-vo-pr]');
         const ml = mlIn && mlIn.value.trim() ? parseInt(mlIn.value, 10) : NaN;
         const pr = prIn && prIn.value.trim() ? parseInt(prIn.value, 10) : NaN;
+        const nkcIn = row.querySelector('[data-vo-nkc]');
+        const nbjIn = row.querySelector('[data-vo-nbj]');
+        const nkc = nkcIn && nkcIn.value.trim() ? nkcIn.value.trim() : null;
+        const nbj = nbjIn && nbjIn.value.trim() ? nbjIn.value.trim() : null;
         if (!Number.isNaN(ml) && ml >= 0 && !Number.isNaN(pr) && pr >= 0) {
-          out.push({ volume_ml: ml, price: pr, sort_order: i });
+          const ob = { volume_ml: ml, price: pr, sort_order: i };
+          if (nkc) ob.nutrition_kcal = nkc;
+          if (nbj) ob.nutrition_bju = nbj;
+          out.push(ob);
           i += 1;
         }
       });
@@ -1091,11 +1248,16 @@
         ? dish.volume_options
             .slice()
             .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
-            .map((o, k) => ({
-              volume_ml: o.volume_ml,
-              price: o.price,
-              sort_order: o.sort_order != null ? o.sort_order : k,
-            }))
+            .map((o, k) => {
+              const b = {
+                volume_ml: o.volume_ml,
+                price: o.price,
+                sort_order: o.sort_order != null ? o.sort_order : k,
+              };
+              if (o.nutrition_kcal) b.nutrition_kcal = o.nutrition_kcal;
+              if (o.nutrition_bju) b.nutrition_bju = o.nutrition_bju;
+              return b;
+            })
         : [];
       return {
         name: dish.name,
@@ -1112,12 +1274,21 @@
     }
 
     if (btnAddVolumeOption) {
-      btnAddVolumeOption.addEventListener('click', () => addVolumeOptionRow('', ''));
+      btnAddVolumeOption.addEventListener('click', () => {
+        addVolumeOptionRow('', '');
+        syncDishFormForCategory();
+      });
     }
 
     function fillFormFromDish(dish) {
       document.getElementById('name').value = dish.name || '';
       document.getElementById('price').value = dish.price != null ? String(dish.price) : '';
+      if (dish.category_id != null) categorySelect.value = String(dish.category_id);
+      else categorySelect.value = '';
+      renderSubcategoriesForCategory(categorySelect.value);
+      if (dish.subcategory_id != null) subcategorySelect.value = String(dish.subcategory_id);
+      else subcategorySelect.value = '';
+
       document.getElementById('weight_grams').value = dish.weight_grams != null ? String(dish.weight_grams) : '';
       fillVolumeOptionsFromDish(dish);
       document.getElementById('description').value = dish.description || '';
@@ -1133,10 +1304,7 @@
       imageInput.value = '';
       videoInput.value = '';
       resetPreviews();
-
-      if (dish.category_id != null) categorySelect.value = String(dish.category_id);
-      renderSubcategoriesForCategory(categorySelect.value);
-      if (dish.subcategory_id != null) subcategorySelect.value = String(dish.subcategory_id);
+      syncDishFormForCategory();
     }
 
     function collectPayload() {
@@ -1165,10 +1333,14 @@
         volume_ml: null,
         volume_options: vOpts.length > 0 ? vOpts : [],
       };
-      const wg = document.getElementById('weight_grams').value.trim();
-      if (wg !== '') {
-        const n = parseInt(wg, 10);
-        if (!Number.isNaN(n) && n >= 0) body.weight_grams = n;
+      if (!isDrinksCategoryFromSelect()) {
+        const wg = document.getElementById('weight_grams').value.trim();
+        if (wg !== '') {
+          const n = parseInt(wg, 10);
+          if (!Number.isNaN(n) && n >= 0) body.weight_grams = n;
+        }
+      } else {
+        body.weight_grams = null;
       }
       if (vOpts.length > 0) {
         body.volume_ml = null;
@@ -1578,7 +1750,10 @@
       renderListMode();
     }
 
-    categorySelect.addEventListener('change', () => renderSubcategoriesForCategory(categorySelect.value));
+    categorySelect.addEventListener('change', () => {
+      renderSubcategoriesForCategory(categorySelect.value);
+      syncDishFormForCategory();
+    });
 
     cloneCheckbox.addEventListener('change', () => {
       clonePickerWrap.classList.toggle('hidden', !cloneCheckbox.checked);
@@ -1623,6 +1798,7 @@
       resetPreviews();
       clearVolumeOptionRows();
       renderSubcategoriesForCategory(categorySelect.value);
+      syncDishFormForCategory();
     });
 
     document.getElementById('reset-form-btn').addEventListener('click', () => {
@@ -1634,6 +1810,7 @@
       clearVolumeOptionRows();
       categorySelect.value = '';
       renderSubcategoriesForCategory('');
+      syncDishFormForCategory();
     });
 
     dishesListEl.addEventListener('click', async (e) => {
@@ -2000,6 +2177,7 @@
         clearVolumeOptionRows();
         categorySelect.value = '';
         renderSubcategoriesForCategory('');
+        syncDishFormForCategory();
         await loadSeasonDishes();
         await loadDishes();
       } catch (err) {
@@ -2027,6 +2205,7 @@
       updateListsHint();
       renderListMode();
       syncPlacementUi();
+      syncDishFormForCategory();
     })();
   </script>
 </body>
