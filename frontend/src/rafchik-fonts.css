@@ -1,34 +1,148 @@
 /*
-  Скопируйте файлы шрифта в frontend/assets/fonts/
-
-  Минимум: Rafchik-Regular.woff2 или Rafchik-Regular.ttf
-  Опционально: Rafchik-Bold.woff2 — тогда раскомментируйте блок @font-face для 700 ниже.
-
-  Коды/ключи для веба не нужны, только файлы .woff2 / .ttf / .woff
+  Бренд: Montserrat (TTF) — frontend/assets/fonts/raf/
+  Кириллица и латиница в одной семье. Для продакшена по возможности — .woff2 и сабсеты.
 */
 
 @font-face {
-  font-family: 'Rafchik';
-  src:
-    url('/assets/fonts/Rafchik-Regular.woff2') format('woff2'),
-    url('/assets/fonts/Rafchik-Regular.ttf') format('truetype');
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-Thin.ttf') format('truetype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-ThinItalic.ttf') format('truetype');
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-ExtraLight.ttf') format('truetype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-ExtraLightItalic.ttf') format('truetype');
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-LightItalic.ttf') format('truetype');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-Regular_0.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
-  /* Rafchik без кириллицы: без unicode-range браузер подставляет «вопросики» вместо русских букв.
-     Кириллица (U+0400+) и прочие блоки — цепочкой уходят на system-ui / Georgia в tailwind.config. */
-  unicode-range: U+0000-03FF;
 }
 
-/*
 @font-face {
-  font-family: 'Rafchik';
-  src:
-    url('/assets/fonts/Rafchik-Bold.woff2') format('woff2'),
-    url('/assets/fonts/Rafchik-Bold.ttf') format('truetype');
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-Italic_0.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-Medium_0.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-MediumItalic_0.ttf') format('truetype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-SemiBold_0.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-SemiBoldItalic_0.ttf') format('truetype');
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-Bold_0.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
-  unicode-range: U+0000-03FF;
 }
-*/
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-BoldItalic_0.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-ExtraBold_0.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-ExtraBoldItalic_0.ttf') format('truetype');
+  font-weight: 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-Black_0.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/raf/Montserrat-BlackItalic_0.ttf') format('truetype');
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}

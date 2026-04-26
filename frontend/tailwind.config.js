@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./index.html', './menu.html', './admin.html'],
+  content: ['./index.html', './menu.html', './admin.html', './privacy.html', './terms.html'],
   theme: {
     extend: {
       colors: {
@@ -29,11 +29,10 @@ module.exports = {
         },
       },
       fontFamily: {
-        /* Rafchik в файлах часто без кириллицы — не ставим его в sans/display, иначе «?» вместо русских букв. */
-        display: ['Georgia', 'Cambria', 'Times New Roman', 'serif'],
-        sans: ['system-ui', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
-        /* Только латиница/цифры в макетах; кириллица уйдёт на Georgia по цепочке */
-        raf: ['Rafchik', 'Georgia', 'Cambria', 'serif'],
+        /* Montserrat из assets/fonts/raf/ — @font-face в rafchik-fonts.css (кириллица + латиница) */
+        display: ['Montserrat', 'system-ui', 'sans-serif'],
+        sans: ['Montserrat', 'system-ui', 'sans-serif'],
+        raf: ['Montserrat', 'system-ui', 'sans-serif'],
       },
     },
   },

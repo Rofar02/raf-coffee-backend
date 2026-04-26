@@ -25,6 +25,8 @@ Test-Get200 '/menu'
 Test-Get200 '/api/menu/'
 Test-Get200 '/ping'
 Test-Get200 '/static/favicon-Photoroom.png'
+Test-Get200 '/privacy'
+Test-Get200 '/terms'
 try {
     $r80 = Invoke-WebRequest -Uri 'http://127.0.0.1/' -Method GET -UseBasicParsing -TimeoutSec 3
     if ($r80.StatusCode -eq 200) { Write-Host "OK 200 GET http://127.0.0.1/ (port 80)" -ForegroundColor Green }

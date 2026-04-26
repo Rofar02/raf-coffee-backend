@@ -15,6 +15,10 @@
   <link rel="stylesheet" href="/dist/styles.css" />
   <!-- Жёсткие границы шапки: без этого логотип может рисоваться в натуральном размере (огромный), навигация — шире экрана -->
   <style>
+    /* Уменьшает «уезд» вниз при догрузке видео/картинок (scroll anchoring) после F5. */
+    html {
+      overflow-anchor: none;
+    }
     #site-header {
       max-width: 100vw;
       overflow-x: hidden;
@@ -55,14 +59,14 @@
       min-height: 100dvh;
     }
     @media (max-width: 1023.98px) {
-      /* На телефоне: первый экран полноэкранный, но без перекрытия остального контента. */
+      /* На телефоне: 100svh — стабильная высота вьюпорта; 100dvh «прыгает» при скрытии адресной строки. */
       #welcome-screen {
         position: relative !important;
         inset: auto !important;
         height: 100vh !important;
-        height: 100dvh !important;
+        height: 100svh !important;
         min-height: 100vh !important;
-        min-height: 100dvh !important;
+        min-height: 100svh !important;
       }
       #welcome-video {
         width: 100% !important;
@@ -112,6 +116,39 @@
   </style>
 </head>
 <body class="bg-coffee-50 font-sans text-coffee-900 antialiased">
+  <script>
+    (function () {
+      if (location.hash) return;
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+      function toTop() {
+        try {
+          window.scrollTo(0, 0);
+          if (document.documentElement) document.documentElement.scrollTop = 0;
+          if (document.body) document.body.scrollTop = 0;
+        } catch (e) {}
+      }
+      toTop();
+      var navs = performance.getEntriesByType('navigation');
+      var isReload = navs && navs[0] && navs[0].type === 'reload';
+      if (isReload) {
+        for (var i = 0; i < 30; i += 1) {
+          setTimeout(toTop, i * 20);
+        }
+        window.addEventListener(
+          'load',
+          function onReloaded() {
+            toTop();
+            setTimeout(toTop, 0);
+            setTimeout(toTop, 50);
+            setTimeout(toTop, 150);
+            setTimeout(toTop, 400);
+            window.removeEventListener('load', onReloaded);
+          },
+          { once: true }
+        );
+      }
+    })();
+  </script>
   <!-- Шапка: цвета как у логотипа — тёмный кофейный + кремовый фон -->
   <header id="site-header" class="fixed top-0 z-40 w-full border-b border-coffee-200/80 bg-coffee-50/95 backdrop-blur-md transition-colors duration-300">
     <div
@@ -426,13 +463,108 @@
     </section>
   </main>
 
-  <footer class="border-t border-coffee-200/80 bg-coffee-50 px-4 py-10 sm:px-6">
-    <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 sm:flex-row">
-      <img src="/static/logo_raf_new.png" alt="" class="h-10 w-auto opacity-90" width="120" height="40" />
-      <p class="text-center text-sm text-coffee-700 sm:text-right">
-        © Рафчик, 2026 · <a href="/menu" class="font-medium text-coffee-900 underline-offset-2 hover:underline">Меню</a>
-        · <a href="/admin" class="text-coffee-600 underline-offset-2 hover:text-coffee-900 hover:underline">Админ</a>
-      </p>
+  <footer class="border-t border-coffee-200/80 bg-coffee-50/95 px-4 py-10 sm:px-6">
+    <div
+      class="mx-auto flex max-w-6xl flex-col items-center gap-8 text-center sm:gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-12 lg:text-left"
+    >
+      <div class="flex max-w-sm flex-col items-center gap-1 sm:max-w-none lg:shrink-0 lg:items-start">
+        <img
+          src="/static/logo_raf_new.png"
+          alt=""
+          class="h-9 w-auto opacity-90 sm:h-10"
+          width="120"
+          height="40"
+        />
+        <p class="text-xs text-coffee-500">© Рафчик, 2026</p>
+      </div>
+      <div
+        class="w-full max-w-md space-y-1.5 text-xs leading-relaxed text-coffee-600 sm:max-w-lg lg:max-w-sm lg:flex-1"
+        lang="ru"
+      >
+        <p class="text-[0.65rem] font-medium uppercase tracking-[0.2em] text-coffee-500/90">Сведения о продавце (черновик)</p>
+        <p class="text-sm font-medium text-coffee-800">ИП Тестов Тест Тестович</p>
+        <p>ИНН 000000000000</p>
+        <p>ОГРНИП 318000000000000</p>
+        <p>
+          <span class="text-coffee-500">E-mail: </span
+          ><a
+            class="text-coffee-800 underline decoration-coffee-300 underline-offset-2 transition hover:decoration-coffee-500"
+            href="mailto:demo-raf@example.com"
+            >demo-raf@example.com</a
+          >
+        </p>
+        <p>
+          <span class="text-coffee-500">Тел.: </span
+          ><a
+            class="text-coffee-800 underline decoration-coffee-300 underline-offset-2 transition hover:decoration-coffee-500"
+            href="tel:+79000000000"
+            >+7 (000) 000-00-00</a
+          >
+        </p>
+        <p class="flex flex-wrap items-center justify-center gap-2 pt-0.5 lg:justify-start">
+          <a
+            href="https://vk.com/rafchik_demo"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-coffee-200/90 bg-transparent text-coffee-800 transition hover:border-coffee-400 hover:bg-transparent hover:text-coffee-950"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Мы ВКонтакте"
+          >
+            <svg class="h-[1.2rem] w-[1.2rem]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="m9.489.004.729-.003h3.564l.73.003.914.01.433.007.418.011.403.014.388.016.374.021.36.025.345.03.333.033c1.74.196 2.933.616 3.833 1.516.9.9 1.32 2.092 1.516 3.833l.034.333.029.346.025.36.02.373.025.588.012.41.013.644.009.915.004.98-.001 3.313-.003.73-.01.914-.007.433-.011.418-.014.403-.016.388-.021.374-.025.36-.03.345-.033.333c-.196 1.74-.616 2.933-1.516 3.833-.9.9-2.092 1.32-3.833 1.516l-.333.034-.346.029-.36.025-.373.02-.588.025-.41.012-.644.013-.915.009-.98.004-3.313-.001-.73-.003-.914-.01-.433-.007-.418-.011-.403-.014-.388-.016-.374-.021-.36-.025-.345-.03-.333-.033c-1.74-.196-2.933-.616-3.833-1.516-.9-.9-1.32-2.092-1.516-3.833l-.034-.333-.029-.346-.025-.36-.02-.373-.025-.588-.012-.41-.013-.644-.009-.915-.004-.98.001-3.313.003-.73.01-.914.007-.433.011-.418.014-.403.016-.388.021-.374.025-.36.03-.345.033-.333c.196-1.74.616-2.933 1.516-3.833.9-.9 2.092-1.32 3.833-1.516l.333-.034.346-.029.36-.025.373-.02.588-.025.41-.012.644-.013.915-.009ZM6.79 7.3H4.05c.13 6.24 3.25 9.99 8.72 9.99h.31v-3.57c2.01.2 3.53 1.67 4.14 3.57h2.84c-.78-2.84-2.83-4.41-4.11-5.01 1.28-.74 3.08-2.54 3.51-4.98h-2.58c-.56 1.98-2.22 3.78-3.8 3.95V7.3H10.5v6.92c-1.6-.4-3.62-2.34-3.71-6.92Z"
+              />
+            </svg>
+          </a>
+          <a
+            href="https://web.max.ru"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-coffee-200/90 bg-transparent text-coffee-800 transition hover:border-coffee-400 hover:bg-transparent hover:text-coffee-950"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Мессенджер Макс"
+          >
+            <svg class="h-[1.2rem] w-[1.2rem]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M1.769 0A1.77 1.77 0 0 0 0 1.769V22.23A1.77 1.77 0 0 0 1.769 24H22.23A1.77 1.77 0 0 0 24 22.231V1.77A1.77 1.77 0 0 0 22.231 0zm12.485 3.28a4.301 4.301 0 0 1 4.3 4.302 4.301 4.301 0 0 1-1.993 3.63 6.085 6.085 0 0 1 1.054 3.422 6.085 6.085 0 0 1-6.085 6.085 6.085 6.085 0 0 1-6.085-6.085 6.085 6.085 0 0 1 4.66-5.916 4.301 4.301 0 0 1-.152-1.136 4.301 4.301 0 0 1 4.301-4.301zm0 1.849a2.453 2.453 0 0 0-2.453 2.453 2.453 2.453 0 0 0 2.453 2.453 2.453 2.453 0 0 0 2.453-2.453 2.453 2.453 0 0 0-2.453-2.453zm-2.724 5.268a4.237 4.237 0 0 0-4.237 4.237 4.237 4.237 0 0 0 4.237 4.237 4.237 4.237 0 0 0 4.237-4.237 4.237 4.237 0 0 0-4.237-4.237zm.032 2.54a1.781 1.781 0 1 1 0 3.562 1.781 1.781 0 0 1 0-3.562Z"
+              />
+            </svg>
+          </a>
+          <a
+            href="https://t.me/rafchik_demo"
+            class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-coffee-200/90 bg-transparent text-coffee-800 transition hover:border-coffee-400 hover:bg-transparent hover:text-coffee-950"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Наш Telegram"
+          >
+            <svg class="h-[1.2rem] w-[1.2rem]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path
+                d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.331.88-.6 3.5-1.5 4.1-1.7 4.2-1.7.05-.01.1-.01.15 0z"
+              />
+            </svg>
+          </a>
+        </p>
+        <p class="pt-1 text-[0.65rem] text-coffee-500/80">Поля тестовые; перед публикацией заменить на фактические реквизиты.</p>
+      </div>
+      <div class="max-w-sm shrink-0 text-center sm:max-w-none lg:text-right" aria-label="Ссылки в подвале">
+        <p class="text-sm text-coffee-800">
+          <a href="admin.html" class="font-medium text-coffee-600 transition hover:text-coffee-900">Админ</a>
+        </p>
+        <nav
+          class="mt-2 flex flex-col items-center gap-1.5 text-xs leading-relaxed text-coffee-600 sm:flex-row sm:justify-end sm:gap-0"
+          aria-label="Правовая информация"
+        >
+          <a
+            href="privacy.html"
+            class="transition hover:text-coffee-900 hover:underline decoration-coffee-300 underline-offset-4"
+            >Политика конфиденциальности</a
+          >
+          <span class="hidden sm:inline sm:px-1.5 text-coffee-300" aria-hidden="true">·</span>
+          <a
+            href="terms.html"
+            class="transition hover:text-coffee-900 hover:underline decoration-coffee-300 underline-offset-4"
+            >Пользовательское соглашение</a
+          >
+        </nav>
+      </div>
     </div>
   </footer>
   <script>
