@@ -49,4 +49,35 @@
     background-position: center, center, center;
     background-attachment: fixed;
   }
+
+  /* Лёгкий «вжим» при нажатии — ощущение клика (не трогаем .nav-btn, .modal-carousel__nav — у них свои состояния) */
+  :where(button:not(:disabled)):not(.modal-carousel__nav):not(.nav-btn),
+  :where(input[type='submit']:not(:disabled)),
+  :where(input[type='button']:not(:disabled)),
+  :where(input[type='reset']:not(:disabled)) {
+    transition: transform 0.12s cubic-bezier(0.2, 0, 0.2, 1);
+  }
+
+  :where(button:not(:disabled)):not(.modal-carousel__nav):not(.nav-btn):active,
+  :where(input[type='submit']:not(:disabled)):active,
+  :where(input[type='button']:not(:disabled)):active,
+  :where(input[type='reset']:not(:disabled)):active {
+    transform: scale(0.97);
+  }
+
+  .modal-carousel__nav:not(:disabled):active {
+    transform: translateY(-50%) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(button:not(:disabled)):not(.modal-carousel__nav):not(.nav-btn):active,
+  :where(input[type='submit']:not(:disabled)):active,
+  :where(input[type='button']:not(:disabled)):active,
+  :where(input[type='reset']:not(:disabled)):active {
+    transform: none;
+  }
+  .modal-carousel__nav:not(:disabled):active {
+    transform: translateY(-50%);
+  }
 }
