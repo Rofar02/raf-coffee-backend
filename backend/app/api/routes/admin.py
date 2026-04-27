@@ -12,6 +12,7 @@ from app.core.database import get_pool
 from app.repositories.dish_repository import DishRepository
 from app.services.menu_service import MenuService
 from app.repositories.vacancy_repository import VacancyRepository
+from app.repositories.interior_repository import InteriorRepository
 from app.services.vacancy_service import VacancyService
 from app.models.dish import (
     CategoryItem,
@@ -35,6 +36,7 @@ from app.models.vacancy import (
     VacancySettingsUpdate,
     VacancyApplication,
 )
+from app.models.interior import InteriorGallery, InteriorGalleryUpdate
 from app.core.auth import verify_admin_token
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -1296,3 +1298,25 @@ async def list_vacancy_applications(
     service = VacancyService(repo)
     rows = await service.list_applications(limit=limit)
     return [VacancyApplication(**x) for x in rows]
+
+
+@router.get("/interior", response_model=List[InteriorGallery])
+async def list_interior_galleries(
+    _: str = Depends(verify_admin_token),
+    pool=Depends(get_pool),
+):
+    repo = InteriorRepository(pool)
+    rows = await repo.list_all()
+    return [InteriorGallery(**x) for x in rows]
+
+
+@router.put("/interior/{slug}", response_model=InteriorGallery)
+async def update_interior_gallery(
+    slug: str,
+    body: InteriorGalleryUpdate,
+    _: str = Depends(verify_admin_token),
+    pool=Depends(get_pool),
+):
+    repo = InteriorRepository(pool)
+    row = await repo.upsert(slug=slug, payload=body.model_dump(exclude_unset=True))
+    return InteriorGallery(**row)

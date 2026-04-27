@@ -243,6 +243,7 @@
         <button type="button" class="admin-tab" data-panel="dish">Форма блюда</button>
         <button type="button" class="admin-tab" data-panel="lists">Списки блюд</button>
         <button type="button" class="admin-tab" data-panel="vacancies">Вакансии</button>
+        <button type="button" class="admin-tab" data-panel="interior">Интерьер</button>
         <button type="button" class="admin-tab" data-panel="help">Справка</button>
       </div>
     </section>
@@ -598,6 +599,16 @@
       </section>
     </div>
 
+    <div id="panel-interior" class="admin-panel mb-8">
+      <section class="space-y-6 rounded-2xl border border-coffee-200 bg-coffee-50 p-5 shadow-sm">
+        <div class="rounded-xl border border-coffee-200 bg-white/80 p-4">
+          <h3 class="font-display text-lg font-semibold text-coffee-900">Галерея интерьера</h3>
+          <p class="mt-1 text-sm text-coffee-600">Редактируйте текст и несколько фото по каждой кофейне. Порядок фото = порядок в карусели на главной.</p>
+        </div>
+        <div id="interior-admin-list" class="grid gap-4"></div>
+      </section>
+    </div>
+
     <div id="panel-help" class="admin-panel mb-8">
       <section class="help-prose rounded-2xl border border-coffee-200 bg-coffee-50 p-5 shadow-sm" aria-label="Справка по админке">
         <h2 class="mb-3 font-display text-xl font-bold text-coffee-900">Как пользоваться панелью</h2>
@@ -742,6 +753,7 @@
     const vacancyAppModalOverlay = document.getElementById('vacancy-app-modal-overlay');
     const vacancyAppModalCloseBtn = document.getElementById('vacancy-app-modal-close');
     const vacancyAppModalBody = document.getElementById('vacancy-app-modal-body');
+    const interiorAdminListEl = document.getElementById('interior-admin-list');
 
     let subcategories = [];
     let adminCategories = [];
@@ -750,6 +762,7 @@
     let seasonDishes = [];
     let vacancies = [];
     let vacancyApplications = [];
+    let interiorGalleries = [];
     let editingDishId = null;
     let toastTimerId = null;
     let listMode = (localStorage.getItem(STORAGE_LIST_MODE_KEY) === 'all') ? 'all' : 'season';
@@ -880,6 +893,7 @@
         await loadVacancySettings();
         await loadVacancies();
         await loadVacancyApplications();
+        await loadInteriorGalleries();
         if (tokenHint) {
           tokenHint.textContent = `Синхронизировано ${new Date().toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}.`;
         }
@@ -1011,6 +1025,49 @@
       renderVacancyApplications();
     }
 
+    function renderInteriorAdmin() {
+      if (!interiorAdminListEl) return;
+      if (!interiorGalleries.length) {
+        interiorAdminListEl.innerHTML = '<p class="text-sm text-coffee-600">Галереи пока не настроены.</p>';
+        return;
+      }
+      interiorAdminListEl.innerHTML = interiorGalleries.map((g) => {
+        const images = Array.isArray(g.images) ? g.images : [];
+        const imageRows = images.map((src) => (
+          '<div data-interior-image-row class="flex flex-col gap-2 rounded-xl border border-coffee-200 bg-coffee-50/70 p-2 sm:flex-row sm:items-center">' +
+            '<input type="text" value="' + escHtml(src) + '" data-interior-image-url class="w-full rounded-lg border border-coffee-300 px-3 py-2 text-xs" placeholder="/static/... или https://..." />' +
+            '<button type="button" data-interior-upload-image class="rounded-full border border-coffee-300 px-3 py-1.5 text-xs font-medium text-coffee-800 hover:bg-coffee-100">Файл</button>' +
+            '<button type="button" data-interior-remove-image class="rounded-full border border-rose-300 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-50">Удалить</button>' +
+          '</div>'
+        )).join('');
+        return (
+          '<form data-interior-form="' + escHtml(g.slug) + '" class="rounded-xl border border-coffee-200 bg-white/90 p-4">' +
+            '<div class="mb-3 flex items-center justify-between gap-2">' +
+              '<h4 class="font-display text-lg font-semibold text-coffee-900">' + escHtml(g.title || g.slug) + '</h4>' +
+              '<button type="submit" class="rounded-full bg-coffee-800 px-4 py-2 text-xs font-semibold text-white transition hover:bg-coffee-950">Сохранить</button>' +
+            '</div>' +
+            '<label class="mt-3 block text-xs font-medium text-coffee-700">Описание</label>' +
+            '<textarea data-interior-description rows="3" maxlength="3000" class="mt-1 w-full rounded-xl border border-coffee-300 px-3 py-2 text-sm">' + escHtml(g.description || '') + '</textarea>' +
+            '<div class="mt-3 flex items-center justify-between gap-2">' +
+              '<p class="text-xs font-medium text-coffee-700">Фото (карусель)</p>' +
+              '<button type="button" data-interior-add-image class="rounded-full border border-coffee-400 px-3 py-1.5 text-xs font-medium text-coffee-800 hover:bg-coffee-100">+ Фото</button>' +
+            '</div>' +
+            '<div class="mt-2 space-y-2" data-interior-images-wrap>' + imageRows + '</div>' +
+          '</form>'
+        );
+      }).join('');
+    }
+
+    async function loadInteriorGalleries() {
+      const token = getTokenOrWarn();
+      if (!token) return;
+      const res = await fetch(url('/admin/interior'), { headers: { 'X-Admin-Token': token } });
+      const text = await res.text();
+      if (!res.ok) throw new Error(parseErrorText(text));
+      interiorGalleries = JSON.parse(text);
+      renderInteriorAdmin();
+    }
+
     const btnSyncAll = document.getElementById('btn-sync-all');
     const btnSyncAllInline = document.getElementById('btn-sync-all-inline');
     if (btnSyncAll) btnSyncAll.addEventListener('click', syncAllData);
@@ -1135,6 +1192,88 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeVacancyApplicationModal();
     });
+
+    if (interiorAdminListEl) {
+      interiorAdminListEl.addEventListener('click', async (e) => {
+        const addBtn = e.target.closest('[data-interior-add-image]');
+        const rmBtn = e.target.closest('[data-interior-remove-image]');
+        const uploadBtn = e.target.closest('[data-interior-upload-image]');
+        if (addBtn) {
+          const form = addBtn.closest('[data-interior-form]');
+          const wrap = form ? form.querySelector('[data-interior-images-wrap]') : null;
+          if (!wrap) return;
+          const row = document.createElement('div');
+          row.setAttribute('data-interior-image-row', '');
+          row.className = 'flex flex-col gap-2 rounded-xl border border-coffee-200 bg-coffee-50/70 p-2 sm:flex-row sm:items-center';
+          row.innerHTML =
+            '<input type="text" data-interior-image-url class="w-full rounded-lg border border-coffee-300 px-3 py-2 text-xs" placeholder="/static/... или https://..." />' +
+            '<button type="button" data-interior-upload-image class="rounded-full border border-coffee-300 px-3 py-1.5 text-xs font-medium text-coffee-800 hover:bg-coffee-100">Файл</button>' +
+            '<button type="button" data-interior-remove-image class="rounded-full border border-rose-300 px-3 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-50">Удалить</button>';
+          wrap.appendChild(row);
+          return;
+        }
+        if (rmBtn) {
+          const row = rmBtn.closest('[data-interior-image-row]');
+          if (row) row.remove();
+          return;
+        }
+        if (uploadBtn) {
+          const row = uploadBtn.closest('[data-interior-image-row]');
+          const input = row ? row.querySelector('[data-interior-image-url]') : null;
+          if (!input) return;
+          const picker = document.createElement('input');
+          picker.type = 'file';
+          picker.accept = 'image/*';
+          picker.onchange = async () => {
+            const f = picker.files && picker.files[0];
+            if (!f) return;
+            try {
+              uploadBtn.disabled = true;
+              const uploaded = await uploadFile(f);
+              input.value = (uploaded && uploaded.url) ? uploaded.url : input.value;
+              showToast('Фото загружено.');
+            } catch (err) {
+              showAlert('err', 'Интерьер: ' + (err.message || err));
+            } finally {
+              uploadBtn.disabled = false;
+            }
+          };
+          picker.click();
+        }
+      });
+
+      interiorAdminListEl.addEventListener('submit', async (e) => {
+        const form = e.target.closest('[data-interior-form]');
+        if (!form) return;
+        e.preventDefault();
+        const token = getTokenOrWarn();
+        if (!token) return;
+        const slug = form.getAttribute('data-interior-form');
+        const descrEl = form.querySelector('[data-interior-description]');
+        const imgInputs = Array.from(form.querySelectorAll('[data-interior-image-url]'));
+        const payload = {
+          description: descrEl ? descrEl.value.trim() : '',
+          images: imgInputs.map((el) => (el.value || '').trim()).filter(Boolean),
+        };
+        const saveBtn = form.querySelector('button[type="submit"]');
+        if (saveBtn) saveBtn.disabled = true;
+        try {
+          const res = await fetch(url('/admin/interior/' + encodeURIComponent(slug)), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+            body: JSON.stringify(payload),
+          });
+          const text = await res.text();
+          if (!res.ok) throw new Error(parseErrorText(text));
+          showToast('Галерея сохранена.');
+          await loadInteriorGalleries();
+        } catch (err) {
+          showAlert('err', 'Интерьер: ' + (err.message || err));
+        } finally {
+          if (saveBtn) saveBtn.disabled = false;
+        }
+      });
+    }
 
     const btnFlushMenuCache = document.getElementById('btn-flush-menu-cache');
     if (btnFlushMenuCache) {
@@ -2660,6 +2799,7 @@
         await loadVacancySettings();
         await loadVacancies();
         await loadVacancyApplications();
+        await loadInteriorGalleries();
       } else {
         renderTaxonomyFromState();
       }
