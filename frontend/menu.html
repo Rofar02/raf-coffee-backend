@@ -16,6 +16,11 @@
     #modal-panel::-webkit-scrollbar {
       display: none;
     }
+    @media (prefers-reduced-motion: no-preference) {
+      #modal-panel {
+        transform-origin: center;
+      }
+    }
     #menu-layout {
       display: block;
     }
@@ -1308,6 +1313,27 @@
 
     var modalDish = null;
     var modalSelectedVolIndex = 0;
+    var bodyScrollLockY = 0;
+
+    function lockBodyScroll() {
+      bodyScrollLockY = window.scrollY || window.pageYOffset || 0;
+      document.body.style.position = 'fixed';
+      document.body.style.top = '-' + bodyScrollLockY + 'px';
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function unlockBodyScroll() {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      window.scrollTo(0, bodyScrollLockY);
+    }
 
     function fixGluedKcalAndBju(s) {
       if (s == null || s === '') return s;
@@ -1431,9 +1457,14 @@
 
       overlay.classList.remove('hidden');
       overlay.classList.add('flex');
-      document.body.style.overflow = 'hidden';
+      panel.scrollTop = 0;
+      overlay.scrollTop = 0;
+      lockBodyScroll();
       panel.style.opacity = '0';
-      panel.style.transition = 'opacity 220ms ease';
+      panel.style.transform = 'translateY(8px) scale(0.985)';
+      panel.style.transition = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ? 'opacity 120ms linear'
+        : 'opacity 220ms ease, transform 220ms ease';
 
       if (mediaEl) {
         await waitForMediaReady(mediaEl, 900);
@@ -1441,6 +1472,7 @@
 
       if (currentRequestId !== modalOpenRequestId) return;
       panel.style.opacity = '1';
+      panel.style.transform = 'translateY(0) scale(1)';
 
       if (mediaEl && mediaEl.tagName === 'VIDEO') {
         mediaEl.play().catch(function () {});
@@ -1455,7 +1487,7 @@
       const overlay = document.getElementById('modal-overlay');
       overlay.classList.add('hidden');
       overlay.classList.remove('flex');
-      document.body.style.overflow = '';
+      unlockBodyScroll();
       const v = document.querySelector('#modal-media video');
       if (v) v.pause();
     }
