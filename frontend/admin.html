@@ -654,6 +654,24 @@
     <div id="toast" role="status" aria-live="polite"></div>
   </main>
 
+  <div
+    id="vacancy-app-modal-overlay"
+    class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/55 p-4 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="vacancy-app-modal-title"
+  >
+    <div class="w-full max-w-2xl rounded-2xl border border-coffee-200 bg-white p-5 shadow-2xl sm:p-6">
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <h3 id="vacancy-app-modal-title" class="font-display text-xl font-semibold text-coffee-900">Отклик на вакансию</h3>
+        <button id="vacancy-app-modal-close" type="button" class="rounded-full border border-coffee-300 px-3 py-1.5 text-sm font-medium text-coffee-800 transition hover:bg-coffee-100">
+          Закрыть
+        </button>
+      </div>
+      <div id="vacancy-app-modal-body" class="space-y-3 text-sm text-coffee-800"></div>
+    </div>
+  </div>
+
   <script>
     const STORAGE_KEY = 'raf_admin_token';
     const STORAGE_LIST_MODE_KEY = 'raf_admin_list_mode';
@@ -721,6 +739,9 @@
     const vacancyDescriptionEl = document.getElementById('vacancy-description');
     const btnVacancyCancel = document.getElementById('btn-vacancy-cancel');
     const vacancyApplicationsListEl = document.getElementById('vacancy-applications-list');
+    const vacancyAppModalOverlay = document.getElementById('vacancy-app-modal-overlay');
+    const vacancyAppModalCloseBtn = document.getElementById('vacancy-app-modal-close');
+    const vacancyAppModalBody = document.getElementById('vacancy-app-modal-body');
 
     let subcategories = [];
     let adminCategories = [];
@@ -912,8 +933,8 @@
         vacancyApplicationsListEl.innerHTML = '<p class="text-sm text-coffee-600">Откликов пока нет.</p>';
         return;
       }
-      vacancyApplicationsListEl.innerHTML = vacancyApplications.map((a) => (
-        '<div class="rounded-xl border border-coffee-200 bg-coffee-50/70 p-3 text-xs">' +
+      vacancyApplicationsListEl.innerHTML = vacancyApplications.map((a, idx) => (
+        '<button type="button" data-vacancy-app-open="' + String(idx) + '" class="block w-full rounded-xl border border-coffee-200 bg-coffee-50/70 p-3 text-left text-xs transition hover:border-coffee-300 hover:bg-coffee-50">' +
           '<div class="flex flex-wrap items-center justify-between gap-2">' +
             '<p class="font-semibold text-coffee-900">' + escHtml(a.full_name) + ' · ' + escHtml(a.phone) + '</p>' +
             '<span class="text-coffee-600">' + escHtml(new Date(a.created_at).toLocaleString('ru-RU')) + '</span>' +
@@ -921,8 +942,43 @@
           '<p class="mt-1 text-coffee-700">Вакансия: ' + escHtml(a.vacancy_title || ('#' + a.vacancy_id)) + '</p>' +
           '<p class="mt-1 text-coffee-600">Telegram: ' + escHtml(a.contact_telegram || '-') + ' · Email: ' + escHtml(a.contact_email || '-') + '</p>' +
           (a.message ? ('<p class="mt-1 text-coffee-800">' + escHtml(a.message) + '</p>') : '') +
-        '</div>'
+        '</button>'
       )).join('');
+    }
+
+    function openVacancyApplicationModal(idx) {
+      if (!vacancyAppModalOverlay || !vacancyAppModalBody) return;
+      const a = vacancyApplications[idx];
+      if (!a) return;
+      vacancyAppModalBody.innerHTML =
+        '<div class="rounded-xl border border-coffee-200 bg-coffee-50/60 p-3">' +
+          '<p class="text-xs text-coffee-600">Дата</p>' +
+          '<p class="font-medium text-coffee-900">' + escHtml(new Date(a.created_at).toLocaleString('ru-RU')) + '</p>' +
+        '</div>' +
+        '<div class="grid gap-3 sm:grid-cols-2">' +
+          '<div class="rounded-xl border border-coffee-200 bg-white p-3"><p class="text-xs text-coffee-600">Имя</p><p class="font-medium text-coffee-900">' + escHtml(a.full_name || '-') + '</p></div>' +
+          '<div class="rounded-xl border border-coffee-200 bg-white p-3"><p class="text-xs text-coffee-600">Телефон</p><p class="font-medium text-coffee-900">' + escHtml(a.phone || '-') + '</p></div>' +
+          '<div class="rounded-xl border border-coffee-200 bg-white p-3"><p class="text-xs text-coffee-600">Вакансия</p><p class="font-medium text-coffee-900">' + escHtml(a.vacancy_title || ('#' + a.vacancy_id)) + '</p></div>' +
+          '<div class="rounded-xl border border-coffee-200 bg-white p-3"><p class="text-xs text-coffee-600">Статус</p><p class="font-medium text-coffee-900">' + escHtml(a.status || '-') + '</p></div>' +
+        '</div>' +
+        '<div class="grid gap-3 sm:grid-cols-2">' +
+          '<div class="rounded-xl border border-coffee-200 bg-white p-3"><p class="text-xs text-coffee-600">Telegram</p><p class="font-medium text-coffee-900">' + escHtml(a.contact_telegram || '-') + '</p></div>' +
+          '<div class="rounded-xl border border-coffee-200 bg-white p-3"><p class="text-xs text-coffee-600">Email</p><p class="font-medium text-coffee-900">' + escHtml(a.contact_email || '-') + '</p></div>' +
+        '</div>' +
+        '<div class="rounded-xl border border-coffee-200 bg-white p-3">' +
+          '<p class="text-xs text-coffee-600">Комментарий</p>' +
+          '<p class="mt-1 whitespace-pre-wrap text-coffee-900">' + escHtml(a.message || '-') + '</p>' +
+        '</div>';
+      vacancyAppModalOverlay.classList.remove('hidden');
+      vacancyAppModalOverlay.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeVacancyApplicationModal() {
+      if (!vacancyAppModalOverlay) return;
+      vacancyAppModalOverlay.classList.add('hidden');
+      vacancyAppModalOverlay.classList.remove('flex');
+      document.body.style.overflow = '';
     }
 
     async function loadVacancySettings() {
@@ -1058,6 +1114,27 @@
         }
       });
     }
+
+    if (vacancyApplicationsListEl) {
+      vacancyApplicationsListEl.addEventListener('click', (e) => {
+        const openBtn = e.target.closest('[data-vacancy-app-open]');
+        if (!openBtn) return;
+        const idx = Number(openBtn.getAttribute('data-vacancy-app-open'));
+        if (Number.isNaN(idx)) return;
+        openVacancyApplicationModal(idx);
+      });
+    }
+    if (vacancyAppModalCloseBtn) {
+      vacancyAppModalCloseBtn.addEventListener('click', closeVacancyApplicationModal);
+    }
+    if (vacancyAppModalOverlay) {
+      vacancyAppModalOverlay.addEventListener('click', (e) => {
+        if (e.target === vacancyAppModalOverlay) closeVacancyApplicationModal();
+      });
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeVacancyApplicationModal();
+    });
 
     const btnFlushMenuCache = document.getElementById('btn-flush-menu-cache');
     if (btnFlushMenuCache) {
