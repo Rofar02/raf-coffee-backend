@@ -154,6 +154,28 @@
         margin-left: auto;
       }
     }
+    #insta-toast {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 90;
+      max-width: min(92vw, 420px);
+      border-radius: 14px;
+      border: 1px solid rgba(73, 9, 0, 0.18);
+      background: rgba(240, 238, 233, 0.98);
+      color: #490900;
+      padding: 12px 18px;
+      font-size: 14px;
+      text-align: center;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease;
+    }
+    #insta-toast.is-visible {
+      opacity: 1;
+    }
   </style>
 </head>
 <body class="bg-coffee-50 font-sans text-coffee-900 antialiased">
@@ -460,8 +482,8 @@
                 <p class="mt-2">Кирова 45а</p>
                 <p class="mt-1 text-coffee-600">Ориентир у входа — уточните при публикации.</p>
                 <p class="mt-6 font-semibold text-coffee-900">Часы работы</p>
-                <p class="mt-2">Пн–Пт 8:00–21:00</p>
-                <p>Сб–Вс 9:00–22:00</p>
+                <p class="mt-2">Пн–Пт 8:00–20:00</p>
+                <p>Сб–Вс 9:00–21:00</p>
               </address>
             </div>
             <div class="min-w-0">
@@ -492,8 +514,8 @@
                 <p class="mt-2">Кирова 12</p>
                 <p class="mt-1 text-coffee-600">Ориентир у входа — уточните при публикации.</p>
                 <p class="mt-6 font-semibold text-coffee-900">Часы работы</p>
-                <p class="mt-2">Пн–Пт 8:00–21:00</p>
-                <p>Сб–Вс 9:00–22:00</p>
+                <p class="mt-2">Пн–Пт 8:00–20:00</p>
+                <p>Сб–Вс 9:00–20:00</p>
               </address>
             </div>
             <div class="min-w-0">
@@ -534,7 +556,7 @@
               <a
                 id="owner-contact-link-max"
                 class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-coffee-800 px-5 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-coffee-950 active:scale-[0.99]"
-                href="https://max.ru/u/f9LHodD0cOL87hklhRt-j7fpyuJkrd5Rtaw6xNehcyB2kbCTk331bvipaWU"
+                href="https://max.ru/u/f9LHodD0cOIvEY7Tb2VRYfAhow-dlCa31GQpTLxMK5QfR7afAWX2G7sf9-k"
                 rel="nofollow noopener noreferrer"
                 target="_blank"
               >
@@ -543,7 +565,7 @@
               <a
                 id="owner-contact-link-telegram"
                 class="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-coffee-300 bg-coffee-50 px-5 py-3 text-base font-semibold text-coffee-900 shadow-sm transition hover:border-coffee-500 hover:bg-coffee-100/80 active:scale-[0.99]"
-                href="https://t.me/rafchik_demo"
+                href="https://t.me/Gredzen_Iuliia"
                 rel="nofollow noopener noreferrer"
                 target="_blank"
               >
@@ -555,6 +577,8 @@
       </div>
     </section>
   </main>
+
+  <div id="insta-toast" role="status" aria-live="polite"></div>
 
   <div id="vacancy-modal-overlay" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/55 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="vacancy-modal-title">
     <div class="w-full max-w-lg rounded-2xl border border-coffee-200 bg-white p-5 shadow-2xl sm:p-6">
@@ -611,42 +635,22 @@
         lang="ru"
       >
         <div class="min-h-0 w-full flex-1 space-y-1.5">
-        <p class="text-[0.65rem] font-medium uppercase tracking-[0.2em] text-coffee-500/90">Сведения о продавце</p>
-        <p class="text-sm font-medium text-coffee-800">ИП Тестов Тест Тестович</p>
-        <p>ИНН 000000000000</p>
-        <p>ОГРНИП 318000000000000</p>
-        <p>
-          <span class="text-coffee-500">E-mail: </span
-          ><a
-            class="text-coffee-800 underline decoration-coffee-300 underline-offset-2 transition hover:decoration-coffee-500"
-            href="mailto:demo-raf@example.com"
-            >demo-raf@example.com</a
-          >
-        </p>
-        <p>
-          <span class="text-coffee-500">Тел.: </span
-          ><a
-            class="text-coffee-800 underline decoration-coffee-300 underline-offset-2 transition hover:decoration-coffee-500"
-            href="tel:+79000000000"
-            >+7 (000) 000-00-00</a
-          >
-        </p>
+        <p class="text-sm font-medium text-coffee-800">ИП Гредзен Юлия Сергеевна</p>
+        <p>ИНН 421812146746</p>
+        <p>ОГРНИП 324420500086313</p>
         <p class="flex flex-wrap items-center justify-center gap-2 pt-0.5">
           <a
-            href="https://vk.com/rafchik_demo"
+            id="footer-instagram"
+            href="#"
             class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-coffee-200/90 bg-transparent text-coffee-800 transition hover:border-coffee-400 hover:bg-transparent hover:text-coffee-950"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Мы ВКонтакте"
+            aria-label="Наш Instagram"
           >
             <svg class="h-[1.2rem] w-[1.2rem]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="m9.489.004.729-.003h3.564l.73.003.914.01.433.007.418.011.403.014.388.016.374.021.36.025.345.03.333.033c1.74.196 2.933.616 3.833 1.516.9.9 1.32 2.092 1.516 3.833l.034.333.029.346.025.36.02.373.025.588.012.41.013.644.009.915.004.98-.001 3.313-.003.73-.01.914-.007.433-.011.418-.014.403-.016.388-.021.374-.025.36-.03.345-.033.333c-.196 1.74-.616 2.933-1.516 3.833-.9.9-2.092 1.32-3.833 1.516l-.333.034-.346.029-.36.025-.373.02-.588.025-.41.012-.644.013-.915.009-.98.004-3.313-.001-.73-.003-.914-.01-.433-.007-.418-.011-.403-.014-.388-.016-.374-.021-.36-.025-.345-.03-.333-.033c-1.74-.196-2.933-.616-3.833-1.516-.9-.9-1.32-2.092-1.516-3.833l-.034-.333-.029-.346-.025-.36-.02-.373-.025-.588-.012-.41-.013-.644-.009-.915-.004-.98.001-3.313.003-.73.01-.914.007-.433.011-.418.014-.403.016-.388.021-.374.025-.36.03-.345.033-.333c.196-1.74.616-2.933 1.516-3.833.9-.9 2.092-1.32 3.833-1.516l.333-.034.346-.029.36-.025.373-.02.588-.025.41-.012.644-.013.915-.009ZM6.79 7.3H4.05c.13 6.24 3.25 9.99 8.72 9.99h.31v-3.57c2.01.2 3.53 1.67 4.14 3.57h2.84c-.78-2.84-2.83-4.41-4.11-5.01 1.28-.74 3.08-2.54 3.51-4.98h-2.58c-.56 1.98-2.22 3.78-3.8 3.95V7.3H10.5v6.92c-1.6-.4-3.62-2.34-3.71-6.92Z"
-              />
+              <path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2Zm0 1.8A3.95 3.95 0 0 0 3.8 7.75v8.5a3.95 3.95 0 0 0 3.95 3.95h8.5a3.95 3.95 0 0 0 3.95-3.95v-8.5a3.95 3.95 0 0 0-3.95-3.95h-8.5ZM12 7.7A4.3 4.3 0 1 1 7.7 12 4.3 4.3 0 0 1 12 7.7Zm0 1.8A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5Zm4.65-3a1.05 1.05 0 1 1-1.05 1.05 1.05 1.05 0 0 1 1.05-1.05Z"/>
             </svg>
           </a>
           <a
-            href="https://web.max.ru"
+            href="https://max.ru/join/12fsSQZnpfQHPXKYGkgjoC7xgXZerjYIXQFCsLdfzdg"
             class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-coffee-200/90 bg-transparent text-coffee-800 transition hover:border-coffee-400 hover:bg-transparent hover:text-coffee-950"
             target="_blank"
             rel="noopener noreferrer"
@@ -659,7 +663,7 @@
             </svg>
           </a>
           <a
-            href="https://t.me/rafchik_demo"
+            href="https://t.me/rafchik_coffee"
             class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-coffee-200/90 bg-transparent text-coffee-800 transition hover:border-coffee-400 hover:bg-transparent hover:text-coffee-950"
             target="_blank"
             rel="noopener noreferrer"
@@ -886,6 +890,9 @@
       const consentEl = document.getElementById('vacancy-consent');
       const submitEl = document.getElementById('vacancy-submit');
       const feedbackEl = document.getElementById('vacancy-feedback');
+      const instaBtn = document.getElementById('footer-instagram');
+      const instaToast = document.getElementById('insta-toast');
+      let instaToastTimer = null;
       const modalOverlay = document.getElementById('vacancy-modal-overlay');
       const modalCloseBtn = document.getElementById('vacancy-modal-close');
       const headerVacancyBtn = document.getElementById('header-vacancy-btn');
@@ -986,6 +993,19 @@
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') closeVacancyModal();
       });
+
+      if (instaBtn) {
+        instaBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          if (!instaToast) return;
+          instaToast.textContent = 'Запрещенку хотите? У нас только кофе и десерты :)';
+          instaToast.classList.add('is-visible');
+          if (instaToastTimer) clearTimeout(instaToastTimer);
+          instaToastTimer = setTimeout(function () {
+            instaToast.classList.remove('is-visible');
+          }, 2000);
+        });
+      }
 
       loadVacancies();
     })();
