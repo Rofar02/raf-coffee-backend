@@ -115,7 +115,13 @@
         0 1px 3px rgba(0, 0, 0, 0.08),
         inset 0 0 0 2px rgba(73, 9, 0, 0.4);
     }
-    #desktop-sub-nav { max-height: calc(100vh - 11rem); overflow-y: auto; padding-right: 4px; }
+    #desktop-sub-nav {
+      max-height: calc(100dvh - 10.5rem);
+      overflow-y: auto;
+      padding-right: 4px;
+      padding-bottom: 6px;
+      scroll-padding-bottom: 8px;
+    }
     .nav-group {
       border: 1px solid rgba(0, 0, 0, 0.1);
       border-radius: 18px;
@@ -189,9 +195,11 @@
     #mobile-sub-nav {
       display: grid;
       gap: 8px;
-      max-height: 42vh;
+      max-height: min(56dvh, calc(100dvh - 14rem));
       overflow-y: auto;
       padding-right: 4px;
+      padding-bottom: 6px;
+      scroll-padding-bottom: 8px;
     }
     .modal-vol-btn {
       border: 1px solid rgba(111, 78, 55, 0.35);
