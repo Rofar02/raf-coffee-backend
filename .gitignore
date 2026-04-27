@@ -10,7 +10,10 @@ __pycache__/
 .venv
 venv/
 poetry.lock
-
+# env files
+.env.*
+backend/.env
+backend/.env.*
 # IDE
 .vscode/
 .idea/
