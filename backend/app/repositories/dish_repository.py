@@ -183,6 +183,99 @@ _SQL_BASE_MENU_WITH_CATEGORIES = """
         d.id
 """
 
+_SQL_LIST_DISHES_BY_SEASON_WITH_CATS = """
+    SELECT
+        d.id,
+        d.name,
+        d.price,
+        d.weight_grams,
+        d.volume_ml,
+        d.description,
+        d.calories,
+        d.image_url,
+        d.image_urls,
+        d.video_url,
+        d.is_base_menu,
+        d.subcategory_id,
+        c.id AS category_id,
+        c.name AS category_name,
+        s.name AS subcategory_name,
+        sd.sort_order AS season_sort_order,
+        sd.is_visible AS season_visible
+    FROM season_dishes sd
+    JOIN dishes d ON d.id = sd.dish_id
+    LEFT JOIN subcategories s ON d.subcategory_id = s.id
+    LEFT JOIN categories c ON s.category_id = c.id
+    WHERE sd.season_id = $1
+    ORDER BY
+        c.sort_order NULLS LAST,
+        c.id NULLS LAST,
+        s.sort_order NULLS LAST,
+        s.id NULLS LAST,
+        sd.sort_order NULLS LAST,
+        d.id
+"""
+
+# Как _SQL_BASE_MENU/V1, но без колонки d.image_urls (старые БД до migrate_dish_image_urls.sql)
+_SQL_LIST_DISHES_BY_SEASON_WITH_CATS_NO_IMAGE_URLS = """
+    SELECT
+        d.id,
+        d.name,
+        d.price,
+        d.weight_grams,
+        d.volume_ml,
+        d.description,
+        d.calories,
+        d.image_url,
+        NULL::text AS image_urls,
+        d.video_url,
+        d.is_base_menu,
+        d.subcategory_id,
+        c.id AS category_id,
+        c.name AS category_name,
+        s.name AS subcategory_name,
+        sd.sort_order AS season_sort_order,
+        sd.is_visible AS season_visible
+    FROM season_dishes sd
+    JOIN dishes d ON d.id = sd.dish_id
+    LEFT JOIN subcategories s ON d.subcategory_id = s.id
+    LEFT JOIN categories c ON s.category_id = c.id
+    WHERE sd.season_id = $1
+    ORDER BY
+        c.sort_order NULLS LAST,
+        c.id NULLS LAST,
+        s.sort_order NULLS LAST,
+        s.id NULLS LAST,
+        sd.sort_order NULLS LAST,
+        d.id
+"""
+
+# Только season_dishes + dishes; «богатые» поля NULL — максимальная совместимость
+_SQL_LIST_DISHES_BY_SEASON_MINIMAL = """
+    SELECT
+        d.id,
+        d.name,
+        d.price,
+        NULL::integer AS weight_grams,
+        NULL::integer AS volume_ml,
+        d.description,
+        d.calories,
+        d.image_url,
+        NULL::text AS image_urls,
+        d.video_url,
+        TRUE::boolean AS is_base_menu,
+        NULL::integer AS subcategory_id,
+        NULL::integer AS category_id,
+        NULL::text AS category_name,
+        NULL::text AS subcategory_name,
+        sd.sort_order AS season_sort_order,
+        sd.is_visible AS season_visible
+    FROM season_dishes sd
+    JOIN dishes d ON d.id = sd.dish_id
+    WHERE sd.season_id = $1
+    ORDER BY sd.sort_order NULLS LAST, d.id
+"""
+
 
 def _normalize_dish_image_row(row: Dict[str, Any]) -> None:
     raw = row.get("image_urls")
@@ -856,45 +949,24 @@ class DishRepository:
             return result.endswith("1")
 
     async def list_dishes_by_season(self, season_id: int) -> List[Dict[str, Any]]:
-        async with self.pool.acquire() as conn:
-            rows = await conn.fetch(
-                """
-                SELECT
-                    d.id,
-                    d.name,
-                    d.price,
-                    d.weight_grams,
-                    d.volume_ml,
-                    d.description,
-                    d.calories,
-                    d.image_url,
-                    d.image_urls,
-                    d.video_url,
-                    d.is_base_menu,
-                    d.subcategory_id,
-                    c.id AS category_id,
-                    c.name AS category_name,
-                    s.name AS subcategory_name,
-                    sd.sort_order AS season_sort_order,
-                    sd.is_visible AS season_visible
-                FROM season_dishes sd
-                JOIN dishes d ON d.id = sd.dish_id
-                LEFT JOIN subcategories s ON d.subcategory_id = s.id
-                LEFT JOIN categories c ON s.category_id = c.id
-                WHERE sd.season_id = $1
-                ORDER BY
-                    c.sort_order NULLS LAST,
-                    c.id NULLS LAST,
-                    s.sort_order NULLS LAST,
-                    s.id NULLS LAST,
-                    sd.sort_order NULLS LAST,
-                    d.id
-                """,
-                season_id,
-            )
-            out = [dict(row) for row in rows]
-            await self._enrich_dishes_with_volume_options(out)
-            return out
+        last: Optional[Exception] = None
+        for sql in (
+            _SQL_LIST_DISHES_BY_SEASON_WITH_CATS,
+            _SQL_LIST_DISHES_BY_SEASON_WITH_CATS_NO_IMAGE_URLS,
+            _SQL_LIST_DISHES_BY_SEASON_MINIMAL,
+        ):
+            try:
+                async with self.pool.acquire() as conn:
+                    rows = await conn.fetch(sql, season_id)
+                out = [dict(row) for row in rows]
+                await self._enrich_dishes_with_volume_options(out)
+                return out
+            except (UndefinedTableError, UndefinedColumnError) as e:
+                last = e
+                continue
+        if last:
+            raise last
+        return []
 
     async def get_base_menu_items(self) -> List[Dict[str, Any]]:
         async with self.pool.acquire() as conn:
