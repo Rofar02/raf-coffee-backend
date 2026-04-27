@@ -11,6 +11,8 @@ from openpyxl import load_workbook
 from app.core.database import get_pool
 from app.repositories.dish_repository import DishRepository
 from app.services.menu_service import MenuService
+from app.repositories.vacancy_repository import VacancyRepository
+from app.services.vacancy_service import VacancyService
 from app.models.dish import (
     CategoryItem,
     DishCreate,
@@ -24,6 +26,14 @@ from app.models.dish import (
     SubcategoryCreateBody,
     SubcategoryOption,
     SubcategoryUpdateBody,
+)
+from app.models.vacancy import (
+    Vacancy,
+    VacancyCreate,
+    VacancyUpdate,
+    VacancySettings,
+    VacancySettingsUpdate,
+    VacancyApplication,
 )
 from app.core.auth import verify_admin_token
 
@@ -1199,3 +1209,90 @@ async def import_menu_from_xlsx(
 
     await service.clear_menu_cache()
     return XlsxImportResult(**result)
+
+
+@router.get("/vacancies/settings", response_model=VacancySettings)
+async def get_vacancy_settings(
+    _: str = Depends(verify_admin_token),
+    pool=Depends(get_pool),
+):
+    repo = VacancyRepository(pool)
+    service = VacancyService(repo)
+    payload = await service.get_settings()
+    return VacancySettings(**payload)
+
+
+@router.put("/vacancies/settings", response_model=VacancySettings)
+async def update_vacancy_settings(
+    body: VacancySettingsUpdate,
+    _: str = Depends(verify_admin_token),
+    pool=Depends(get_pool),
+):
+    repo = VacancyRepository(pool)
+    service = VacancyService(repo)
+    payload = await service.update_settings(show_on_homepage=body.show_on_homepage)
+    return VacancySettings(**payload)
+
+
+@router.get("/vacancies", response_model=List[Vacancy])
+async def list_vacancies(
+    _: str = Depends(verify_admin_token),
+    pool=Depends(get_pool),
+):
+    repo = VacancyRepository(pool)
+    service = VacancyService(repo)
+    rows = await service.list_vacancies()
+    return [Vacancy(**x) for x in rows]
+
+
+@router.post("/vacancies", response_model=Vacancy)
+async def create_vacancy(
+    body: VacancyCreate,
+    _: str = Depends(verify_admin_token),
+    pool=Depends(get_pool),
+):
+    repo = VacancyRepository(pool)
+    service = VacancyService(repo)
+    row = await service.create_vacancy(body.model_dump())
+    return Vacancy(**row)
+
+
+@router.put("/vacancies/{vacancy_id}", response_model=Vacancy)
+async def update_vacancy(
+    vacancy_id: int,
+    body: VacancyUpdate,
+    _: str = Depends(verify_admin_token),
+    pool=Depends(get_pool),
+):
+    repo = VacancyRepository(pool)
+    service = VacancyService(repo)
+    row = await service.update_vacancy(vacancy_id, body.model_dump(exclude_unset=True))
+    if not row:
+        raise HTTPException(status_code=404, detail="Vacancy not found")
+    return Vacancy(**row)
+
+
+@router.delete("/vacancies/{vacancy_id}")
+async def delete_vacancy(
+    vacancy_id: int,
+    _: str = Depends(verify_admin_token),
+    pool=Depends(get_pool),
+):
+    repo = VacancyRepository(pool)
+    service = VacancyService(repo)
+    ok = await service.delete_vacancy(vacancy_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Vacancy not found")
+    return {"ok": True, "deleted_id": vacancy_id}
+
+
+@router.get("/vacancy-applications", response_model=List[VacancyApplication])
+async def list_vacancy_applications(
+    limit: int = Query(200, ge=1, le=1000),
+    _: str = Depends(verify_admin_token),
+    pool=Depends(get_pool),
+):
+    repo = VacancyRepository(pool)
+    service = VacancyService(repo)
+    rows = await service.list_applications(limit=limit)
+    return [VacancyApplication(**x) for x in rows]

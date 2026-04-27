@@ -242,6 +242,7 @@
         <button type="button" class="admin-tab" data-panel="taxonomy">Рубрики</button>
         <button type="button" class="admin-tab" data-panel="dish">Форма блюда</button>
         <button type="button" class="admin-tab" data-panel="lists">Списки блюд</button>
+        <button type="button" class="admin-tab" data-panel="vacancies">Вакансии</button>
         <button type="button" class="admin-tab" data-panel="help">Справка</button>
       </div>
     </section>
@@ -539,6 +540,64 @@
       </section>
     </div>
 
+    <div id="panel-vacancies" class="admin-panel mb-8">
+      <section class="space-y-6 rounded-2xl border border-coffee-200 bg-coffee-50 p-5 shadow-sm">
+        <div class="rounded-xl border border-coffee-200 bg-white/80 p-4">
+          <label class="inline-flex items-center gap-2 text-sm font-medium text-coffee-800">
+            <input id="vacancy-show-homepage" type="checkbox" class="h-4 w-4 rounded border-coffee-300 text-coffee-700 focus:ring-coffee-500/40" />
+            Показывать блок вакансий на главной
+          </label>
+          <button id="btn-vacancy-settings-save" type="button" class="ml-0 mt-3 inline-flex rounded-full border border-coffee-500 bg-coffee-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-coffee-950 sm:ml-3 sm:mt-0">
+            Сохранить настройку
+          </button>
+        </div>
+
+        <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <div class="rounded-xl border border-coffee-200 bg-white/80 p-4">
+            <h3 class="font-display text-lg font-semibold text-coffee-900">Позиции</h3>
+            <div id="vacancies-list" class="mt-3 space-y-2"></div>
+          </div>
+          <form id="vacancy-form" class="rounded-xl border border-coffee-200 bg-white/80 p-4">
+            <input id="vacancy-edit-id" type="hidden" value="" />
+            <h3 class="font-display text-lg font-semibold text-coffee-900">Добавить / редактировать</h3>
+            <label class="mt-3 block text-xs font-medium text-coffee-700">Название *</label>
+            <input id="vacancy-title" required maxlength="160" class="mt-1 w-full rounded-xl border border-coffee-300 px-3 py-2 text-sm" />
+            <div class="mt-3 grid gap-3 sm:grid-cols-2">
+              <div>
+                <label class="block text-xs font-medium text-coffee-700">Город</label>
+                <input id="vacancy-city" maxlength="120" class="mt-1 w-full rounded-xl border border-coffee-300 px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-coffee-700">Филиал</label>
+                <input id="vacancy-branch" maxlength="160" class="mt-1 w-full rounded-xl border border-coffee-300 px-3 py-2 text-sm" />
+              </div>
+            </div>
+            <div class="mt-3 grid gap-3 sm:grid-cols-2">
+              <div>
+                <label class="block text-xs font-medium text-coffee-700">Порядок</label>
+                <input id="vacancy-sort-order" type="number" min="0" max="9999" value="0" class="mt-1 w-full rounded-xl border border-coffee-300 px-3 py-2 text-sm" />
+              </div>
+              <label class="mt-6 inline-flex items-center gap-2 text-sm text-coffee-800">
+                <input id="vacancy-is-active" type="checkbox" checked class="h-4 w-4 rounded border-coffee-300 text-coffee-700 focus:ring-coffee-500/40" />
+                Активна
+              </label>
+            </div>
+            <label class="mt-3 block text-xs font-medium text-coffee-700">Описание</label>
+            <textarea id="vacancy-description" rows="3" maxlength="2000" class="mt-1 w-full rounded-xl border border-coffee-300 px-3 py-2 text-sm"></textarea>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button id="btn-vacancy-save" type="submit" class="rounded-full bg-coffee-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-coffee-950">Сохранить позицию</button>
+              <button id="btn-vacancy-cancel" type="button" class="rounded-full border border-coffee-400 px-4 py-2 text-sm font-medium text-coffee-800 transition hover:bg-coffee-100">Сбросить</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="rounded-xl border border-coffee-200 bg-white/80 p-4">
+          <h3 class="font-display text-lg font-semibold text-coffee-900">Отклики (последние 200)</h3>
+          <div id="vacancy-applications-list" class="mt-3 space-y-2"></div>
+        </div>
+      </section>
+    </div>
+
     <div id="panel-help" class="admin-panel mb-8">
       <section class="help-prose rounded-2xl border border-coffee-200 bg-coffee-50 p-5 shadow-sm" aria-label="Справка по админке">
         <h2 class="mb-3 font-display text-xl font-bold text-coffee-900">Как пользоваться панелью</h2>
@@ -649,12 +708,27 @@
     const xlsxHierarchicalModeCheckbox = document.getElementById('xlsx_hierarchical_mode');
     const xlsxStrictModeCheckbox = document.getElementById('xlsx_strict_mode');
     const xlsxImportResult = document.getElementById('xlsx-import-result');
+    const vacancyShowHomepageCheckbox = document.getElementById('vacancy-show-homepage');
+    const btnVacancySettingsSave = document.getElementById('btn-vacancy-settings-save');
+    const vacanciesListEl = document.getElementById('vacancies-list');
+    const vacancyFormEl = document.getElementById('vacancy-form');
+    const vacancyEditIdEl = document.getElementById('vacancy-edit-id');
+    const vacancyTitleEl = document.getElementById('vacancy-title');
+    const vacancyCityEl = document.getElementById('vacancy-city');
+    const vacancyBranchEl = document.getElementById('vacancy-branch');
+    const vacancySortOrderEl = document.getElementById('vacancy-sort-order');
+    const vacancyIsActiveEl = document.getElementById('vacancy-is-active');
+    const vacancyDescriptionEl = document.getElementById('vacancy-description');
+    const btnVacancyCancel = document.getElementById('btn-vacancy-cancel');
+    const vacancyApplicationsListEl = document.getElementById('vacancy-applications-list');
 
     let subcategories = [];
     let adminCategories = [];
     let seasons = [];
     let dishes = [];
     let seasonDishes = [];
+    let vacancies = [];
+    let vacancyApplications = [];
     let editingDishId = null;
     let toastTimerId = null;
     let listMode = (localStorage.getItem(STORAGE_LIST_MODE_KEY) === 'all') ? 'all' : 'season';
@@ -782,6 +856,9 @@
         await loadSeasons();
         await loadSeasonDishes();
         await loadDishes();
+        await loadVacancySettings();
+        await loadVacancies();
+        await loadVacancyApplications();
         if (tokenHint) {
           tokenHint.textContent = `Синхронизировано ${new Date().toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}.`;
         }
@@ -796,10 +873,191 @@
       }
     }
 
+    function resetVacancyForm() {
+      if (!vacancyFormEl) return;
+      vacancyEditIdEl.value = '';
+      vacancyTitleEl.value = '';
+      vacancyCityEl.value = '';
+      vacancyBranchEl.value = '';
+      vacancySortOrderEl.value = '0';
+      vacancyIsActiveEl.checked = true;
+      vacancyDescriptionEl.value = '';
+    }
+
+    function renderVacancies() {
+      if (!vacanciesListEl) return;
+      if (!vacancies.length) {
+        vacanciesListEl.innerHTML = '<p class="text-sm text-coffee-600">Пока нет позиций.</p>';
+        return;
+      }
+      vacanciesListEl.innerHTML = vacancies.map((v) => (
+        '<div class="rounded-xl border border-coffee-200 bg-coffee-50/70 p-3">' +
+          '<div class="flex flex-wrap items-center justify-between gap-2">' +
+            '<p class="font-medium text-coffee-900">' + escHtml(v.title) + '</p>' +
+            '<span class="text-xs ' + (v.is_active ? 'text-emerald-700' : 'text-coffee-500') + '">' + (v.is_active ? 'активна' : 'скрыта') + '</span>' +
+          '</div>' +
+          '<p class="mt-1 text-xs text-coffee-600">' + escHtml([v.city, v.branch].filter(Boolean).join(' · ') || 'Без привязки к филиалу') + '</p>' +
+          (v.description ? ('<p class="mt-1 text-xs text-coffee-700">' + escHtml(v.description) + '</p>') : '') +
+          '<div class="mt-2 flex gap-2">' +
+            '<button type="button" data-vacancy-edit="' + String(v.id) + '" class="rounded-full border border-coffee-400 px-3 py-1 text-xs font-medium text-coffee-800 hover:bg-coffee-100">Правка</button>' +
+            '<button type="button" data-vacancy-del="' + String(v.id) + '" class="rounded-full border border-rose-300 px-3 py-1 text-xs font-medium text-rose-700 hover:bg-rose-50">Удалить</button>' +
+          '</div>' +
+        '</div>'
+      )).join('');
+    }
+
+    function renderVacancyApplications() {
+      if (!vacancyApplicationsListEl) return;
+      if (!vacancyApplications.length) {
+        vacancyApplicationsListEl.innerHTML = '<p class="text-sm text-coffee-600">Откликов пока нет.</p>';
+        return;
+      }
+      vacancyApplicationsListEl.innerHTML = vacancyApplications.map((a) => (
+        '<div class="rounded-xl border border-coffee-200 bg-coffee-50/70 p-3 text-xs">' +
+          '<div class="flex flex-wrap items-center justify-between gap-2">' +
+            '<p class="font-semibold text-coffee-900">' + escHtml(a.full_name) + ' · ' + escHtml(a.phone) + '</p>' +
+            '<span class="text-coffee-600">' + escHtml(new Date(a.created_at).toLocaleString('ru-RU')) + '</span>' +
+          '</div>' +
+          '<p class="mt-1 text-coffee-700">Вакансия: ' + escHtml(a.vacancy_title || ('#' + a.vacancy_id)) + '</p>' +
+          '<p class="mt-1 text-coffee-600">Telegram: ' + escHtml(a.contact_telegram || '-') + ' · Email: ' + escHtml(a.contact_email || '-') + '</p>' +
+          (a.message ? ('<p class="mt-1 text-coffee-800">' + escHtml(a.message) + '</p>') : '') +
+        '</div>'
+      )).join('');
+    }
+
+    async function loadVacancySettings() {
+      const token = getTokenOrWarn();
+      if (!token) return;
+      const res = await fetch(url('/admin/vacancies/settings'), { headers: { 'X-Admin-Token': token } });
+      const text = await res.text();
+      if (!res.ok) throw new Error(parseErrorText(text));
+      const data = JSON.parse(text);
+      if (vacancyShowHomepageCheckbox) vacancyShowHomepageCheckbox.checked = !!data.show_on_homepage;
+    }
+
+    async function loadVacancies() {
+      const token = getTokenOrWarn();
+      if (!token) return;
+      const res = await fetch(url('/admin/vacancies'), { headers: { 'X-Admin-Token': token } });
+      const text = await res.text();
+      if (!res.ok) throw new Error(parseErrorText(text));
+      vacancies = JSON.parse(text);
+      renderVacancies();
+    }
+
+    async function loadVacancyApplications() {
+      const token = getTokenOrWarn();
+      if (!token) return;
+      const res = await fetch(url('/admin/vacancy-applications?limit=200'), { headers: { 'X-Admin-Token': token } });
+      const text = await res.text();
+      if (!res.ok) throw new Error(parseErrorText(text));
+      vacancyApplications = JSON.parse(text);
+      renderVacancyApplications();
+    }
+
     const btnSyncAll = document.getElementById('btn-sync-all');
     const btnSyncAllInline = document.getElementById('btn-sync-all-inline');
     if (btnSyncAll) btnSyncAll.addEventListener('click', syncAllData);
     if (btnSyncAllInline) btnSyncAllInline.addEventListener('click', syncAllData);
+
+    if (btnVacancySettingsSave) {
+      btnVacancySettingsSave.addEventListener('click', async () => {
+        const token = getTokenOrWarn();
+        if (!token) return;
+        btnVacancySettingsSave.disabled = true;
+        try {
+          const res = await fetch(url('/admin/vacancies/settings'), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+            body: JSON.stringify({ show_on_homepage: !!vacancyShowHomepageCheckbox.checked }),
+          });
+          const text = await res.text();
+          if (!res.ok) throw new Error(parseErrorText(text));
+          showToast('Настройка вакансий сохранена.');
+        } catch (e) {
+          showAlert('err', 'Вакансии: ' + (e.message || e));
+        } finally {
+          btnVacancySettingsSave.disabled = false;
+        }
+      });
+    }
+
+    if (vacancyFormEl) {
+      vacancyFormEl.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const token = getTokenOrWarn();
+        if (!token) return;
+        const id = Number(vacancyEditIdEl.value || 0);
+        const payload = {
+          title: vacancyTitleEl.value.trim(),
+          city: vacancyCityEl.value.trim() || null,
+          branch: vacancyBranchEl.value.trim() || null,
+          description: vacancyDescriptionEl.value.trim() || null,
+          is_active: !!vacancyIsActiveEl.checked,
+          sort_order: Number(vacancySortOrderEl.value || 0),
+        };
+        if (!payload.title) {
+          showAlert('err', 'Укажите название позиции.');
+          return;
+        }
+        try {
+          const res = await fetch(url(id ? ('/admin/vacancies/' + id) : '/admin/vacancies'), {
+            method: id ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+            body: JSON.stringify(payload),
+          });
+          const text = await res.text();
+          if (!res.ok) throw new Error(parseErrorText(text));
+          resetVacancyForm();
+          await loadVacancies();
+          showToast(id ? 'Позиция обновлена.' : 'Позиция добавлена.');
+        } catch (err) {
+          showAlert('err', 'Вакансии: ' + (err.message || err));
+        }
+      });
+    }
+
+    if (btnVacancyCancel) {
+      btnVacancyCancel.addEventListener('click', resetVacancyForm);
+    }
+
+    if (vacanciesListEl) {
+      vacanciesListEl.addEventListener('click', async (e) => {
+        const token = getTokenOrWarn();
+        if (!token) return;
+        const editBtn = e.target.closest('[data-vacancy-edit]');
+        const delBtn = e.target.closest('[data-vacancy-del]');
+        if (editBtn) {
+          const id = Number(editBtn.getAttribute('data-vacancy-edit'));
+          const v = vacancies.find((x) => x.id === id);
+          if (!v) return;
+          vacancyEditIdEl.value = String(v.id);
+          vacancyTitleEl.value = v.title || '';
+          vacancyCityEl.value = v.city || '';
+          vacancyBranchEl.value = v.branch || '';
+          vacancyDescriptionEl.value = v.description || '';
+          vacancySortOrderEl.value = String(v.sort_order || 0);
+          vacancyIsActiveEl.checked = !!v.is_active;
+          return;
+        }
+        if (delBtn) {
+          const id = Number(delBtn.getAttribute('data-vacancy-del'));
+          if (!confirm('Удалить позицию?')) return;
+          try {
+            const res = await fetch(url('/admin/vacancies/' + id), {
+              method: 'DELETE',
+              headers: { 'X-Admin-Token': token },
+            });
+            const text = await res.text();
+            if (!res.ok) throw new Error(parseErrorText(text));
+            await loadVacancies();
+            showToast('Позиция удалена.');
+          } catch (err) {
+            showAlert('err', 'Вакансии: ' + (err.message || err));
+          }
+        }
+      });
+    }
 
     const btnFlushMenuCache = document.getElementById('btn-flush-menu-cache');
     if (btnFlushMenuCache) {
@@ -2322,6 +2580,9 @@
         await loadSeasons();
         await loadSeasonDishes();
         await loadDishes();
+        await loadVacancySettings();
+        await loadVacancies();
+        await loadVacancyApplications();
       } else {
         renderTaxonomyFromState();
       }

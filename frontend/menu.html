@@ -53,6 +53,22 @@
         display: grid;
       }
     }
+    #pdf-download-side {
+      display: none;
+    }
+    #pdf-download-bottom {
+      display: block;
+      margin-top: 4rem;
+    }
+    @media (min-width: 1024px) {
+      #pdf-download-side {
+        display: block !important;
+      }
+      #pdf-download-bottom {
+        display: none !important;
+        margin-top: 0;
+      }
+    }
     .nav-btn {
       box-sizing: border-box;
       width: 100%;
@@ -415,7 +431,7 @@
       <a href="/" class="flex items-center gap-3 rounded-xl text-coffee-900 transition hover:opacity-90">
         <img src="/static/logo_raf_new.png" alt="Рафчик" class="h-10 w-auto sm:h-12" width="120" height="48" />
       </a>
-      <nav class="flex items-center gap-4 text-sm font-medium text-coffee-900">
+      <nav class="flex items-center gap-2 sm:gap-4 text-sm font-medium text-coffee-900">
         <a href="/" class="rounded-full px-3 py-1.5 transition hover:bg-coffee-900/5">Главная</a>
         <span class="rounded-full bg-coffee-900/10 px-3 py-1.5 text-coffee-900">Меню</span>
       </nav>
@@ -444,6 +460,20 @@
     </div>
 
     <div id="menu-root" class="hidden space-y-14"></div>
+    <div id="pdf-download-bottom" class="mt-16 text-center">
+      <a
+        href="/static/%D0%9C%D0%B5%D0%BD%D1%8E%20(PDF)%20(2).pdf"
+        class="inline-flex items-center justify-center gap-2 rounded-full border border-coffee-300 bg-white px-4 py-2 text-sm font-medium text-coffee-900 shadow-sm transition hover:border-coffee-500 hover:bg-coffee-100/80"
+        target="_blank"
+        rel="noopener noreferrer"
+        download
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 20h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Скачать меню в PDF
+      </a>
+    </div>
   </div>
 
   <div
@@ -937,6 +967,20 @@
             </div>
             <div id="desktop-tabs"></div>
             <div id="desktop-sub-nav"></div>
+            <div id="pdf-download-side" class="mt-4 pt-4">
+              <a
+                href="/static/%D0%9C%D0%B5%D0%BD%D1%8E%20(PDF)%20(2).pdf"
+                class="inline-flex w-full items-center justify-center gap-2 rounded-full border border-coffee-300 bg-white px-4 py-2 text-sm font-medium text-coffee-900 shadow-sm transition hover:border-coffee-500 hover:bg-coffee-100/80"
+                target="_blank"
+                rel="noopener noreferrer"
+                download
+              >
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 20h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Скачать меню в PDF
+              </a>
+            </div>
           </section>
           <div id="menu-content"></div>
         </div>

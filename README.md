@@ -40,6 +40,8 @@ cd frontend && npm install && npm run build:css
 
 Колонка **веса порции** (`weight_grams`): для существующей БД выполните `backend/sql/migrate_add_weight_grams.sql` (или пересоздайте том — в `init.sql` колонка уже есть).
 
+Вакансии/отклики для существующей БД: выполните `backend/sql/migrate_add_vacancies.sql`.
+
 Переменные окружения backend:
 
 | Переменная     | Описание |
@@ -47,6 +49,10 @@ cd frontend && npm install && npm run build:css
 | `DATABASE_URL` | Строка подключения к PostgreSQL |
 | `REDIS_URL`    | Строка подключения к Redis |
 | `ADMIN_TOKEN`  | Секрет для заголовка `X-Admin-Token` на админ-роутах |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` | SMTP для отправки откликов по вакансиям |
+| `SMTP_FROM` | Адрес отправителя писем по вакансиям |
+| `VACANCY_EMAIL_TO` | Куда отправлять отклики по вакансиям |
+| `SMTP_USE_TLS` | Использовать STARTTLS (`true/false`) |
 
 В `docker-compose.yml` заданы значения по умолчанию для локальной разработки; для продакшена задайте свои секреты (в т.ч. `ADMIN_TOKEN`).
 
@@ -64,6 +70,12 @@ cd frontend && npm install && npm run build:css
 
 `POST /admin/import-xlsx` — импорт меню из `.xlsx` (multipart upload, заголовок `X-Admin-Token`).
 В админке это доступно в разделе «Токен и доступ» через кнопку «Импорт XLSX».
+
+`GET/PUT /admin/vacancies/settings`, `GET/POST/PUT/DELETE /admin/vacancies`, `GET /admin/vacancy-applications` — управление блоком вакансий, позициями и откликами (вкладка «Вакансии» в админке).
+
+Публичные эндпоинты вакансий:
+- `GET /api/vacancies` — настройки показа + активные вакансии для главной.
+- `POST /api/vacancies/apply` — отправка отклика (сохранение в БД; email отправляется при настроенном SMTP).
 
 Минимальные колонки:
 - `name` (или `название`)

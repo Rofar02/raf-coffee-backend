@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.api.routes import menu, admin
+from app.api.routes import menu, admin, vacancies
 from app.core.database import init_pool, close_pool
 from app.core.redis_client import get_redis, close_redis
 
@@ -30,6 +30,7 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 app.include_router(menu.router)
 app.include_router(admin.router)
+app.include_router(vacancies.router)
 
 
 @app.on_event("startup")
