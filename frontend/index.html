@@ -119,7 +119,73 @@
     a[href^="#"] {
       -webkit-tap-highlight-color: transparent;
     }
+    .route-btn {
+      touch-action: manipulation;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-appearance: none;
+      appearance: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+    .route-btn:focus:not(:focus-visible) {
+      outline: none;
+    }
+    .route-btn:focus-visible {
+      outline: 2px solid rgba(217, 174, 95, 0.55);
+      outline-offset: 3px;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .route-btn:hover {
+        background-color: #e5d2b8;
+      }
+    }
+    /* Фиксированные размеры виджета Яндекса (500×400 и 479×326), без растягивания на всю колонку */
+    #place #map-embed-45a {
+      display: block;
+      width: 500px !important;
+      max-width: 100%;
+      height: 400px !important;
+      box-sizing: border-box;
+    }
+    #place #map-embed-12 {
+      display: block;
+      width: 479px !important;
+      max-width: 100%;
+      height: 326px !important;
+      box-sizing: border-box;
+    }
+    /* «Как добраться»: на десктопе текст+часы слева, карта справа в один ряд; кнопка маршрута — второй строкой только слева */
+    .place-route-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
     @media (min-width: 1024px) {
+      .place-route-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-areas:
+          'route-adr route-map'
+          'route-btn route-map';
+        column-gap: 3rem;
+        row-gap: 0.75rem;
+        align-items: start;
+      }
+      .place-route-layout .route-adr {
+        grid-area: route-adr;
+      }
+      .place-route-layout .route-map-wrap {
+        grid-area: route-map;
+        justify-self: end;
+        align-self: start;
+        width: fit-content;
+        max-width: 100%;
+      }
+      .place-route-layout > .route-btn-desktop {
+        grid-area: route-btn;
+        margin-top: 0;
+      }
       #footer-grid {
         display: grid !important;
         grid-template-columns: minmax(180px, 0.9fr) minmax(360px, 1.45fr) minmax(220px, 1fr);
@@ -153,28 +219,6 @@
         flex: 0 0 340px;
         margin-left: auto;
       }
-    }
-    #insta-toast {
-      position: fixed;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 90;
-      max-width: min(92vw, 420px);
-      border-radius: 14px;
-      border: 1px solid rgba(73, 9, 0, 0.18);
-      background: rgba(240, 238, 233, 0.98);
-      color: #490900;
-      padding: 12px 18px;
-      font-size: 14px;
-      text-align: center;
-      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 180ms ease;
-    }
-    #insta-toast.is-visible {
-      opacity: 1;
     }
     .interior-carousel {
       position: relative;
@@ -481,11 +525,11 @@
           width="200"
           height="80"
         />
-        <p class="font-display text-2xl font-semibold text-coffee-900 sm:text-3xl">
-          Неспешный кофе и тёплая атмосфера
+        <p class="font-display text-2xl font-bold text-coffee-900 sm:text-3xl">
+          Рафчик - твой повод замедлиться в центре города
         </p>
         <p class="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-coffee-700">
-          Заходите на раф, чай или десерт — берите с собой или оставайтесь за столом. Мы рядом, когда нужна пауза в дне.
+          Авторский кофе на натуральных ингредиентах, завтраки весь день и атмосфера, в которую хочется возвращаться
         </p>
         <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
           <a
@@ -528,17 +572,16 @@
       </div>
     </section>
 
-    <!-- О нас — замените текст на свой -->
     <section id="about" class="scroll-mt-24 px-4 pt-2 pb-16 sm:px-6 sm:pt-4 sm:pb-20">
       <div class="mx-auto max-w-5xl">
         <h2 class="font-display text-2xl font-bold text-coffee-900 sm:text-3xl">О кофейне</h2>
         <p class="mt-2 h-1 w-16 rounded-full bg-coffee-700"></p>
         <div class="mt-8 space-y-4 text-lg leading-relaxed text-coffee-800">
           <p>
-            «Рафчик» — это про спокойный ритм: удобные места, честный кофе и десерты без лишней суеты. Мы любим, когда гости возвращаются — как к знакомым.
+            Рафчик Coffee — это две уникальные локации на карте Новокузнецка, объединенные любовью к качественному зерну и гостеприимству — на Кирова, 45а вас ждет просторная кофейня с уютным залом, где можно неспешно насладиться авторскими завтраками и провести время с близкими
           </p>
           <p>
-            Здесь можно поработать с ноутбуком, встретиться с другом или просто выпить чашку до дороги. Этот блок легко правится в исходнике главной страницы.
+            Если же вы цените каждую минуту, загляните в наш компактный экспресс-филиал на Кирова, 12 — там мы быстро приготовим ваш любимый напиток в формате «с собой» — выбирайте свой формат, но будьте уверены: в каждом «Рафчике» вас ждет тот самый вкус и наша искренняя забота
           </p>
         </div>
       </div>
@@ -554,14 +597,13 @@
         <p class="mt-2 h-1 w-16 rounded-full bg-coffee-700"></p>
 
         <div class="interior-tabs mt-4" data-interior-tabs>
-          <p class="font-display text-sm font-semibold text-coffee-800 sm:text-base">Наши кофейни</p>
-          <p class="mt-1 max-w-xl text-sm leading-relaxed text-coffee-600 sm:text-base">
-            Выберите точку: обновятся и фотографии зала, и адрес в разделе «Как добраться» ниже.
+          <p class="max-w-xl text-sm leading-relaxed text-coffee-600 sm:text-base">
+            Выбирайте удобный адрес, чтобы посмотреть интерьер, узнать подробности и построить маршрут
           </p>
           <div
             class="interior-tabs-row mt-4 flex w-full max-w-2xl flex-row items-stretch gap-2 sm:mt-5 sm:gap-3 md:gap-4"
             role="tablist"
-            aria-label="Наши кофейни"
+            aria-label="Выбор адреса"
           >
             <button
               type="button"
@@ -625,65 +667,95 @@
         <p class="mt-2 h-1 w-16 rounded-full bg-coffee-700"></p>
 
         <div
-          class="place-for-cafe mt-6 grid gap-10 lg:grid-cols-2 lg:items-start lg:gap-12"
+          class="place-for-cafe place-route-layout mt-10"
           data-cafe-idx="0"
         >
-            <div>
-              <address class="not-italic text-lg leading-relaxed text-coffee-800">
-                <p class="font-semibold text-coffee-900">Адрес</p>
-                <p class="mt-2">Кирова 45а</p>
-                <p class="mt-1 text-coffee-600">Ориентир у входа — уточните при публикации.</p>
-                <p class="mt-6 font-semibold text-coffee-900">Часы работы</p>
-                <p class="mt-2">Пн–Пт 8:00–20:00</p>
-                <p>Сб–Вс 9:00–21:00</p>
-              </address>
-            </div>
-            <div class="min-w-0">
-              <div class="overflow-hidden rounded-2xl ring-1 ring-coffee-200/80">
-                <iframe
-                  id="map-embed-45a"
-                  title="Карта — Кирова 45а"
-                  class="mx-auto w-full max-w-[500px] border-0"
-                  width="500"
-                  height="400"
-                  loading="eager"
-                  fetchpriority="high"
-                  referrerpolicy="no-referrer-when-downgrade"
-                  src="https://yandex.ru/map-widget/v1/?um=constructor%3Abcc48115e407c941bd64905a501e541abcc1889599c3c087301c79879de4dade&amp;source=constructor"
-                ></iframe>
-              </div>
-            </div>
+          <address class="route-adr not-italic text-lg leading-relaxed text-coffee-800">
+            <p class="font-semibold text-coffee-900">Адрес</p>
+            <p class="mt-2">Кирова 45а</p>
+            <p class="mt-6 font-semibold text-coffee-900">Часы работы</p>
+            <p class="mt-2">Пн–Пт 8:00–20:00</p>
+            <p>Сб–Вс 9:00–21:00</p>
+          </address>
+          <div class="route-map-wrap mx-auto w-fit max-w-full min-w-0 overflow-hidden rounded-2xl ring-1 ring-coffee-200/80">
+            <iframe
+              id="map-embed-45a"
+              title="Карта — Кирова 45а"
+              class="border-0"
+              width="500"
+              height="400"
+              loading="eager"
+              fetchpriority="high"
+              referrerpolicy="no-referrer-when-downgrade"
+              src="https://yandex.ru/map-widget/v1/?um=constructor%3Abcc48115e407c941bd64905a501e541abcc1889599c3c087301c79879de4dade&amp;source=constructor"
+            ></iframe>
           </div>
-
-          <div
-            class="place-for-cafe mt-6 grid gap-10 lg:grid-cols-2 lg:items-start lg:gap-12"
-            data-cafe-idx="1"
-            hidden
+          <button
+            type="button"
+            class="route-btn route-btn-desktop hidden w-full items-center justify-center rounded-full border-2 border-coffee-700 px-8 py-3 text-base font-semibold text-coffee-800 transition active:scale-[0.99] lg:inline-flex"
+            data-yandex-route
+            data-route-lat="53.7578694"
+            data-route-lon="87.1324358"
+            data-route-label="Кирова 45а"
           >
-            <div>
-              <address class="not-italic text-lg leading-relaxed text-coffee-800">
-                <p class="font-semibold text-coffee-900">Адрес</p>
-                <p class="mt-2">Кирова 12</p>
-                <p class="mt-1 text-coffee-600">Ориентир у входа — уточните при публикации.</p>
-                <p class="mt-6 font-semibold text-coffee-900">Часы работы</p>
-                <p class="mt-2">Пн–Пт 8:00–20:00</p>
-                <p>Сб–Вс 9:00–20:00</p>
-              </address>
-            </div>
-            <div class="min-w-0">
-              <div class="overflow-hidden rounded-2xl ring-1 ring-coffee-200/80">
-                <iframe
-                  id="map-embed-12"
-                  title="Карта — Кирова 12"
-                  class="mx-auto w-full max-w-[479px] border-0"
-                  width="479"
-                  height="326"
-                  loading="lazy"
-                  referrerpolicy="no-referrer-when-downgrade"
-                  data-map-src="https://yandex.ru/map-widget/v1/?um=constructor%3A8210349a47cc913d142d98ebdcb337b96abf25698f0bbf00d29eb875ef0bbf97&amp;source=constructor"
-                ></iframe>
-              </div>
-            </div>
+            Построить маршрут
+          </button>
+          <button
+            type="button"
+            class="route-btn lg:hidden inline-flex w-full items-center justify-center rounded-full border-2 border-coffee-700 px-8 py-3 text-base font-semibold text-coffee-800 transition active:scale-[0.99]"
+            data-yandex-route
+            data-route-lat="53.7578694"
+            data-route-lon="87.1324358"
+            data-route-label="Кирова 45а"
+          >
+            Построить маршрут
+          </button>
+        </div>
+
+        <div
+          class="place-for-cafe place-route-layout mt-10"
+          data-cafe-idx="1"
+          hidden
+        >
+          <address class="route-adr not-italic text-lg leading-relaxed text-coffee-800">
+            <p class="font-semibold text-coffee-900">Адрес</p>
+            <p class="mt-2">Кирова 12</p>
+            <p class="mt-6 font-semibold text-coffee-900">Часы работы</p>
+            <p class="mt-2">Пн–Пт 8:00–20:00</p>
+            <p>Сб–Вс 9:00–20:00</p>
+          </address>
+          <div class="route-map-wrap mx-auto w-fit max-w-full min-w-0 overflow-hidden rounded-2xl ring-1 ring-coffee-200/80">
+            <iframe
+              id="map-embed-12"
+              title="Карта — Кирова 12"
+              class="border-0"
+              width="479"
+              height="326"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              data-map-src="https://yandex.ru/map-widget/v1/?um=constructor%3A8210349a47cc913d142d98ebdcb337b96abf25698f0bbf00d29eb875ef0bbf97&amp;source=constructor"
+            ></iframe>
+          </div>
+          <button
+            type="button"
+            class="route-btn route-btn-desktop hidden w-full items-center justify-center rounded-full border-2 border-coffee-700 px-8 py-3 text-base font-semibold text-coffee-800 transition active:scale-[0.99] lg:inline-flex"
+            data-yandex-route
+            data-route-lat="53.7571361"
+            data-route-lon="87.1108786"
+            data-route-label="Кирова 12"
+          >
+            Построить маршрут
+          </button>
+          <button
+            type="button"
+            class="route-btn lg:hidden inline-flex w-full items-center justify-center rounded-full border-2 border-coffee-700 px-8 py-3 text-base font-semibold text-coffee-800 transition active:scale-[0.99]"
+            data-yandex-route
+            data-route-lat="53.7571361"
+            data-route-lon="87.1108786"
+            data-route-label="Кирова 12"
+          >
+            Построить маршрут
+          </button>
         </div>
       </div>
     </section>
@@ -697,13 +769,13 @@
         <div id="owner-contact-layout" class="grid gap-9 lg:gap-10">
           <div id="owner-contact-text">
             <p class="text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-coffee-600/80">Связь с владельцем</p>
-            <h2 class="mt-1.5 font-display text-xl font-bold text-coffee-900 sm:text-2xl">Если есть проблема — напишите напрямую</h2>
+            <h2 class="mt-1.5 font-display text-xl font-bold text-coffee-900 sm:text-2xl">Прямая связь с владельцем</h2>
             <p class="mt-2.5 max-w-3xl text-sm leading-relaxed text-coffee-700 sm:text-base">
-              Канал для спорных ситуаций: сервис, заказ, качество или поведение персонала. Рассмотрим обращение вручную и ответим по делу.
+              Заметили недочет? Напишите нам напрямую. Мы увидим сообщение мгновенно и отреагируем быстрее, чем на отзыв в 2ГИС или Яндексе. Давайте исправим ситуацию сразу, пока ваш кофе еще не остыл!
             </p>
           </div>
           <div id="owner-contact-card" class="mt-4 w-full rounded-2xl border border-coffee-200/80 p-4 shadow-sm sm:mt-0 sm:p-5">
-            <p class="text-xs font-semibold uppercase tracking-[0.12em] text-coffee-600">Обычно отвечаем в течение 24 часов</p>
+            <p class="text-xs font-semibold uppercase tracking-[0.12em] text-coffee-600">Ценим вашу обратную связь больше всего на свете</p>
             <div class="mt-3 grid gap-2">
               <a
                 id="owner-contact-link-max"
@@ -724,13 +796,20 @@
                 Написать в Telegram
               </a>
             </div>
+            <label class="mt-3 inline-flex items-start gap-2 text-xs leading-relaxed text-coffee-700" for="owner-contact-telegram-consent">
+              <input
+                id="owner-contact-telegram-consent"
+                type="checkbox"
+                class="mt-0.5 h-4 w-4 rounded border-coffee-300 text-coffee-700"
+              />
+              <span>Используя мессенджер, вы соглашаетесь с <a href="privacy.html" class="underline decoration-coffee-400 underline-offset-2 hover:decoration-coffee-700">политикой конфиденциальности</a></span>
+            </label>
+            <p id="owner-contact-consent-hint" class="mt-2 hidden text-xs text-red-700">Подтвердите согласие с политикой конфиденциальности, чтобы перейти в Telegram</p>
           </div>
         </div>
       </div>
     </section>
   </main>
-
-  <div id="insta-toast" role="status" aria-live="polite"></div>
 
   <div id="vacancy-modal-overlay" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/55 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="vacancy-modal-title">
     <div class="w-full max-w-lg rounded-2xl border border-coffee-200 bg-white p-5 shadow-2xl sm:p-6">
@@ -792,13 +871,15 @@
         <p>ОГРНИП 324420500086313</p>
         <p class="flex flex-wrap items-center justify-center gap-2 pt-0.5">
           <a
-            id="footer-instagram"
-            href="#"
+            id="footer-vk"
+            href="https://vk.ru/rafchik.coffee"
             class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-coffee-200/90 bg-transparent text-coffee-800 transition hover:border-coffee-400 hover:bg-transparent hover:text-coffee-950"
-            aria-label="Наш Instagram"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Наша страница VK"
           >
             <svg class="h-[1.2rem] w-[1.2rem]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-              <path d="M7.75 2h8.5A5.75 5.75 0 0 1 22 7.75v8.5A5.75 5.75 0 0 1 16.25 22h-8.5A5.75 5.75 0 0 1 2 16.25v-8.5A5.75 5.75 0 0 1 7.75 2Zm0 1.8A3.95 3.95 0 0 0 3.8 7.75v8.5a3.95 3.95 0 0 0 3.95 3.95h8.5a3.95 3.95 0 0 0 3.95-3.95v-8.5a3.95 3.95 0 0 0-3.95-3.95h-8.5ZM12 7.7A4.3 4.3 0 1 1 7.7 12 4.3 4.3 0 0 1 12 7.7Zm0 1.8A2.5 2.5 0 1 0 14.5 12 2.5 2.5 0 0 0 12 9.5Zm4.65-3a1.05 1.05 0 1 1-1.05 1.05 1.05 1.05 0 0 1 1.05-1.05Z"/>
+              <path d="M3 7.5c.12 5.95 3.1 9.53 8.32 9.53h.31v-3.4c1.89.19 3.31 1.56 3.88 3.4H18c-.73-2.67-2.65-4.15-3.84-4.72 1.19-.69 2.87-2.38 3.27-4.8h-2.26c-.52 1.97-2.06 3.66-3.54 3.83V7.5H9.38v6.71c-1.5-.38-3.39-2.2-3.47-6.71H3z"/>
             </svg>
           </a>
           <a
@@ -1165,6 +1246,63 @@
   </script>
   <script>
     (function () {
+      var base = 'https://yandex.ru/maps/';
+      /** rtext: широта,долгота ~ широта,долгота — см. документацию запуска Яндекс Карт */
+      function gotoInTab(openedWin, url) {
+        try {
+          if (openedWin && !openedWin.closed) {
+            openedWin.location.href = url;
+            openedWin.focus();
+          } else {
+            window.location.assign(url);
+          }
+        } catch (_) {
+          window.location.assign(url);
+        }
+      }
+      /** Вкладку открываем синхронно по тапу, иначе мобильные блокируют всплывающее окно после асинхронной геолокации. */
+      function openRouteFromClick(destLatStr, destLonStr) {
+        var dLat = Number(destLatStr);
+        var dLon = Number(destLonStr);
+        function between(lat1, lon1) {
+          return base + '?rtext=' + lat1 + ',' + lon1 + '~' + dLat + ',' + dLon + '&rtt=auto';
+        }
+        var fromMyLoc = base + '?rtext=~' + dLat + ',' + dLon + '&rtt=auto';
+
+        var newTab = window.open('about:blank', '_blank');
+        /** Без вкладки-заглушки переходим в текущем окне (работает на моб. при блокировке всплывающего). */
+
+        function apply(url) {
+          gotoInTab(newTab, url);
+        }
+
+        if (!navigator.geolocation) {
+          apply(fromMyLoc);
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          function (pos) {
+            apply(between(pos.coords.latitude, pos.coords.longitude));
+          },
+          function () {
+            apply(fromMyLoc);
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+        );
+      }
+      document.querySelectorAll('[data-yandex-route]').forEach(function (btn) {
+        var lat = btn.getAttribute('data-route-lat');
+        var lon = btn.getAttribute('data-route-lon');
+        var lbl = btn.getAttribute('data-route-label');
+        if (lbl) btn.setAttribute('aria-label', 'Построить маршрут до ' + lbl + ' в Яндекс Картах');
+        btn.addEventListener('click', function () {
+          openRouteFromClick(lat, lon);
+        });
+      });
+    })();
+  </script>
+  <script>
+    (function () {
       const form = document.getElementById('vacancy-form');
       if (!form) return;
 
@@ -1177,9 +1315,9 @@
       const consentEl = document.getElementById('vacancy-consent');
       const submitEl = document.getElementById('vacancy-submit');
       const feedbackEl = document.getElementById('vacancy-feedback');
-      const instaBtn = document.getElementById('footer-instagram');
-      const instaToast = document.getElementById('insta-toast');
-      let instaToastTimer = null;
+      const ownerTgLink = document.getElementById('owner-contact-link-telegram');
+      const ownerTgConsent = document.getElementById('owner-contact-telegram-consent');
+      const ownerTgHint = document.getElementById('owner-contact-consent-hint');
       const modalOverlay = document.getElementById('vacancy-modal-overlay');
       const modalCloseBtn = document.getElementById('vacancy-modal-close');
       const headerVacancyBtn = document.getElementById('header-vacancy-btn');
@@ -1281,16 +1419,19 @@
         if (e.key === 'Escape') closeVacancyModal();
       });
 
-      if (instaBtn) {
-        instaBtn.addEventListener('click', function (e) {
+      if (ownerTgLink && ownerTgConsent) {
+        ownerTgLink.addEventListener('click', function (e) {
+          if (ownerTgConsent.checked) {
+            if (ownerTgHint) ownerTgHint.classList.add('hidden');
+            return;
+          }
           e.preventDefault();
-          if (!instaToast) return;
-          instaToast.textContent = 'Запрещенку хотите? У нас только кофе и десерты :)';
-          instaToast.classList.add('is-visible');
-          if (instaToastTimer) clearTimeout(instaToastTimer);
-          instaToastTimer = setTimeout(function () {
-            instaToast.classList.remove('is-visible');
-          }, 2000);
+          if (ownerTgHint) ownerTgHint.classList.remove('hidden');
+          ownerTgConsent.focus();
+        });
+        ownerTgConsent.addEventListener('change', function () {
+          if (!ownerTgHint) return;
+          ownerTgHint.classList.toggle('hidden', ownerTgConsent.checked);
         });
       }
 
