@@ -243,7 +243,7 @@
         <button type="button" class="admin-tab" data-panel="dish">Форма блюда</button>
         <button type="button" class="admin-tab" data-panel="lists">Списки блюд</button>
         <button type="button" class="admin-tab" data-panel="vacancies">Вакансии</button>
-        <button type="button" class="admin-tab" data-panel="interior">Интерьер</button>
+        <button type="button" class="admin-tab hidden" data-panel="interior" aria-hidden="true">Интерьер</button>
         <button type="button" class="admin-tab" data-panel="help">Справка</button>
       </div>
     </section>
@@ -599,7 +599,7 @@
       </section>
     </div>
 
-    <div id="panel-interior" class="admin-panel mb-8">
+    <div id="panel-interior" class="admin-panel mb-8 hidden">
       <section class="space-y-6 rounded-2xl border border-coffee-200 bg-coffee-50 p-5 shadow-sm">
         <div class="rounded-xl border border-coffee-200 bg-white/80 p-4">
           <h3 class="font-display text-lg font-semibold text-coffee-900">Галерея интерьера</h3>
@@ -964,6 +964,16 @@
       if (!vacancyAppModalOverlay || !vacancyAppModalBody) return;
       const a = vacancyApplications[idx];
       if (!a) return;
+      const rawMessage = a.message || '';
+      const resumeMatch = rawMessage.match(/Резюме PDF:\s*(\S+)/i);
+      const resumeUrl = resumeMatch && resumeMatch[1] ? resumeMatch[1] : null;
+      const rawMessageForView = rawMessage.replace(/(^|\n)\s*Резюме PDF:\s*\S+\s*$/im, '$1');
+      const resumeHtml = resumeUrl
+        ? '<div class="mt-3 flex items-center gap-2">' +
+          '<a href="' + escHtml(resumeUrl) + '" target="_blank" rel="noopener noreferrer" class="inline-flex rounded-full border border-coffee-400 px-3 py-1 text-xs font-medium text-coffee-800 transition hover:bg-coffee-100">' +
+          'Открыть резюме</a>' +
+          '</div>'
+        : '';
       vacancyAppModalBody.innerHTML =
         '<div class="rounded-xl border border-coffee-200 bg-coffee-50/60 p-3">' +
           '<p class="text-xs text-coffee-600">Дата</p>' +
@@ -981,7 +991,8 @@
         '</div>' +
         '<div class="rounded-xl border border-coffee-200 bg-white p-3">' +
           '<p class="text-xs text-coffee-600">Комментарий</p>' +
-          '<p class="mt-1 whitespace-pre-wrap text-coffee-900">' + escHtml(a.message || '-') + '</p>' +
+          '<p class="mt-1 whitespace-pre-wrap text-coffee-900">' + escHtml(rawMessageForView || '-') + '</p>' +
+          resumeHtml +
         '</div>';
       vacancyAppModalOverlay.classList.remove('hidden');
       vacancyAppModalOverlay.classList.add('flex');

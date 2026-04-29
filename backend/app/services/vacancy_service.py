@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import smtplib
 from email.message import EmailMessage
 from typing import Any, Dict, List, Optional, Tuple
@@ -45,7 +46,26 @@ class VacancyService:
         if not vacancy or not vacancy.get("is_active", False):
             raise ValueError("Vacancy not found or inactive")
         app = await self.repo.create_application(payload)
-        email_sent = self._send_application_email(vacancy=vacancy, application=app)
+        # SMTP отправка делается синхронно и может заметно тормозить запрос.
+        # Чтобы UI не ждал 1-3+ секунды, отправляем письмо "в фоне" и возвращаемся сразу.
+        email_sent = False
+
+        async def _fire_and_forget() -> None:
+            try:
+                await asyncio.to_thread(self._send_application_email, vacancy=vacancy, application=app)
+            except Exception:
+                # Ошибки email отправки не должны ломать пользовательский UX.
+                return
+
+        try:
+            asyncio.create_task(_fire_and_forget())
+        except RuntimeError:
+            # На случай, если этот код вызовут без active event loop.
+            try:
+                self._send_application_email(vacancy=vacancy, application=app)
+            except Exception:
+                pass
+
         return app, email_sent
 
     def _send_application_email(self, *, vacancy: Dict[str, Any], application: Dict[str, Any]) -> bool:
