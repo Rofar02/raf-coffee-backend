@@ -264,6 +264,20 @@
         height: clamp(170px, 24vw, 220px);
       }
     }
+    .interior-carousel--has-video .interior-carousel__pages {
+      height: min(56svh, 300px);
+      background: #000;
+    }
+    @media (min-width: 640px) {
+      .interior-carousel--has-video .interior-carousel__pages {
+        height: clamp(220px, 38vw, 360px);
+      }
+    }
+    @media (min-width: 1024px) {
+      .interior-carousel--has-video .interior-carousel__pages {
+        height: clamp(260px, 30vw, 420px);
+      }
+    }
     .interior-carousel__page {
       flex: 0 0 100%;
       width: 100%;
@@ -272,7 +286,8 @@
       scroll-snap-stop: always;
       overflow: hidden;
     }
-    .interior-carousel__page img {
+    .interior-carousel__page img,
+    .interior-carousel__page video {
       display: block;
       width: 100%;
       height: 100%;
@@ -282,13 +297,44 @@
       object-position: center;
       background: rgba(240, 238, 233, 0.9);
     }
+    .interior-video-only {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      object-position: center;
+      background: transparent;
+      display: block;
+    }
+    .interior-carousel__frame--video-only {
+      height: auto;
+      min-height: 0;
+      max-height: none;
+      background: transparent;
+    }
     @media (min-width: 640px) {
-      .interior-carousel__page img {
+      .interior-carousel__frame--video-only {
+        height: auto;
+        max-height: none;
+      }
+    }
+    @media (min-width: 1024px) {
+      .interior-carousel__frame--video-only {
+        height: auto;
+        max-height: none;
+      }
+    }
+    .interior-carousel__page video {
+      background: transparent;
+    }
+    @media (min-width: 640px) {
+      .interior-carousel__page img,
+      .interior-carousel__page video {
         object-fit: cover;
       }
     }
     @media (min-width: 1024px) {
-      .interior-carousel__page img {
+      .interior-carousel__page img,
+      .interior-carousel__page video {
         object-fit: cover;
       }
     }
@@ -335,6 +381,13 @@
       height: 100%;
       object-fit: cover;
       display: block;
+    }
+    .interior-carousel__thumb--video {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #490900;
+      background: rgba(229, 210, 184, 0.72);
     }
     .interior-carousel__nav {
       position: absolute;
@@ -578,10 +631,10 @@
         <p class="mt-2 h-1 w-16 rounded-full bg-coffee-700"></p>
         <div class="mt-8 space-y-4 text-lg leading-relaxed text-coffee-800">
           <p>
-            Рафчик Coffee — это две уникальные локации на карте Новокузнецка, объединенные любовью к качественному зерну и гостеприимству — на Кирова, 45а вас ждет просторная кофейня с уютным залом, где можно неспешно насладиться авторскими завтраками и провести время с близкими
+            Рафчик Coffee — это две уникальные локации на карте Новокузнецка, объединенные любовью к качественному зерну и гостеприимству — на Кирова, 45а вас ждет просторная кофейня с уютным залом, где можно неспешно насладиться авторскими завтраками и провести время с близкими.
           </p>
           <p>
-            Если же вы цените каждую минуту, загляните в наш компактный экспресс-филиал на Кирова, 12 — там мы быстро приготовим ваш любимый напиток в формате «с собой» — выбирайте свой формат, но будьте уверены: в каждом «Рафчике» вас ждет тот самый вкус и наша искренняя забота
+            Если же вы цените каждую минуту, загляните в наш компактный экспресс-филиал на Кирова, 12 — там мы быстро приготовим ваш любимый напиток в формате «с собой» — выбирайте свой формат, но будьте уверены: в каждом «Рафчике» вас ждет тот самый вкус и наша искренняя забота.
           </p>
         </div>
       </div>
@@ -635,8 +688,11 @@
             aria-labelledby="tab-interior-kirova-45a"
             class="mt-6"
           >
-            <p class="max-w-3xl text-base leading-relaxed text-coffee-800 sm:text-lg" data-interior-description="kirova-45a">
-              Первая кофейня: компактный зал, столы у окна, удобно и «на бегу» с кофе, и с ноутбуком. Тёплые оттенки дерева и мягкий свет — фирменный уют «Рафчика».
+            <p
+              class="max-w-3xl font-display text-base font-bold leading-relaxed text-coffee-900 sm:text-lg"
+              data-interior-description="kirova-45a"
+            >
+              Кофейня с завтраками и посадочными местами
             </p>
             <div class="mt-8" data-interior-gallery="kirova-45a"></div>
           </div>
@@ -648,8 +704,11 @@
             class="mt-6"
             hidden
           >
-            <p class="max-w-3xl text-base leading-relaxed text-coffee-800 sm:text-lg" data-interior-description="kirova-12">
-              Вторая точка: просторнее посадка, тот же кофе и десерты, своё сочетание света и зоны для встреч. Заходите — найдёте «свой» угол.
+            <p
+              class="max-w-3xl font-display text-base font-bold leading-relaxed text-coffee-900 sm:text-lg"
+              data-interior-description="kirova-12"
+            >
+              Экспресс-кофейня в ритме города
             </p>
             <div class="mt-8" data-interior-gallery="kirova-12"></div>
           </div>
@@ -768,7 +827,6 @@
       <div class="mx-auto max-w-5xl">
         <div id="owner-contact-layout" class="grid gap-9 lg:gap-10">
           <div id="owner-contact-text">
-            <p class="text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-coffee-600/80">Связь с владельцем</p>
             <h2 class="mt-1.5 font-display text-xl font-bold text-coffee-900 sm:text-2xl">Прямая связь с владельцем</h2>
             <p class="mt-2.5 max-w-3xl text-sm leading-relaxed text-coffee-700 sm:text-base">
               Заметили недочет? Напишите нам напрямую. Мы увидим сообщение мгновенно и отреагируем быстрее, чем на отзыв в 2ГИС или Яндексе. Давайте исправим ситуацию сразу, пока ваш кофе еще не остыл!
@@ -796,15 +854,16 @@
                 Написать в Telegram
               </a>
             </div>
-            <label class="mt-3 inline-flex items-start gap-2 text-xs leading-relaxed text-coffee-700" for="owner-contact-telegram-consent">
-              <input
-                id="owner-contact-telegram-consent"
-                type="checkbox"
-                class="mt-0.5 h-4 w-4 rounded border-coffee-300 text-coffee-700"
-              />
-              <span>Используя мессенджер, вы соглашаетесь с <a href="privacy.html" class="underline decoration-coffee-400 underline-offset-2 hover:decoration-coffee-700">политикой конфиденциальности</a></span>
-            </label>
-            <p id="owner-contact-consent-hint" class="mt-2 hidden text-xs text-red-700">Подтвердите согласие с политикой конфиденциальности, чтобы перейти в Telegram</p>
+            <div id="owner-contact-consent-wrap" class="mt-3 hidden">
+              <label class="inline-flex items-start gap-2 text-xs leading-relaxed text-coffee-700" for="owner-contact-messenger-consent">
+                <input
+                  id="owner-contact-messenger-consent"
+                  type="checkbox"
+                  class="mt-0.5 h-4 w-4 rounded border-coffee-300 text-coffee-700"
+                />
+                <span>Используя мессенджеры, вы соглашаетесь с <a href="privacy.html" class="underline decoration-coffee-400 underline-offset-2 hover:decoration-coffee-700">политикой конфиденциальности</a></span>
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -1072,6 +1131,9 @@
           .replace(/"/g, '&quot;')
           .replace(/'/g, '&#39;');
       }
+      function isVideoUrl(src) {
+        return /\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(String(src || '').trim());
+      }
 
       function renderGallery(slug) {
         const mount = document.querySelector('[data-interior-gallery="' + slug + '"]');
@@ -1087,14 +1149,61 @@
         if (typeof state.current !== 'number' || state.current < 0 || state.current >= state.images.length) {
           state.current = 0;
         }
-        const pages = state.images.map((src, idx) => (
+        const media = state.images.map((src) => ({ src: String(src || '').trim(), kind: isVideoUrl(src) ? 'video' : 'image' }));
+        const hasVideo = media.some((item) => item.kind === 'video');
+        if (hasVideo) {
+          const firstVideo = media.find((item) => item.kind === 'video' && item.src);
+          if (!firstVideo || !firstVideo.src) {
+            mount.innerHTML =
+              '<div class="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl bg-coffee-200/40 text-center text-sm text-coffee-600 ring-1 ring-coffee-200/80">' +
+                '<span>Видео скоро добавим</span>' +
+              '</div>';
+            return;
+          }
+          state.current = 0;
+          mount.innerHTML =
+            '<div class="interior-carousel__frame interior-carousel__frame--video-only">' +
+              '<video ' +
+                'src="' + escHtml(firstVideo.src) + '" ' +
+                'preload="metadata" ' +
+                'playsinline webkit-playsinline muted loop ' +
+                'class="interior-video-only" ' +
+              '></video>' +
+            '</div>';
+          const videoEl = mount.querySelector('video');
+          if (videoEl) {
+            // До клика никаких controls — только после взаимодействия.
+            videoEl.addEventListener('click', function () {
+              if (!videoEl.controls) videoEl.controls = true;
+            });
+          }
+          state.syncMedia = function () {
+            const panel = mount.closest('[role="tabpanel"]');
+            const isActivePanel = !panel || !panel.hidden;
+            if (!videoEl) return;
+            if (!isActivePanel) {
+              try { videoEl.pause(); } catch (_) {}
+              return;
+            }
+            videoEl.muted = true;
+            const p = videoEl.play();
+            if (p && typeof p.catch === 'function') p.catch(function () {});
+          };
+          // На видео-галеpее карусель и миниатюры не нужны.
+          return;
+        }
+        const pages = media.map((item, idx) => (
           '<div class="interior-carousel__page">' +
-            '<img src="' + escHtml(src) + '" alt="' + escHtml((state.title || slug) + ' — ' + (idx + 1) + ' / ' + state.images.length) + '" loading="lazy" draggable="false" />' +
+            (item.kind === 'video'
+              ? '<video src="' + escHtml(item.src) + '" preload="metadata" playsinline webkit-playsinline muted loop class="bg-black" data-interior-video="' + slug + '"></video>'
+              : '<img src="' + escHtml(item.src) + '" alt="' + escHtml((state.title || slug) + ' — ' + (idx + 1) + ' / ' + media.length) + '" loading="lazy" draggable="false" />') +
           '</div>'
         )).join('');
-        const thumbs = state.images.map((src, idx) => (
-          '<button type="button" class="interior-carousel__thumb" data-interior-thumb="' + slug + '" data-idx="' + String(idx) + '" aria-selected="' + (idx === state.current ? 'true' : 'false') + '" aria-label="Фото ' + String(idx + 1) + ' из ' + state.images.length + '">' +
-            '<img src="' + escHtml(src) + '" alt="" loading="lazy" draggable="false" />' +
+        const thumbs = media.map((item, idx) => (
+          '<button type="button" class="interior-carousel__thumb' + (item.kind === 'video' ? ' interior-carousel__thumb--video' : '') + '" data-interior-thumb="' + slug + '" data-idx="' + String(idx) + '" aria-selected="' + (idx === state.current ? 'true' : 'false') + '" aria-label="' + (item.kind === 'video' ? 'Видео ' : 'Фото ') + String(idx + 1) + ' из ' + media.length + '">' +
+            (item.kind === 'video'
+              ? ''
+              : '<img src="' + escHtml(item.src) + '" alt="" loading="lazy" draggable="false" />') +
           '</button>'
         )).join('');
         const svgL =
@@ -1105,13 +1214,17 @@
           '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
           '<path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />' +
           '</svg>';
-        const collageItems = state.images.map((src, idx) => (
-          '<div class="interior-collage__item"><img src="' + escHtml(src) + '" alt="" loading="lazy" /></div>'
+        const collageItems = media.map((item, idx) => (
+          '<div class="interior-collage__item">' +
+            (item.kind === 'video'
+              ? '<video src="' + escHtml(item.src) + '" preload="metadata" playsinline webkit-playsinline muted loop class="h-full w-full object-cover bg-black"></video>'
+              : '<img src="' + escHtml(item.src) + '" alt="" loading="lazy" />') +
+          '</div>'
         )).join('');
         mount.innerHTML =
           '<div class="w-full overflow-hidden">' +
             '<div class="interior-carousel-wrap">' +
-              '<div class="interior-carousel interior-carousel--with-thumbs" role="group">' +
+              '<div class="interior-carousel interior-carousel--with-thumbs' + (hasVideo ? ' interior-carousel--has-video' : '') + '" role="group">' +
                 '<div class="min-w-0 flex-1">' +
                   '<div class="interior-carousel__frame">' +
                     '<div class="interior-carousel__pages" data-interior-pages="' + slug + '">' + pages + '</div>' +
@@ -1128,6 +1241,29 @@
         const thumbBtns = Array.from(mount.querySelectorAll('[data-interior-thumb="' + slug + '"]'));
         if (!pagesEl || !thumbBtns.length) return;
         let idx = state.current || 0;
+        const videos = Array.from(pagesEl.querySelectorAll('video'));
+        videos.forEach(function (video) {
+          video.addEventListener('click', function () {
+            if (!video.hasAttribute('controls')) video.setAttribute('controls', '');
+          });
+        });
+        function syncVideoPlayback() {
+          const panel = mount.closest('[role="tabpanel"]');
+          const isActivePanel = !panel || !panel.hidden;
+          videos.forEach((video, mediaIdx) => {
+            if (mediaIdx !== idx || !isActivePanel) {
+              video.pause();
+              return;
+            }
+            if (slug === 'kirova-12') {
+              video.muted = true;
+              const playPromise = video.play();
+              if (playPromise && typeof playPromise.catch === 'function') {
+                playPromise.catch(function () {});
+              }
+            }
+          });
+        }
         function setThumbState(i) {
           thumbBtns.forEach((btn, k) => btn.setAttribute('aria-selected', k === i ? 'true' : 'false'));
           const active = thumbBtns[i];
@@ -1141,6 +1277,7 @@
           state.current = newIdx;
           pagesEl.scrollTo({ left: newIdx * w, behavior: instant ? 'auto' : 'smooth' });
           setThumbState(newIdx);
+          syncVideoPlayback();
         }
         function go(step) {
           const nextIdx = (idx + step + state.images.length) % state.images.length;
@@ -1158,6 +1295,7 @@
               idx = i;
               state.current = i;
               setThumbState(i);
+              syncVideoPlayback();
             }
           });
         }, { passive: true });
@@ -1171,6 +1309,7 @@
         const nextBtn = mount.querySelector('[data-interior-next="' + slug + '"]');
         if (prevBtn) prevBtn.addEventListener('click', function () { go(-1); });
         if (nextBtn) nextBtn.addEventListener('click', function () { go(1); });
+        state.syncMedia = syncVideoPlayback;
         requestAnimationFrame(function () { goTo(idx, true); });
       }
 
@@ -1180,18 +1319,31 @@
           if (!res.ok) return;
           const rows = await res.json();
           if (!Array.isArray(rows)) return;
+          const demoKirova12Video = '/static/kirova%2012.mp4';
+          const interiorHeadingOverrides = {
+            'kirova-45a': 'Кофейня с завтраками и посадочными местами',
+            'kirova-12': 'Экспресс-кофейня в ритме города',
+          };
           rows.forEach((item) => {
             const slug = String(item.slug || '').trim();
             if (!slug) return;
+            let media = Array.isArray(item.images) ? item.images.filter(Boolean) : [];
+            if (slug === 'kirova-12' && !media.some((src) => String(src || '').includes('kirova%2012.mp4') || String(src || '').includes('kirova 12.mp4'))) {
+              media = [demoKirova12Video].concat(media);
+            }
             interiorState[slug] = {
               title: item.title || slug,
               description: item.description || '',
-              images: Array.isArray(item.images) ? item.images.filter(Boolean) : [],
+              images: media,
               current: 0,
             };
             const descEl = document.querySelector('[data-interior-description="' + slug + '"]');
-            if (descEl && item.description) {
-              descEl.textContent = item.description;
+            if (descEl) {
+              if (interiorHeadingOverrides[slug]) {
+                descEl.textContent = interiorHeadingOverrides[slug];
+              } else if (item.description) {
+                descEl.textContent = item.description;
+              }
             }
             renderGallery(slug);
           });
@@ -1222,6 +1374,10 @@
             m12.dataset.mapLoaded = '1';
           }
         }
+        Object.keys(interiorState).forEach(function (slug) {
+          const item = interiorState[slug];
+          if (item && typeof item.syncMedia === 'function') item.syncMedia();
+        });
       }
 
       tabs.forEach((tab, i) => {
@@ -1315,9 +1471,11 @@
       const consentEl = document.getElementById('vacancy-consent');
       const submitEl = document.getElementById('vacancy-submit');
       const feedbackEl = document.getElementById('vacancy-feedback');
+      const ownerMaxLink = document.getElementById('owner-contact-link-max');
       const ownerTgLink = document.getElementById('owner-contact-link-telegram');
-      const ownerTgConsent = document.getElementById('owner-contact-telegram-consent');
-      const ownerTgHint = document.getElementById('owner-contact-consent-hint');
+      const ownerContactSection = document.getElementById('owner-contact');
+      const ownerConsentWrap = document.getElementById('owner-contact-consent-wrap');
+      const ownerMessengerConsent = document.getElementById('owner-contact-messenger-consent');
       const modalOverlay = document.getElementById('vacancy-modal-overlay');
       const modalCloseBtn = document.getElementById('vacancy-modal-close');
       const headerVacancyBtn = document.getElementById('header-vacancy-btn');
@@ -1419,20 +1577,57 @@
         if (e.key === 'Escape') closeVacancyModal();
       });
 
-      if (ownerTgLink && ownerTgConsent) {
-        ownerTgLink.addEventListener('click', function (e) {
-          if (ownerTgConsent.checked) {
-            if (ownerTgHint) ownerTgHint.classList.add('hidden');
+      if (ownerMessengerConsent) {
+        let pendingMessengerUrl = '';
+        function resetOwnerConsentUi() {
+          pendingMessengerUrl = '';
+          ownerMessengerConsent.checked = false;
+          if (ownerConsentWrap) ownerConsentWrap.classList.add('hidden');
+        }
+
+        function openMessengerUrl(url) {
+          if (!url) return;
+          const opened = window.open(url, '_blank', 'noopener,noreferrer');
+          if (!opened) window.location.href = url;
+        }
+
+        function ensureConsentForMessenger(e, linkEl) {
+          if (ownerConsentWrap) ownerConsentWrap.classList.remove('hidden');
+          if (ownerMessengerConsent.checked) {
             return;
           }
           e.preventDefault();
-          if (ownerTgHint) ownerTgHint.classList.remove('hidden');
-          ownerTgConsent.focus();
+          pendingMessengerUrl = linkEl ? (linkEl.getAttribute('href') || '') : '';
+          ownerMessengerConsent.focus();
+        }
+
+        if (ownerMaxLink) {
+          ownerMaxLink.addEventListener('click', function (e) {
+            ensureConsentForMessenger(e, ownerMaxLink);
+          });
+        }
+        if (ownerTgLink) {
+          ownerTgLink.addEventListener('click', function (e) {
+            ensureConsentForMessenger(e, ownerTgLink);
+          });
+        }
+
+        ownerMessengerConsent.addEventListener('change', function () {
+          if (!ownerMessengerConsent.checked || !pendingMessengerUrl) return;
+          openMessengerUrl(pendingMessengerUrl);
+          pendingMessengerUrl = '';
         });
-        ownerTgConsent.addEventListener('change', function () {
-          if (!ownerTgHint) return;
-          ownerTgHint.classList.toggle('hidden', ownerTgConsent.checked);
-        });
+
+        // Если ушли скроллом с блока владельца — скрываем и сбрасываем выбор.
+        if (ownerContactSection) {
+          window.addEventListener('scroll', function () {
+            const rect = ownerContactSection.getBoundingClientRect();
+            const outOfView = rect.bottom < 0 || rect.top > window.innerHeight;
+            if (outOfView && ownerConsentWrap && !ownerConsentWrap.classList.contains('hidden')) {
+              resetOwnerConsentUi();
+            }
+          }, { passive: true });
+        }
       }
 
       loadVacancies();
