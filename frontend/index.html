@@ -320,7 +320,13 @@
     @media (min-width: 1024px) {
       .interior-carousel__frame--video-only {
         height: auto;
-        max-height: none;
+        max-height: min(48vw, 520px);
+        background: transparent;
+        box-shadow: none;
+        border-radius: 0;
+      }
+      .interior-video-only {
+        max-height: min(48vw, 520px);
       }
     }
     .interior-carousel__page video {
