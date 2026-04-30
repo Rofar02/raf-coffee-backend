@@ -282,13 +282,131 @@
         height: clamp(260px, 30vw, 420px);
       }
     }
+    @media (min-width: 1024px) {
+      /* На десктопе контейнер подстраивается под текущий кадр (фото/видео), без лишних полей. */
+      .interior-carousel--has-video .interior-carousel__frame {
+        background: transparent;
+      }
+      .interior-carousel--has-video .interior-carousel__pages {
+        width: 100%;
+        height: auto;
+        max-width: 100%;
+        max-height: none;
+      }
+    }
+    /* Фото в mixed-блоке (видео + фото) показываем целиком, без обрезки. */
+    .interior-carousel--has-video .interior-carousel__page img {
+      object-fit: contain;
+      background: rgba(240, 238, 233, 0.9);
+    }
+    /* На мобилке оставляем текущий приятный результат: видео заполняет кадр. */
+    .interior-carousel--has-video .interior-carousel__page video {
+      object-fit: cover;
+      object-position: center;
+      background: transparent;
+    }
+    /* На планшете/десктопе убираем обрезку видео: показываем полный кадр. */
+    @media (min-width: 1024px) {
+      .interior-carousel--has-video .interior-carousel__page video {
+        object-fit: contain;
+        background: rgba(240, 238, 233, 0.9);
+      }
+    }
     .interior-carousel__page {
+      position: relative;
       flex: 0 0 100%;
       width: 100%;
       height: 100%;
       scroll-snap-align: start;
       scroll-snap-stop: always;
       overflow: hidden;
+    }
+    .interior-video-expand-btn {
+      position: absolute;
+      right: 0.5rem;
+      bottom: 0.5rem;
+      z-index: 3;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      background: rgba(0, 0, 0, 0.45);
+      color: #fff;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.75rem;
+      line-height: 1.1;
+      backdrop-filter: blur(2px);
+    }
+    .interior-video-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem;
+      background: rgba(0, 0, 0, 0.88);
+    }
+    .interior-video-overlay.is-open {
+      display: flex;
+    }
+    .interior-video-overlay__inner {
+      width: min(96vw, 1200px);
+    }
+    .interior-video-overlay__video {
+      width: 100%;
+      max-height: 90dvh;
+      background: #000;
+      border-radius: 0.75rem;
+    }
+    .interior-video-overlay__close {
+      position: fixed;
+      top: 0.75rem;
+      right: 0.75rem;
+      z-index: 81;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      background: rgba(0, 0, 0, 0.55);
+      color: #fff;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.8rem;
+      line-height: 1.1;
+    }
+    .interior-image-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem;
+      background: rgba(0, 0, 0, 0.88);
+    }
+    .interior-image-overlay.is-open {
+      display: flex;
+    }
+    .interior-image-overlay__inner {
+      width: min(96vw, 1280px);
+      max-height: 92dvh;
+    }
+    .interior-image-overlay__img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 92dvh;
+      object-fit: contain;
+      border-radius: 0.75rem;
+    }
+    .interior-image-overlay__close {
+      position: fixed;
+      top: 0.75rem;
+      right: 0.75rem;
+      z-index: 81;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      background: rgba(0, 0, 0, 0.55);
+      color: #fff;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.8rem;
+      line-height: 1.1;
     }
     .interior-carousel__page img,
     .interior-carousel__page video {
@@ -423,6 +541,9 @@
     .interior-collage {
       display: none;
     }
+    .interior-desktop-media {
+      display: none;
+    }
     .interior-carousel-wrap {
       display: block;
     }
@@ -459,6 +580,88 @@
         object-fit: contain;
         object-position: center;
         display: block;
+      }
+      .interior-gallery-shell--has-video .interior-carousel-wrap {
+        display: block;
+      }
+      .interior-gallery-shell--has-video .interior-collage {
+        display: none;
+      }
+      .interior-gallery-shell--has-video .interior-desktop-media {
+        display: block;
+      }
+      .interior-gallery-shell--has-video .interior-carousel-wrap {
+        display: none;
+      }
+    }
+    .interior-desktop-media__tabs {
+      display: inline-flex;
+      gap: 0.45rem;
+      padding: 0.22rem;
+      border-radius: 9999px;
+      background: rgba(73, 9, 0, 0.08);
+      margin-bottom: 0.8rem;
+    }
+    .interior-desktop-media__tab {
+      border: 0;
+      border-radius: 9999px;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #490900;
+      background: transparent;
+    }
+    .interior-desktop-media__tab[aria-selected='true'] {
+      background: #fff;
+      box-shadow: 0 0 0 1px rgba(73, 9, 0, 0.12);
+    }
+    .interior-desktop-media__panel[hidden] {
+      display: none !important;
+    }
+    .interior-desktop-media__video-wrap {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 0.95rem;
+      background: transparent;
+      box-shadow: none;
+      max-width: 920px;
+    }
+    .interior-desktop-media__video-wrap video {
+      display: block;
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: min(72vh, 640px);
+      object-fit: contain;
+      background: transparent;
+      border-radius: 0.95rem;
+      box-shadow: 0 0 0 1px rgba(73, 9, 0, 0.1);
+    }
+    .interior-desktop-media__photos {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.65rem;
+      max-width: 1100px;
+    }
+    .interior-desktop-media__photo {
+      border-radius: 0.85rem;
+      overflow: hidden;
+      background: #f0eee9;
+      box-shadow: 0 0 0 1px rgba(73, 9, 0, 0.1);
+      aspect-ratio: 4 / 3;
+    }
+    .interior-desktop-media__photo img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: rgba(240, 238, 233, 0.92);
+    }
+    @media (min-width: 1320px) {
+      .interior-desktop-media__photos {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
     }
   </style>
@@ -1202,6 +1405,171 @@
       function isVideoUrl(src) {
         return /\.(mp4|webm|ogg)(?:[?#].*)?$/i.test(String(src || '').trim());
       }
+      function isTouchDevice() {
+        try {
+          return window.matchMedia('(pointer: coarse)').matches;
+        } catch (_) {
+          return false;
+        }
+      }
+      let interiorVideoOverlay = null;
+      let interiorVideoOverlayVideo = null;
+      let interiorVideoOverlayTouchStartY = null;
+      let interiorVideoOverlaySourceVideo = null;
+      let interiorVideoOverlayWasPlaying = false;
+      let interiorImageOverlay = null;
+      let interiorImageOverlayImage = null;
+      let interiorImageOverlayTouchStartY = null;
+      let interiorOverlayLockCount = 0;
+      function lockPageScroll() {
+        interiorOverlayLockCount += 1;
+        if (interiorOverlayLockCount === 1) {
+          document.documentElement.style.overflow = 'hidden';
+          document.body.style.overflow = 'hidden';
+        }
+      }
+      function unlockPageScroll() {
+        interiorOverlayLockCount = Math.max(0, interiorOverlayLockCount - 1);
+        if (interiorOverlayLockCount === 0) {
+          document.documentElement.style.overflow = '';
+          document.body.style.overflow = '';
+        }
+      }
+      function ensureInteriorVideoOverlay() {
+        if (interiorVideoOverlay && interiorVideoOverlayVideo) return;
+        const root = document.createElement('div');
+        root.className = 'interior-video-overlay';
+        root.setAttribute('aria-hidden', 'true');
+        root.innerHTML =
+          '<button type="button" class="interior-video-overlay__close" data-interior-video-overlay-close>Закрыть</button>' +
+          '<div class="interior-video-overlay__inner">' +
+            '<video class="interior-video-overlay__video" playsinline webkit-playsinline preload="metadata"></video>' +
+          '</div>';
+        document.body.appendChild(root);
+        interiorVideoOverlay = root;
+        interiorVideoOverlayVideo = root.querySelector('.interior-video-overlay__video');
+        if (interiorVideoOverlayVideo) {
+          interiorVideoOverlayVideo.addEventListener('click', function () {
+            if (!interiorVideoOverlayVideo.hasAttribute('controls')) {
+              interiorVideoOverlayVideo.setAttribute('controls', '');
+            }
+          });
+        }
+        const closeBtn = root.querySelector('[data-interior-video-overlay-close]');
+        function closeOverlay() {
+          if (!interiorVideoOverlay || !interiorVideoOverlayVideo) return;
+          const restoreTime = Number(interiorVideoOverlayVideo.currentTime || 0);
+          interiorVideoOverlay.classList.remove('is-open');
+          interiorVideoOverlay.setAttribute('aria-hidden', 'true');
+          unlockPageScroll();
+          try { interiorVideoOverlayVideo.pause(); } catch (_) {}
+          if (interiorVideoOverlaySourceVideo) {
+            try { interiorVideoOverlaySourceVideo.currentTime = restoreTime; } catch (_) {}
+            if (interiorVideoOverlayWasPlaying) {
+              const p = interiorVideoOverlaySourceVideo.play();
+              if (p && typeof p.catch === 'function') p.catch(function () {});
+            }
+          }
+          interiorVideoOverlaySourceVideo = null;
+          interiorVideoOverlayWasPlaying = false;
+          interiorVideoOverlayVideo.removeAttribute('src');
+          interiorVideoOverlayVideo.removeAttribute('controls');
+          try { interiorVideoOverlayVideo.load(); } catch (_) {}
+          interiorVideoOverlayTouchStartY = null;
+        }
+        function openOverlay(src, sourceVideo) {
+          if (!interiorVideoOverlay || !interiorVideoOverlayVideo || !src) return;
+          interiorVideoOverlaySourceVideo = sourceVideo || null;
+          interiorVideoOverlayWasPlaying = !!(sourceVideo && !sourceVideo.paused);
+          const startTime = Number(sourceVideo && sourceVideo.currentTime ? sourceVideo.currentTime : 0);
+          if (sourceVideo) {
+            try { sourceVideo.pause(); } catch (_) {}
+          }
+          interiorVideoOverlayVideo.src = src;
+          try { interiorVideoOverlayVideo.currentTime = startTime; } catch (_) {}
+          interiorVideoOverlay.classList.add('is-open');
+          interiorVideoOverlay.setAttribute('aria-hidden', 'false');
+          lockPageScroll();
+          const p = interiorVideoOverlayVideo.play();
+          if (p && typeof p.catch === 'function') p.catch(function () {});
+        }
+        root.addEventListener('click', function (e) {
+          if (e.target === root) closeOverlay();
+        });
+        if (closeBtn) closeBtn.addEventListener('click', closeOverlay);
+        root.addEventListener('wheel', function (e) {
+          if (e.deltaY < -8) closeOverlay();
+        }, { passive: true });
+        root.addEventListener('touchstart', function (e) {
+          if (!e.touches || !e.touches[0]) return;
+          interiorVideoOverlayTouchStartY = e.touches[0].clientY;
+        }, { passive: true });
+        root.addEventListener('touchmove', function (e) {
+          if (!e.touches || !e.touches[0] || interiorVideoOverlayTouchStartY == null) return;
+          const dy = e.touches[0].clientY - interiorVideoOverlayTouchStartY;
+          // Свайп вниз (обычно жест "скролл вверх") — закрываем просмотр.
+          if (dy > 28) closeOverlay();
+        }, { passive: true });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && interiorVideoOverlay && interiorVideoOverlay.classList.contains('is-open')) {
+            closeOverlay();
+          }
+        });
+        ensureInteriorVideoOverlay.open = openOverlay;
+      }
+      function ensureInteriorImageOverlay() {
+        if (interiorImageOverlay && interiorImageOverlayImage) return;
+        const root = document.createElement('div');
+        root.className = 'interior-image-overlay';
+        root.setAttribute('aria-hidden', 'true');
+        root.innerHTML =
+          '<button type="button" class="interior-image-overlay__close" data-interior-image-overlay-close>Закрыть</button>' +
+          '<div class="interior-image-overlay__inner">' +
+            '<img class="interior-image-overlay__img" alt="" />' +
+          '</div>';
+        document.body.appendChild(root);
+        interiorImageOverlay = root;
+        interiorImageOverlayImage = root.querySelector('.interior-image-overlay__img');
+        const closeBtn = root.querySelector('[data-interior-image-overlay-close]');
+        function closeOverlay() {
+          if (!interiorImageOverlay || !interiorImageOverlayImage) return;
+          interiorImageOverlay.classList.remove('is-open');
+          interiorImageOverlay.setAttribute('aria-hidden', 'true');
+          unlockPageScroll();
+          interiorImageOverlayImage.removeAttribute('src');
+          interiorImageOverlayTouchStartY = null;
+        }
+        function openOverlay(src, alt) {
+          if (!interiorImageOverlay || !interiorImageOverlayImage || !src) return;
+          interiorImageOverlayImage.src = src;
+          interiorImageOverlayImage.alt = alt || '';
+          interiorImageOverlay.classList.add('is-open');
+          interiorImageOverlay.setAttribute('aria-hidden', 'false');
+          lockPageScroll();
+        }
+        root.addEventListener('click', function (e) {
+          if (e.target === root) closeOverlay();
+        });
+        if (closeBtn) closeBtn.addEventListener('click', closeOverlay);
+        root.addEventListener('wheel', function (e) {
+          if (e.deltaY < -8) closeOverlay();
+        }, { passive: true });
+        root.addEventListener('touchstart', function (e) {
+          if (!e.touches || !e.touches[0]) return;
+          interiorImageOverlayTouchStartY = e.touches[0].clientY;
+        }, { passive: true });
+        root.addEventListener('touchmove', function (e) {
+          if (!e.touches || !e.touches[0] || interiorImageOverlayTouchStartY == null) return;
+          const dy = e.touches[0].clientY - interiorImageOverlayTouchStartY;
+          if (dy > 28) closeOverlay();
+        }, { passive: true });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && interiorImageOverlay && interiorImageOverlay.classList.contains('is-open')) {
+            closeOverlay();
+          }
+        });
+        ensureInteriorImageOverlay.open = openOverlay;
+      }
 
       function renderGallery(slug) {
         const mount = document.querySelector('[data-interior-gallery="' + slug + '"]');
@@ -1217,60 +1585,37 @@
         if (typeof state.current !== 'number' || state.current < 0 || state.current >= state.images.length) {
           state.current = 0;
         }
-        const media = state.images.map((src) => ({ src: String(src || '').trim(), kind: isVideoUrl(src) ? 'video' : 'image' }));
+        const media = state.images
+          .map((src) => ({ src: String(src || '').trim(), kind: isVideoUrl(src) ? 'video' : 'image' }))
+          .filter((item) => !!item.src);
         const hasVideo = media.some((item) => item.kind === 'video');
-        if (hasVideo) {
-          const firstVideo = media.find((item) => item.kind === 'video' && item.src);
-          if (!firstVideo || !firstVideo.src) {
-            mount.innerHTML =
-              '<div class="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl bg-coffee-200/40 text-center text-sm text-coffee-600 ring-1 ring-coffee-200/80">' +
-                '<span>Видео скоро добавим</span>' +
-              '</div>';
-            return;
-          }
-          state.current = 0;
+        if (!media.length) {
           mount.innerHTML =
-            '<div class="interior-carousel__frame interior-carousel__frame--video-only">' +
-              '<video ' +
-                'src="' + escHtml(firstVideo.src) + '" ' +
-                'preload="metadata" ' +
-                'playsinline webkit-playsinline muted loop ' +
-                'class="interior-video-only" ' +
-              '></video>' +
+            '<div class="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl bg-coffee-200/40 text-center text-sm text-coffee-600 ring-1 ring-coffee-200/80">' +
+              '<span>Медиа скоро добавим</span>' +
             '</div>';
-          const videoEl = mount.querySelector('video');
-          if (videoEl) {
-            // До клика никаких controls — только после взаимодействия.
-            videoEl.addEventListener('click', function () {
-              if (!videoEl.controls) videoEl.controls = true;
-            });
-          }
-          state.syncMedia = function () {
-            const panel = mount.closest('[role="tabpanel"]');
-            const isActivePanel = !panel || !panel.hidden;
-            if (!videoEl) return;
-            if (!isActivePanel) {
-              try { videoEl.pause(); } catch (_) {}
-              return;
-            }
-            videoEl.muted = true;
-            const p = videoEl.play();
-            if (p && typeof p.catch === 'function') p.catch(function () {});
-          };
-          // На видео-галеpее карусель и миниатюры не нужны.
           return;
+        }
+        // Вариант 1 UX: если есть видео, всегда показываем его первым, фото — через миниатюры рядом/ниже.
+        media.sort(function (a, b) {
+          if (a.kind === b.kind) return 0;
+          return a.kind === 'video' ? -1 : 1;
+        });
+        if (typeof state.current !== 'number' || state.current < 0 || state.current >= media.length) {
+          state.current = 0;
         }
         const pages = media.map((item, idx) => (
           '<div class="interior-carousel__page">' +
             (item.kind === 'video'
-              ? '<video src="' + escHtml(item.src) + '" preload="metadata" playsinline webkit-playsinline muted loop class="bg-black" data-interior-video="' + slug + '"></video>'
+              ? '<video src="' + escHtml(item.src) + '" preload="metadata" playsinline webkit-playsinline muted loop class="bg-black" data-interior-video="' + slug + '"></video>' +
+                '<button type="button" class="interior-video-expand-btn" data-interior-video-expand="' + escHtml(item.src) + '">Развернуть</button>'
               : '<img src="' + escHtml(item.src) + '" alt="' + escHtml((state.title || slug) + ' — ' + (idx + 1) + ' / ' + media.length) + '" loading="lazy" draggable="false" />') +
           '</div>'
         )).join('');
         const thumbs = media.map((item, idx) => (
           '<button type="button" class="interior-carousel__thumb' + (item.kind === 'video' ? ' interior-carousel__thumb--video' : '') + '" data-interior-thumb="' + slug + '" data-idx="' + String(idx) + '" aria-selected="' + (idx === state.current ? 'true' : 'false') + '" aria-label="' + (item.kind === 'video' ? 'Видео ' : 'Фото ') + String(idx + 1) + ' из ' + media.length + '">' +
             (item.kind === 'video'
-              ? ''
+              ? '<span aria-hidden="true">▶</span>'
               : '<img src="' + escHtml(item.src) + '" alt="" loading="lazy" draggable="false" />') +
           '</button>'
         )).join('');
@@ -1289,20 +1634,50 @@
               : '<img src="' + escHtml(item.src) + '" alt="" loading="lazy" />') +
           '</div>'
         )).join('');
+        const desktopVideoItem = media.find((item) => item.kind === 'video');
+        const desktopPhotoItems = media.filter((item) => item.kind === 'image');
+        const desktopPhotoTiles = desktopPhotoItems.map((item, idx) => (
+          '<div class="interior-desktop-media__photo" data-desktop-photo-wrap="' + slug + '-' + String(idx) + '">' +
+            '<img src="' + escHtml(item.src) + '" alt="' + escHtml((state.title || slug) + ' — фото ' + (idx + 1)) + '" loading="lazy" data-desktop-photo="' + slug + '-' + String(idx) + '" />' +
+          '</div>'
+        )).join('');
+        const desktopMediaBlock = hasVideo
+          ? (
+            '<div class="interior-desktop-media" data-interior-desktop-media="' + slug + '">' +
+              '<div class="interior-desktop-media__tabs" role="tablist" aria-label="Видео и фото">' +
+                '<button type="button" class="interior-desktop-media__tab" role="tab" data-desktop-tab="video" aria-selected="true">Видео</button>' +
+                '<button type="button" class="interior-desktop-media__tab" role="tab" data-desktop-tab="photo" aria-selected="false">Фото</button>' +
+              '</div>' +
+              '<div class="interior-desktop-media__panel" data-desktop-panel="video">' +
+                '<div class="interior-desktop-media__video-wrap">' +
+                  (desktopVideoItem
+                    ? '<video src="' + escHtml(desktopVideoItem.src) + '" preload="metadata" playsinline webkit-playsinline muted loop data-desktop-video="' + slug + '"></video>'
+                    : '<div class="p-6 text-sm text-white/80">Видео скоро добавим</div>') +
+                '</div>' +
+              '</div>' +
+              '<div class="interior-desktop-media__panel" data-desktop-panel="photo" hidden>' +
+                (desktopPhotoTiles
+                  ? '<div class="interior-desktop-media__photos">' + desktopPhotoTiles + '</div>'
+                  : '<div class="rounded-xl border border-coffee-200 bg-coffee-50/70 p-4 text-sm text-coffee-700">Фото скоро добавим</div>') +
+              '</div>' +
+            '</div>'
+          )
+          : '';
         mount.innerHTML =
-          '<div class="w-full overflow-hidden">' +
+          '<div class="interior-gallery-shell' + (hasVideo ? ' interior-gallery-shell--has-video' : '') + ' w-full overflow-hidden">' +
             '<div class="interior-carousel-wrap">' +
               '<div class="interior-carousel interior-carousel--with-thumbs' + (hasVideo ? ' interior-carousel--has-video' : '') + '" role="group">' +
                 '<div class="min-w-0 flex-1">' +
                   '<div class="interior-carousel__frame">' +
                     '<div class="interior-carousel__pages" data-interior-pages="' + slug + '">' + pages + '</div>' +
-                    '<button type="button" data-interior-prev="' + slug + '" class="interior-carousel__nav interior-carousel__nav--prev" aria-label="Предыдущее фото">' + svgL + '</button>' +
-                    '<button type="button" data-interior-next="' + slug + '" class="interior-carousel__nav interior-carousel__nav--next" aria-label="Следующее фото">' + svgR + '</button>' +
+                    '<button type="button" data-interior-prev="' + slug + '" class="interior-carousel__nav interior-carousel__nav--prev" aria-label="Предыдущее медиа">' + svgL + '</button>' +
+                    '<button type="button" data-interior-next="' + slug + '" class="interior-carousel__nav interior-carousel__nav--next" aria-label="Следующее медиа">' + svgR + '</button>' +
                   '</div>' +
                 '</div>' +
                 '<div class="interior-carousel__thumbs">' + thumbs + '</div>' +
               '</div>' +
             '</div>' +
+            desktopMediaBlock +
             '<div class="interior-collage" aria-hidden="true">' + collageItems + '</div>' +
           '</div>';
         const pagesEl = mount.querySelector('[data-interior-pages="' + slug + '"]');
@@ -1310,9 +1685,32 @@
         if (!pagesEl || !thumbBtns.length) return;
         let idx = state.current || 0;
         const videos = Array.from(pagesEl.querySelectorAll('video'));
+        const images = Array.from(pagesEl.querySelectorAll('img'));
+        const expandBtns = Array.from(mount.querySelectorAll('[data-interior-video-expand]'));
+        ensureInteriorVideoOverlay();
+        ensureInteriorImageOverlay();
         videos.forEach(function (video) {
           video.addEventListener('click', function () {
+            if (isTouchDevice()) return;
             if (!video.hasAttribute('controls')) video.setAttribute('controls', '');
+          });
+        });
+        images.forEach(function (img) {
+          img.addEventListener('click', function () {
+            const src = img.getAttribute('src');
+            const alt = img.getAttribute('alt') || '';
+            if (ensureInteriorImageOverlay.open) ensureInteriorImageOverlay.open(src, alt);
+          });
+        });
+        expandBtns.forEach(function (btn) {
+          btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const src = btn.getAttribute('data-interior-video-expand');
+            const sourceVideo = btn.closest('.interior-carousel__page')
+              ? btn.closest('.interior-carousel__page').querySelector('video')
+              : null;
+            if (ensureInteriorVideoOverlay.open) ensureInteriorVideoOverlay.open(src, sourceVideo);
           });
         });
         function syncVideoPlayback() {
@@ -1337,18 +1735,22 @@
           const active = thumbBtns[i];
           if (active) active.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
         }
+        function updateDesktopAspect(i) {
+          return;
+        }
         function goTo(newIdx, instant) {
-          if (newIdx < 0 || newIdx >= state.images.length) return;
+          if (newIdx < 0 || newIdx >= media.length) return;
           const w = pagesEl.clientWidth;
           if (w < 1) return;
           idx = newIdx;
           state.current = newIdx;
           pagesEl.scrollTo({ left: newIdx * w, behavior: instant ? 'auto' : 'smooth' });
           setThumbState(newIdx);
+          updateDesktopAspect(newIdx);
           syncVideoPlayback();
         }
         function go(step) {
-          const nextIdx = (idx + step + state.images.length) % state.images.length;
+          const nextIdx = (idx + step + media.length) % media.length;
           goTo(nextIdx, false);
         }
         let scrollRaf = 0;
@@ -1358,11 +1760,12 @@
             scrollRaf = 0;
             const w = pagesEl.clientWidth;
             if (w < 1) return;
-            const i = Math.max(0, Math.min(state.images.length - 1, Math.round(pagesEl.scrollLeft / w)));
+            const i = Math.max(0, Math.min(media.length - 1, Math.round(pagesEl.scrollLeft / w)));
             if (i !== idx) {
               idx = i;
               state.current = i;
               setThumbState(i);
+              updateDesktopAspect(i);
               syncVideoPlayback();
             }
           });
@@ -1378,7 +1781,71 @@
         if (prevBtn) prevBtn.addEventListener('click', function () { go(-1); });
         if (nextBtn) nextBtn.addEventListener('click', function () { go(1); });
         state.syncMedia = syncVideoPlayback;
-        requestAnimationFrame(function () { goTo(idx, true); });
+        requestAnimationFrame(function () {
+          goTo(idx, true);
+          updateDesktopAspect(idx);
+        });
+        const desktopRoot = mount.querySelector('[data-interior-desktop-media="' + slug + '"]');
+        if (desktopRoot) {
+          const tabs = Array.from(desktopRoot.querySelectorAll('[data-desktop-tab]'));
+          const panelVideo = desktopRoot.querySelector('[data-desktop-panel="video"]');
+          const panelPhoto = desktopRoot.querySelector('[data-desktop-panel="photo"]');
+          const desktopVideo = desktopRoot.querySelector('[data-desktop-video="' + slug + '"]');
+          function setDesktopTab(next) {
+            const showVideo = next === 'video';
+            tabs.forEach(function (tab) {
+              tab.setAttribute('aria-selected', tab.getAttribute('data-desktop-tab') === next ? 'true' : 'false');
+            });
+            if (panelVideo) panelVideo.hidden = !showVideo;
+            if (panelPhoto) panelPhoto.hidden = showVideo;
+            if (desktopVideo) {
+              if (showVideo) {
+                const p = desktopVideo.play();
+                if (p && typeof p.catch === 'function') p.catch(function () {});
+              } else {
+                try { desktopVideo.pause(); } catch (_) {}
+              }
+            }
+          }
+          tabs.forEach(function (tab) {
+            tab.addEventListener('click', function () {
+              setDesktopTab(tab.getAttribute('data-desktop-tab') || 'video');
+            });
+          });
+          const desktopPhotos = Array.from(desktopRoot.querySelectorAll('[data-desktop-photo]'));
+          desktopPhotos.forEach(function (img) {
+            const key = img.getAttribute('data-desktop-photo');
+            const wrap = key ? desktopRoot.querySelector('[data-desktop-photo-wrap="' + key + '"]') : null;
+            if (!wrap) return;
+            function applyPhotoRatio() {
+              const w = Number(img.naturalWidth) || 0;
+              const h = Number(img.naturalHeight) || 0;
+              if (w > 0 && h > 0) wrap.style.aspectRatio = w + ' / ' + h;
+            }
+            if (img.complete) {
+              applyPhotoRatio();
+            } else {
+              img.addEventListener('load', applyPhotoRatio, { once: true });
+            }
+          });
+          setDesktopTab('video');
+          const prevSync = state.syncMedia;
+          state.syncMedia = function () {
+            if (typeof prevSync === 'function') prevSync();
+            if (!desktopVideo) return;
+            const panel = mount.closest('[role="tabpanel"]');
+            const isActivePanel = !panel || !panel.hidden;
+            const isDesktop = window.innerWidth >= 1024;
+            const videoTabOn = panelVideo && !panelVideo.hidden;
+            if (!isActivePanel || !isDesktop || !videoTabOn) {
+              try { desktopVideo.pause(); } catch (_) {}
+              return;
+            }
+            desktopVideo.muted = true;
+            const p = desktopVideo.play();
+            if (p && typeof p.catch === 'function') p.catch(function () {});
+          };
+        }
       }
 
       async function loadInteriorGallery() {
@@ -1388,6 +1855,11 @@
           const rows = await res.json();
           if (!Array.isArray(rows)) return;
           const demoKirova12Video = '/static/kirova%2012.mp4';
+          const demoKirova12Photos = [
+            '/static/uploads/images/1640efa71d0e426ba1a4f9d0cc12d51f.jpg',
+            '/static/uploads/images/565c8c77a697420190289c372944431d.jpg',
+            '/static/uploads/images/7e33a935dc6c4a31a3db37148c9483cf.jpg',
+          ];
           const interiorHeadingOverrides = {
             'kirova-45a': 'Кофейня с завтраками и посадочными местами',
             'kirova-12': 'Экспресс-кофейня в ритме города',
@@ -1398,6 +1870,9 @@
             let media = Array.isArray(item.images) ? item.images.filter(Boolean) : [];
             if (slug === 'kirova-12' && !media.some((src) => String(src || '').includes('kirova%2012.mp4') || String(src || '').includes('kirova 12.mp4'))) {
               media = [demoKirova12Video].concat(media);
+            }
+            if (slug === 'kirova-12' && !media.some((src) => !isVideoUrl(src))) {
+              media = media.concat(demoKirova12Photos);
             }
             interiorState[slug] = {
               title: item.title || slug,
