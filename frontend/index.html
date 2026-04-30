@@ -13,6 +13,53 @@
   <link rel="preconnect" href="https://yandex.ru" />
   <link rel="preconnect" href="https://yastatic.net" crossorigin />
   <link rel="stylesheet" href="/dist/styles.css" />
+  <script>
+    (function () {
+      // Мобильные браузеры (особенно Safari) могут агрессивно восстанавливать позицию на reload.
+      // Делаем ранний "анти-restore": убираем hash и кратко фиксируем top только на reload.
+      // При первом действии пользователя (скролл/тап) фиксация сразу выключается.
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+      if (location.hash) {
+        try {
+          history.replaceState(null, '', location.pathname + location.search);
+        } catch (_) {}
+      }
+      var navEntries = (performance && typeof performance.getEntriesByType === 'function')
+        ? performance.getEntriesByType('navigation')
+        : [];
+      var isReload = !!(navEntries && navEntries[0] && navEntries[0].type === 'reload');
+      if (!isReload) return;
+      function toTop() {
+        try {
+          window.scrollTo(0, 0);
+          if (document.documentElement) document.documentElement.scrollTop = 0;
+          if (document.body) document.body.scrollTop = 0;
+        } catch (_) {}
+      }
+      var cancelled = false;
+      function cancelHold() {
+        cancelled = true;
+      }
+      window.addEventListener('wheel', cancelHold, { once: true, passive: true });
+      window.addEventListener('touchstart', cancelHold, { once: true, passive: true });
+      window.addEventListener('keydown', cancelHold, { once: true });
+      window.addEventListener('scroll', cancelHold, { once: true, passive: true });
+      function holdTopFor(ms) {
+        var until = Date.now() + ms;
+        function tick() {
+          if (cancelled) return;
+          toTop();
+          if (Date.now() < until) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      }
+      toTop();
+      holdTopFor(180);
+      window.addEventListener('pageshow', function () {
+        if (!cancelled) holdTopFor(120);
+      }, { once: true });
+    })();
+  </script>
   <!-- Жёсткие границы шапки: без этого логотип может рисоваться в натуральном размере (огромный), навигация — шире экрана -->
   <style>
     /* Уменьшает «уезд» вниз при догрузке видео/картинок (scroll anchoring) после F5. */
@@ -687,35 +734,9 @@
 <body class="bg-coffee-50 font-sans text-coffee-900 antialiased">
   <script>
     (function () {
-      if (location.hash) return;
+      // Повторно фиксируем режим восстановления без поздних scrollTo,
+      // чтобы не было заметного скачка "вниз->вверх" после обновления.
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-      function toTop() {
-        try {
-          window.scrollTo(0, 0);
-          if (document.documentElement) document.documentElement.scrollTop = 0;
-          if (document.body) document.body.scrollTop = 0;
-        } catch (e) {}
-      }
-      toTop();
-      var navs = performance.getEntriesByType('navigation');
-      var isReload = navs && navs[0] && navs[0].type === 'reload';
-      if (isReload) {
-        for (var i = 0; i < 30; i += 1) {
-          setTimeout(toTop, i * 20);
-        }
-        window.addEventListener(
-          'load',
-          function onReloaded() {
-            toTop();
-            setTimeout(toTop, 0);
-            setTimeout(toTop, 50);
-            setTimeout(toTop, 150);
-            setTimeout(toTop, 400);
-            window.removeEventListener('load', onReloaded);
-          },
-          { once: true }
-        );
-      }
     })();
   </script>
   <!-- Шапка: цвета как у логотипа — тёмный кофейный + кремовый фон -->
