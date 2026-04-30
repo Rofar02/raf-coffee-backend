@@ -451,6 +451,30 @@
     .interior-image-overlay__inner {
       width: min(96vw, 1280px);
       max-height: 92dvh;
+      overflow: hidden;
+    }
+    .interior-image-overlay__pages {
+      display: flex;
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      touch-action: pan-x pan-y pinch-zoom;
+    }
+    .interior-image-overlay__pages::-webkit-scrollbar {
+      display: none;
+    }
+    .interior-image-overlay__page {
+      flex: 0 0 100%;
+      width: 100%;
+      scroll-snap-align: start;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .interior-image-overlay__img {
       display: block;
@@ -1457,8 +1481,11 @@
       let interiorVideoOverlaySourceVideo = null;
       let interiorVideoOverlayWasPlaying = false;
       let interiorImageOverlay = null;
-      let interiorImageOverlayImage = null;
+      let interiorImageOverlayPages = null;
       let interiorImageOverlayTouchStartY = null;
+      let interiorImageOverlayTouchStartX = null;
+      let interiorImageOverlayItems = [];
+      let interiorImageOverlayIndex = 0;
       let interiorOverlayLockCount = 0;
       function lockPageScroll() {
         interiorOverlayLockCount += 1;
@@ -1557,54 +1584,98 @@
         ensureInteriorVideoOverlay.open = openOverlay;
       }
       function ensureInteriorImageOverlay() {
-        if (interiorImageOverlay && interiorImageOverlayImage) return;
+        if (interiorImageOverlay && interiorImageOverlayPages) return;
         const root = document.createElement('div');
         root.className = 'interior-image-overlay';
         root.setAttribute('aria-hidden', 'true');
         root.innerHTML =
           '<button type="button" class="interior-image-overlay__close" data-interior-image-overlay-close>Закрыть</button>' +
           '<div class="interior-image-overlay__inner">' +
-            '<img class="interior-image-overlay__img" alt="" />' +
+            '<div class="interior-image-overlay__pages"></div>' +
           '</div>';
         document.body.appendChild(root);
         interiorImageOverlay = root;
-        interiorImageOverlayImage = root.querySelector('.interior-image-overlay__img');
+        interiorImageOverlayPages = root.querySelector('.interior-image-overlay__pages');
         const closeBtn = root.querySelector('[data-interior-image-overlay-close]');
+        function renderCurrent() {
+          if (!interiorImageOverlayPages || !interiorImageOverlayItems.length) return;
+          const w = interiorImageOverlayPages.clientWidth;
+          if (w < 1) return;
+          interiorImageOverlayPages.scrollTo({ left: interiorImageOverlayIndex * w, behavior: 'auto' });
+        }
+        function go(step) {
+          if (!interiorImageOverlayItems.length) return;
+          interiorImageOverlayIndex = (interiorImageOverlayIndex + step + interiorImageOverlayItems.length) % interiorImageOverlayItems.length;
+          renderCurrent();
+        }
         function closeOverlay() {
-          if (!interiorImageOverlay || !interiorImageOverlayImage) return;
+          if (!interiorImageOverlay || !interiorImageOverlayPages) return;
           interiorImageOverlay.classList.remove('is-open');
           interiorImageOverlay.setAttribute('aria-hidden', 'true');
           unlockPageScroll();
-          interiorImageOverlayImage.removeAttribute('src');
+          interiorImageOverlayPages.innerHTML = '';
           interiorImageOverlayTouchStartY = null;
+          interiorImageOverlayTouchStartX = null;
+          interiorImageOverlayItems = [];
+          interiorImageOverlayIndex = 0;
         }
-        function openOverlay(src, alt) {
-          if (!interiorImageOverlay || !interiorImageOverlayImage || !src) return;
-          interiorImageOverlayImage.src = src;
-          interiorImageOverlayImage.alt = alt || '';
+        function openOverlay(items, startIndex) {
+          if (!interiorImageOverlay || !interiorImageOverlayPages) return;
+          interiorImageOverlayItems = Array.isArray(items) ? items.filter(function (x) { return x && x.src; }) : [];
+          if (!interiorImageOverlayItems.length) return;
+          interiorImageOverlayIndex = Math.max(0, Math.min(interiorImageOverlayItems.length - 1, Number(startIndex) || 0));
+          interiorImageOverlayPages.innerHTML = interiorImageOverlayItems.map(function (item) {
+            return '<div class="interior-image-overlay__page"><img class="interior-image-overlay__img" src="' + escHtml(item.src) + '" alt="' + escHtml(item.alt || '') + '" /></div>';
+          }).join('');
           interiorImageOverlay.classList.add('is-open');
           interiorImageOverlay.setAttribute('aria-hidden', 'false');
           lockPageScroll();
+          requestAnimationFrame(renderCurrent);
         }
         root.addEventListener('click', function (e) {
           if (e.target === root) closeOverlay();
         });
         if (closeBtn) closeBtn.addEventListener('click', closeOverlay);
+        interiorImageOverlayPages.addEventListener('scroll', function () {
+          const w = interiorImageOverlayPages.clientWidth;
+          if (w < 1) return;
+          const i = Math.max(0, Math.min(interiorImageOverlayItems.length - 1, Math.round(interiorImageOverlayPages.scrollLeft / w)));
+          interiorImageOverlayIndex = i;
+        }, { passive: true });
         root.addEventListener('wheel', function (e) {
           if (e.deltaY < -8) closeOverlay();
         }, { passive: true });
         root.addEventListener('touchstart', function (e) {
           if (!e.touches || !e.touches[0]) return;
           interiorImageOverlayTouchStartY = e.touches[0].clientY;
+          interiorImageOverlayTouchStartX = e.touches[0].clientX;
         }, { passive: true });
         root.addEventListener('touchmove', function (e) {
-          if (!e.touches || !e.touches[0] || interiorImageOverlayTouchStartY == null) return;
+          if (!e.touches || !e.touches[0] || interiorImageOverlayTouchStartY == null || interiorImageOverlayTouchStartX == null) return;
           const dy = e.touches[0].clientY - interiorImageOverlayTouchStartY;
-          if (dy > 28) closeOverlay();
+          const dx = e.touches[0].clientX - interiorImageOverlayTouchStartX;
+          if (Math.abs(dx) > 34 && Math.abs(dx) > Math.abs(dy)) {
+            // Листаем, как в обычной карусели: свайп/скролл без стрелок.
+            const w = interiorImageOverlayPages ? interiorImageOverlayPages.clientWidth : 0;
+            if (w > 0 && interiorImageOverlayPages) {
+              interiorImageOverlayPages.scrollTo({
+                left: interiorImageOverlayPages.scrollLeft + (dx < 0 ? w : -w),
+                behavior: 'smooth',
+              });
+            }
+            interiorImageOverlayTouchStartY = e.touches[0].clientY;
+            interiorImageOverlayTouchStartX = e.touches[0].clientX;
+            return;
+          }
+          if (dy > 34) closeOverlay();
         }, { passive: true });
         document.addEventListener('keydown', function (e) {
           if (e.key === 'Escape' && interiorImageOverlay && interiorImageOverlay.classList.contains('is-open')) {
             closeOverlay();
+          } else if (e.key === 'ArrowRight' && interiorImageOverlay && interiorImageOverlay.classList.contains('is-open')) {
+            go(1);
+          } else if (e.key === 'ArrowLeft' && interiorImageOverlay && interiorImageOverlay.classList.contains('is-open')) {
+            go(-1);
           }
         });
         ensureInteriorImageOverlay.open = openOverlay;
@@ -1734,11 +1805,15 @@
             if (!video.hasAttribute('controls')) video.setAttribute('controls', '');
           });
         });
-        images.forEach(function (img) {
+        const imageItems = images.map(function (img) {
+          return {
+            src: img.getAttribute('src') || '',
+            alt: img.getAttribute('alt') || '',
+          };
+        });
+        images.forEach(function (img, imageIdx) {
           img.addEventListener('click', function () {
-            const src = img.getAttribute('src');
-            const alt = img.getAttribute('alt') || '';
-            if (ensureInteriorImageOverlay.open) ensureInteriorImageOverlay.open(src, alt);
+            if (ensureInteriorImageOverlay.open) ensureInteriorImageOverlay.open(imageItems, imageIdx);
           });
         });
         expandBtns.forEach(function (btn) {
