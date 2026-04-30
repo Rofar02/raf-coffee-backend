@@ -260,6 +260,12 @@
       -ms-overflow-style: none;
       touch-action: pan-x pan-y pinch-zoom;
     }
+    @media (max-width: 1023.98px) {
+      .interior-carousel__pages,
+      .interior-carousel--has-video .interior-carousel__pages {
+        height: min(56svh, 300px) !important;
+      }
+    }
     .interior-carousel__pages::-webkit-scrollbar {
       display: none;
     }
@@ -298,6 +304,18 @@
     .interior-carousel--has-video .interior-carousel__page img {
       object-fit: contain;
       background: rgba(240, 238, 233, 0.9);
+    }
+    @media (max-width: 1023.98px) {
+      .interior-carousel__page img {
+        object-fit: cover !important;
+        object-position: center !important;
+        background: transparent !important;
+      }
+      .interior-carousel--has-video .interior-carousel__page img {
+        object-fit: cover !important;
+        object-position: center !important;
+        background: transparent !important;
+      }
     }
     /* На мобилке оставляем текущий приятный результат: видео заполняет кадр. */
     .interior-carousel--has-video .interior-carousel__page video {
@@ -1855,10 +1873,12 @@
           const rows = await res.json();
           if (!Array.isArray(rows)) return;
           const demoKirova12Video = '/static/kirova%2012.mp4';
-          const demoKirova12Photos = [
-            '/static/uploads/images/1640efa71d0e426ba1a4f9d0cc12d51f.jpg',
-            '/static/uploads/images/565c8c77a697420190289c372944431d.jpg',
-            '/static/uploads/images/7e33a935dc6c4a31a3db37148c9483cf.jpg',
+          const demoInteriorPhotos = [
+            '/static/interier/kofe_osen_shliapa_117427_1600x1200.jpg',
+            '/static/interier/kofe_moloko_stakan_197355_1600x1200.jpg',
+            '/static/interier/kofe_stakan_kofevarka_144401_1600x1200.jpg',
+            '/static/interier/kofe_kniga_podokonnik_130911_1600x1200.jpg',
+            '/static/interier/kofe_stolik_chashka_119666_1600x1200.jpg',
           ];
           const interiorHeadingOverrides = {
             'kirova-45a': 'Кофейня с завтраками и посадочными местами',
@@ -1868,11 +1888,12 @@
             const slug = String(item.slug || '').trim();
             if (!slug) return;
             let media = Array.isArray(item.images) ? item.images.filter(Boolean) : [];
-            if (slug === 'kirova-12' && !media.some((src) => String(src || '').includes('kirova%2012.mp4') || String(src || '').includes('kirova 12.mp4'))) {
-              media = [demoKirova12Video].concat(media);
+            // Временный предпросмотр: новые фото 4:3 показываем в обеих кофейнях.
+            if (slug === 'kirova-45a' || slug === 'kirova-12') {
+              media = demoInteriorPhotos.slice();
             }
-            if (slug === 'kirova-12' && !media.some((src) => !isVideoUrl(src))) {
-              media = media.concat(demoKirova12Photos);
+            if (slug === 'kirova-12') {
+              media = [demoKirova12Video].concat(media);
             }
             interiorState[slug] = {
               title: item.title || slug,
