@@ -41,6 +41,9 @@ class VacancyService:
     async def list_applications(self, limit: int = 200) -> List[Dict[str, Any]]:
         return await self.repo.list_applications(limit=limit)
 
+    async def delete_application(self, application_id: int) -> bool:
+        return await self.repo.delete_application(application_id)
+
     async def apply(self, payload: Dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
         vacancy = await self.repo.get_vacancy(int(payload["vacancy_id"]))
         if not vacancy or not vacancy.get("is_active", False):

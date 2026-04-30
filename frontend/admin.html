@@ -45,7 +45,10 @@
       text-align: center;
     }
     #toast.is-visible { opacity: 1; }
-    @media (max-width: 640px) {
+    @media (max-width: 1023.98px) {
+      .admin-desktop-header {
+        display: none !important;
+      }
       .season-activate-wrap { flex-direction: column; }
       #btn-activate-season, #btn-create-season, #submit-btn, #cancel-edit-btn, #reset-form-btn { width: 100%; }
       #season-dishes-list, #dishes-list { max-height: 32vh; padding-right: 0; }
@@ -193,6 +196,12 @@
       top: 0;
       z-index: 50;
     }
+    @media (max-width: 1023.98px) {
+      #admin-app-nav {
+        position: static !important;
+        top: auto !important;
+      }
+    }
     .admin-panel { display: none; }
     .admin-panel.is-active { display: block; }
     .admin-tab {
@@ -228,7 +237,7 @@
   </header>
 
   <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-10">
-    <div class="mb-8">
+    <div class="admin-desktop-header mb-8">
       <img src="/static/logo_raf_new.png" alt="" class="mb-4 h-12 w-auto sm:h-14" />
       <h1 class="font-display text-2xl font-bold text-coffee-900">Управление меню</h1>
       <p class="mt-2 text-coffee-600">Блюда, сезоны, категории и рубрики — переключайте раздел ниже.</p>
@@ -667,17 +676,22 @@
 
   <div
     id="vacancy-app-modal-overlay"
-    class="fixed inset-0 z-[90] hidden items-center justify-center bg-black/55 p-4 backdrop-blur-sm"
+    class="fixed inset-0 z-[90] hidden items-start justify-center overflow-y-auto bg-black/55 p-3 pt-6 pb-6 backdrop-blur-sm sm:items-center sm:p-4"
     role="dialog"
     aria-modal="true"
     aria-labelledby="vacancy-app-modal-title"
   >
-    <div class="w-full max-w-2xl rounded-2xl border border-coffee-200 bg-white p-5 shadow-2xl sm:p-6">
+    <div class="w-full max-w-2xl max-h-[calc(100dvh-3rem)] overflow-y-auto rounded-2xl border border-coffee-200 bg-white p-4 shadow-2xl sm:max-h-[calc(100dvh-4rem)] sm:p-6">
       <div class="mb-3 flex items-center justify-between gap-3">
         <h3 id="vacancy-app-modal-title" class="font-display text-xl font-semibold text-coffee-900">Отклик на вакансию</h3>
-        <button id="vacancy-app-modal-close" type="button" class="rounded-full border border-coffee-300 px-3 py-1.5 text-sm font-medium text-coffee-800 transition hover:bg-coffee-100">
-          Закрыть
-        </button>
+        <div class="flex items-center gap-2">
+          <button id="vacancy-app-modal-delete" type="button" class="rounded-full border border-rose-300 px-3 py-1.5 text-sm font-medium text-rose-700 transition hover:bg-rose-50">
+            Удалить
+          </button>
+          <button id="vacancy-app-modal-close" type="button" class="rounded-full border border-coffee-300 px-3 py-1.5 text-sm font-medium text-coffee-800 transition hover:bg-coffee-100">
+            Закрыть
+          </button>
+        </div>
       </div>
       <div id="vacancy-app-modal-body" class="space-y-3 text-sm text-coffee-800"></div>
     </div>
@@ -752,6 +766,7 @@
     const vacancyApplicationsListEl = document.getElementById('vacancy-applications-list');
     const vacancyAppModalOverlay = document.getElementById('vacancy-app-modal-overlay');
     const vacancyAppModalCloseBtn = document.getElementById('vacancy-app-modal-close');
+    const vacancyAppModalDeleteBtn = document.getElementById('vacancy-app-modal-delete');
     const vacancyAppModalBody = document.getElementById('vacancy-app-modal-body');
     const interiorAdminListEl = document.getElementById('interior-admin-list');
 
@@ -762,6 +777,7 @@
     let seasonDishes = [];
     let vacancies = [];
     let vacancyApplications = [];
+    let openedVacancyApplicationId = null;
     let interiorGalleries = [];
     let editingDishId = null;
     let toastTimerId = null;
@@ -948,15 +964,16 @@
         return;
       }
       vacancyApplicationsListEl.innerHTML = vacancyApplications.map((a, idx) => (
-        '<button type="button" data-vacancy-app-open="' + String(idx) + '" class="block w-full rounded-xl border border-coffee-200 bg-coffee-50/70 p-3 text-left text-xs transition hover:border-coffee-300 hover:bg-coffee-50">' +
+        '<div data-vacancy-app-open="' + String(idx) + '" role="button" tabindex="0" class="block w-full cursor-pointer rounded-xl border border-coffee-200 bg-coffee-50/70 p-3 text-left text-xs transition hover:border-coffee-300 hover:bg-coffee-50">' +
           '<div class="flex flex-wrap items-center justify-between gap-2">' +
             '<p class="font-semibold text-coffee-900">' + escHtml(a.full_name) + ' · ' + escHtml(a.phone) + '</p>' +
             '<span class="text-coffee-600">' + escHtml(new Date(a.created_at).toLocaleString('ru-RU')) + '</span>' +
+            '<button type="button" data-vacancy-app-del="' + String(a.id) + '" class="rounded-full border border-rose-300 px-2.5 py-1 text-[11px] font-medium text-rose-700 transition hover:bg-rose-50">Удалить</button>' +
           '</div>' +
           '<p class="mt-1 text-coffee-700">Вакансия: ' + escHtml(a.vacancy_title || ('#' + a.vacancy_id)) + '</p>' +
           '<p class="mt-1 text-coffee-600">Telegram: ' + escHtml(a.contact_telegram || '-') + ' · Email: ' + escHtml(a.contact_email || '-') + '</p>' +
           (a.message ? ('<p class="mt-1 text-coffee-800">' + escHtml(a.message) + '</p>') : '') +
-        '</button>'
+        '</div>'
       )).join('');
     }
 
@@ -964,6 +981,7 @@
       if (!vacancyAppModalOverlay || !vacancyAppModalBody) return;
       const a = vacancyApplications[idx];
       if (!a) return;
+      openedVacancyApplicationId = Number(a.id);
       const rawMessage = a.message || '';
       const resumeMatch = rawMessage.match(/Резюме PDF:\s*(\S+)/i);
       const resumeUrl = resumeMatch && resumeMatch[1] ? resumeMatch[1] : null;
@@ -999,11 +1017,35 @@
       document.body.style.overflow = 'hidden';
     }
 
+    async function deleteVacancyApplicationById(applicationId) {
+      const token = getTokenOrWarn();
+      if (!token) return;
+      const id = Number(applicationId);
+      if (!id || Number.isNaN(id)) return;
+      if (!confirm('Удалить отклик? Это действие необратимо.')) return;
+      try {
+        const res = await fetch(url('/admin/vacancy-applications/' + id), {
+          method: 'DELETE',
+          headers: { 'X-Admin-Token': token },
+        });
+        const text = await res.text();
+        if (!res.ok) throw new Error(parseErrorText(text));
+        await loadVacancyApplications();
+        if (openedVacancyApplicationId === id) {
+          closeVacancyApplicationModal();
+        }
+        showToast('Отклик удален.');
+      } catch (err) {
+        showAlert('err', 'Отклики: ' + (err.message || err));
+      }
+    }
+
     function closeVacancyApplicationModal() {
       if (!vacancyAppModalOverlay) return;
       vacancyAppModalOverlay.classList.add('hidden');
       vacancyAppModalOverlay.classList.remove('flex');
       document.body.style.overflow = '';
+      openedVacancyApplicationId = null;
     }
 
     async function loadVacancySettings() {
@@ -1184,9 +1226,27 @@
     }
 
     if (vacancyApplicationsListEl) {
-      vacancyApplicationsListEl.addEventListener('click', (e) => {
+      vacancyApplicationsListEl.addEventListener('click', async (e) => {
+        const delBtn = e.target.closest('[data-vacancy-app-del]');
+        if (delBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          const id = Number(delBtn.getAttribute('data-vacancy-app-del'));
+          if (Number.isNaN(id)) return;
+          await deleteVacancyApplicationById(id);
+          return;
+        }
         const openBtn = e.target.closest('[data-vacancy-app-open]');
         if (!openBtn) return;
+        const idx = Number(openBtn.getAttribute('data-vacancy-app-open'));
+        if (Number.isNaN(idx)) return;
+        openVacancyApplicationModal(idx);
+      });
+      vacancyApplicationsListEl.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        const openBtn = e.target.closest('[data-vacancy-app-open]');
+        if (!openBtn) return;
+        e.preventDefault();
         const idx = Number(openBtn.getAttribute('data-vacancy-app-open'));
         if (Number.isNaN(idx)) return;
         openVacancyApplicationModal(idx);
@@ -1194,6 +1254,17 @@
     }
     if (vacancyAppModalCloseBtn) {
       vacancyAppModalCloseBtn.addEventListener('click', closeVacancyApplicationModal);
+    }
+    if (vacancyAppModalDeleteBtn) {
+      vacancyAppModalDeleteBtn.addEventListener('click', async () => {
+        if (!openedVacancyApplicationId) return;
+        vacancyAppModalDeleteBtn.disabled = true;
+        try {
+          await deleteVacancyApplicationById(openedVacancyApplicationId);
+        } finally {
+          vacancyAppModalDeleteBtn.disabled = false;
+        }
+      });
     }
     if (vacancyAppModalOverlay) {
       vacancyAppModalOverlay.addEventListener('click', (e) => {

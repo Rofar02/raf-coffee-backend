@@ -1300,6 +1300,20 @@ async def list_vacancy_applications(
     return [VacancyApplication(**x) for x in rows]
 
 
+@router.delete("/vacancy-applications/{application_id}")
+async def delete_vacancy_application(
+    application_id: int,
+    _: str = Depends(verify_admin_token),
+    pool=Depends(get_pool),
+):
+    repo = VacancyRepository(pool)
+    service = VacancyService(repo)
+    ok = await service.delete_application(application_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Vacancy application not found")
+    return {"ok": True, "deleted_id": application_id}
+
+
 @router.get("/interior", response_model=List[InteriorGallery])
 async def list_interior_galleries(
     _: str = Depends(verify_admin_token),

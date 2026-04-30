@@ -163,3 +163,11 @@ class VacancyRepository:
                 limit,
             )
             return [dict(r) for r in rows]
+
+    async def delete_application(self, application_id: int) -> bool:
+        async with self.pool.acquire() as conn:
+            result = await conn.execute(
+                "DELETE FROM vacancy_applications WHERE id = $1",
+                application_id,
+            )
+            return result.endswith("1")
