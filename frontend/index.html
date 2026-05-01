@@ -71,6 +71,45 @@
     body {
       overflow-anchor: none;
     }
+    /* Сковородка: в SVG много поля — чуть крупнее остальных эмблем; !important перебивает preflight img height:auto */
+    img.advantages-emblem-skillet {
+      flex-shrink: 0;
+      width: 3.25rem !important;
+      height: 3.25rem !important;
+      max-width: none !important;
+      max-height: none !important;
+    }
+    @media (min-width: 640px) {
+      img.advantages-emblem-skillet {
+        width: 4rem !important;
+        height: 4rem !important;
+      }
+    }
+    @media (min-width: 1024px) {
+      img.advantages-emblem-skillet {
+        width: 4.125rem !important;
+        height: 4.125rem !important;
+      }
+    }
+    /* Блок преимуществ: на планшетах/компах подпись только под эмблемой — фиксируем каскадом. */
+    @media (min-width: 768px) {
+      .advantages-item {
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start;
+        text-align: center;
+        gap: 0 !important;
+      }
+      .advantages-item > p {
+        flex: none !important;
+        width: 100%;
+        margin-top: 0.875rem !important;
+        text-align: center !important;
+      }
+      .advantages-item > img {
+        margin-inline: auto;
+      }
+    }
     #site-header {
       max-width: 100vw;
       overflow-x: hidden;
@@ -850,7 +889,7 @@
     </section>
 
     <!-- Герой -->
-    <section id="home-content" class="border-b border-coffee-200/60 bg-coffee-50 px-4 py-16 sm:px-6 sm:py-24">
+    <section id="home-content" class="bg-coffee-50 px-4 py-16 sm:px-6 sm:py-24">
       <div class="mx-auto max-w-3xl text-center">
         <img
           src="/static/logo_raf_new.png"
@@ -882,45 +921,45 @@
       </div>
     </section>
 
-    <section class="mb-20 bg-white px-2 py-12 sm:mb-24 sm:px-4 sm:py-14">
-      <div class="mx-auto max-w-[110rem] p-3 sm:p-5 lg:p-6">
-        <h2 class="mb-5 text-center font-display text-2xl font-bold text-coffee-900 sm:mb-6 sm:text-3xl">Наши преимущества</h2>
-        <div class="mx-auto grid max-w-6xl grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10 md:grid-cols-3 md:gap-x-8 md:gap-y-14 lg:gap-x-10 lg:gap-y-16">
-        <article class="flex flex-col items-center px-2 py-3 text-center sm:px-4">
-          <img src="/static/emblems/Зерно.svg" alt="" class="h-[3.25rem] w-[3.25rem] object-contain sm:h-14 sm:w-14" width="56" height="56" />
-          <p class="mt-3 text-lg font-semibold text-coffee-900 sm:text-xl">Speciality зерно</p>
+    <section class="mb-20 bg-white px-6 pb-16 pt-32 sm:mb-24 sm:px-7 sm:pb-16 sm:pt-26 md:px-8 md:pb-18 md:pt-28">
+      <div class="mx-auto max-w-[110rem]">
+        <h2 class="mb-9 px-3 text-center font-display text-2xl font-bold text-coffee-900 sm:mb-10 sm:px-0 sm:text-3xl md:mb-11">Наши преимущества</h2>
+        <div class="mx-auto grid max-w-6xl grid-cols-1 gap-y-11 px-5 sm:gap-y-12 sm:px-6 md:grid-cols-3 md:gap-x-9 md:gap-y-17 md:px-0 lg:gap-x-10 lg:gap-y-21">
+        <article class="advantages-item flex flex-row items-center gap-4 px-5 text-left sm:px-5 md:flex-col md:items-center md:gap-0 md:px-4 md:py-3 md:text-center">
+          <img src="/static/emblems/Зерно.svg" alt="" class="h-11 w-11 shrink-0 object-contain sm:h-[3.375rem] sm:w-[3.375rem]" width="44" height="44" />
+          <p class="min-w-0 flex-1 text-base font-semibold leading-snug text-coffee-900 sm:text-lg md:mt-3 md:flex-none md:text-xl">Speciality зерно</p>
         </article>
-        <article class="flex flex-col items-center px-2 py-3 text-center sm:px-4">
-          <img src="/static/emblems/Кедровый орех.svg" alt="" class="h-[3.25rem] w-[3.25rem] object-contain sm:h-14 sm:w-14" width="56" height="56" />
-          <p class="mt-3 text-lg font-semibold text-coffee-900 sm:text-xl">Используем натуральные<br />ингредиенты</p>
+        <article class="advantages-item flex flex-row items-center gap-4 px-5 text-left sm:px-5 md:flex-col md:items-center md:gap-0 md:px-4 md:py-3 md:text-center">
+          <img src="/static/emblems/Кедровый орех.svg" alt="" class="h-11 w-11 shrink-0 object-contain sm:h-[3.375rem] sm:w-[3.375rem]" width="44" height="44" />
+          <p class="min-w-0 flex-1 text-base font-semibold leading-snug text-coffee-900 sm:text-lg md:mt-3 md:flex-none md:text-xl">Используем натуральные<br />ингредиенты</p>
         </article>
-        <article class="flex flex-col items-center px-2 py-3 text-center sm:px-4">
-          <img src="/static/emblems/Сковородка.svg" alt="" class="h-[3.25rem] w-[3.25rem] object-contain sm:h-14 sm:w-14" width="56" height="56" />
-          <p class="mt-3 text-lg font-semibold text-coffee-900 sm:text-xl">Завтракаем весь день</p>
+        <article class="advantages-item flex flex-row items-center gap-4 px-5 text-left sm:px-5 md:flex-col md:items-center md:gap-0 md:px-4 md:py-3 md:text-center">
+          <img src="/static/emblems/Сковородка.svg" alt="" class="advantages-emblem-skillet shrink-0 object-contain" width="52" height="52" />
+          <p class="min-w-0 flex-1 text-base font-semibold leading-snug text-coffee-900 sm:text-lg md:mt-3 md:flex-none md:text-xl">Завтракаем весь день</p>
         </article>
-        <article class="flex flex-col items-center px-2 py-3 text-center sm:px-4">
-          <img src="/static/emblems/Лапка.svg" alt="" class="h-[3.25rem] w-[3.25rem] object-contain sm:h-14 sm:w-14" width="56" height="56" />
-          <p class="mt-3 text-lg font-semibold text-coffee-900 sm:text-xl">Любим животных</p>
+        <article class="advantages-item flex flex-row items-center gap-4 px-5 text-left sm:px-5 md:flex-col md:items-center md:gap-0 md:px-4 md:py-3 md:text-center">
+          <img src="/static/emblems/Лапка.svg" alt="" class="h-11 w-11 shrink-0 object-contain sm:h-[3.375rem] sm:w-[3.375rem]" width="44" height="44" />
+          <p class="min-w-0 flex-1 text-base font-semibold leading-snug text-coffee-900 sm:text-lg md:mt-3 md:flex-none md:text-xl">Любим животных</p>
         </article>
-        <article class="flex flex-col items-center px-2 py-3 text-center sm:px-4">
-          <img src="/static/emblems/рука.svg" alt="" class="h-[3.25rem] w-[3.25rem] object-contain sm:h-14 sm:w-14" width="56" height="56" />
-          <p class="mt-3 text-lg font-semibold leading-snug text-coffee-900 sm:text-xl">Крафтовый подход и авторские рецепты</p>
+        <article class="advantages-item flex flex-row items-center gap-4 px-5 text-left sm:px-5 md:flex-col md:items-center md:gap-0 md:px-4 md:py-3 md:text-center">
+          <img src="/static/emblems/рука.svg" alt="" class="h-11 w-11 shrink-0 object-contain sm:h-[3.375rem] sm:w-[3.375rem]" width="44" height="44" />
+          <p class="min-w-0 flex-1 text-base font-semibold leading-snug text-coffee-900 sm:text-lg md:mt-3 md:flex-none md:text-xl">Крафтовый подход и авторские рецепты</p>
         </article>
-        <article class="flex flex-col items-center px-2 py-3 text-center sm:px-4">
-          <img src="/static/emblems/стаканчик.svg" alt="" class="h-[3.25rem] w-[3.25rem] object-contain sm:h-14 sm:w-14" width="56" height="56" />
-          <p class="mt-3 text-lg font-semibold leading-snug text-coffee-900 sm:text-xl">
-            Дружелюбный сервис. Знаем постоянников по&nbsp;именам и&nbsp;помним их любимые напитки
+        <article class="advantages-item flex flex-row items-center gap-4 px-5 text-left sm:px-5 md:flex-col md:items-center md:gap-0 md:px-4 md:py-3 md:text-center">
+          <img src="/static/emblems/стаканчик.svg" alt="" class="h-11 w-11 shrink-0 object-contain sm:h-[3.375rem] sm:w-[3.375rem]" width="44" height="44" />
+          <p class="min-w-0 flex-1 text-base font-semibold leading-snug text-coffee-900 sm:text-lg md:mt-3 md:flex-none md:text-xl">
+            Знаем постоянников по&nbsp;именам и&nbsp;помним их любимые напитки
           </p>
         </article>
         </div>
       </div>
     </section>
 
-    <section id="about" class="scroll-mt-24 px-4 pt-2 pb-16 sm:px-6 sm:pt-4 sm:pb-20">
+    <section id="about" class="scroll-mt-24 px-4 pt-3 pb-14 text-center sm:px-6 sm:pt-6 sm:pb-18 md:pt-7">
       <div class="mx-auto max-w-5xl">
-        <h2 class="font-display text-2xl font-bold text-coffee-900 sm:text-3xl">О кофейне</h2>
-        <p class="mt-2 h-1 w-16 rounded-full bg-coffee-700"></p>
-        <div class="mt-8 space-y-4 text-lg leading-relaxed text-coffee-800">
+        <h2 class="font-display text-2xl font-bold text-coffee-900 sm:text-3xl">О нас</h2>
+        <p class="mx-auto mt-2 h-1 w-16 rounded-full bg-coffee-700"></p>
+        <div class="mt-7 space-y-4 text-center text-lg leading-relaxed text-coffee-800">
           <p>
             Рафчик Coffee — это две уникальные локации на карте Новокузнецка, объединенные любовью к качественному зерну и гостеприимству — на Кирова, 45а вас ждет просторная кофейня с уютным залом, где можно неспешно насладиться авторскими завтраками и провести время с близкими.
           </p>
