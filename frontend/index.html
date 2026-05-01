@@ -27,7 +27,9 @@
       var navEntries = (performance && typeof performance.getEntriesByType === 'function')
         ? performance.getEntriesByType('navigation')
         : [];
-      var isReload = !!(navEntries && navEntries[0] && navEntries[0].type === 'reload');
+      var nt = navEntries && navEntries[0] && navEntries[0].type;
+      var legacyNav = typeof performance !== 'undefined' ? performance.navigation : null;
+      var isReload = nt === 'reload' || !!(legacyNav && legacyNav.type === 1); /* TYPE_RELOAD */
       if (!isReload) return;
       function toTop() {
         try {
@@ -64,6 +66,9 @@
   <style>
     /* Уменьшает «уезд» вниз при догрузке видео/картинок (scroll anchoring) после F5. */
     html {
+      overflow-anchor: none;
+    }
+    body {
       overflow-anchor: none;
     }
     #site-header {
@@ -845,7 +850,7 @@
     </section>
 
     <!-- Герой -->
-    <section id="home-content" class="border-b border-coffee-200/60 bg-white px-4 py-16 sm:px-6 sm:py-24">
+    <section id="home-content" class="border-b border-coffee-200/60 bg-coffee-50 px-4 py-16 sm:px-6 sm:py-24">
       <div class="mx-auto max-w-3xl text-center">
         <img
           src="/static/logo_raf_new.png"
@@ -1844,10 +1849,33 @@
             }
           });
         }
-        function setThumbState(i) {
+        /* scrollIntoView на миниатюре тянет весь документ к #interior (особенно Safari при обновлении). */
+        function scrollInteriorThumbIntoStrip(btn, behavior) {
+          if (!btn) return;
+          const strip = btn.closest('.interior-carousel__thumbs');
+          if (!strip) return;
+          const beh = behavior === 'smooth' ? 'smooth' : 'auto';
+          const er = btn.getBoundingClientRect();
+          const sr = strip.getBoundingClientRect();
+          const pad = 6;
+          let dx = 0;
+          let dy = 0;
+          if (er.left < sr.left + pad) dx = er.left - (sr.left + pad);
+          else if (er.right > sr.right - pad) dx = er.right - (sr.right - pad);
+          if (er.top < sr.top + pad) dy = er.top - (sr.top + pad);
+          else if (er.bottom > sr.bottom - pad) dy = er.bottom - (sr.bottom - pad);
+          if (dx === 0 && dy === 0) return;
+          try {
+            strip.scrollBy({ left: dx, top: dy, behavior: beh });
+          } catch (_) {
+            strip.scrollLeft += dx;
+            strip.scrollTop += dy;
+          }
+        }
+        function setThumbState(i, thumbScrollBehavior) {
           thumbBtns.forEach((btn, k) => btn.setAttribute('aria-selected', k === i ? 'true' : 'false'));
           const active = thumbBtns[i];
-          if (active) active.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+          scrollInteriorThumbIntoStrip(active, thumbScrollBehavior === 'smooth' ? 'smooth' : 'auto');
         }
         function updateDesktopAspect(i) {
           return;
@@ -1859,7 +1887,7 @@
           idx = newIdx;
           state.current = newIdx;
           pagesEl.scrollTo({ left: newIdx * w, behavior: instant ? 'auto' : 'smooth' });
-          setThumbState(newIdx);
+          setThumbState(newIdx, instant ? 'auto' : 'smooth');
           updateDesktopAspect(newIdx);
           syncVideoPlayback();
         }
@@ -1878,7 +1906,7 @@
             if (i !== idx) {
               idx = i;
               state.current = i;
-              setThumbState(i);
+              setThumbState(i, 'auto');
               updateDesktopAspect(i);
               syncVideoPlayback();
             }
