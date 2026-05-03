@@ -3,6 +3,11 @@ module.exports = {
   content: ['./index.html', './menu.html', './admin.html', './privacy.html', './terms.html'],
   theme: {
     extend: {
+      spacing: {
+        /** Под уже используемые на сайте утилиты (pb-18, pt-26, …) */
+        18: '4.5rem',
+        26: '6.5rem',
+      },
       colors: {
         /* Бренд-референс (шкала STUDIO FLEUR с картинки): MATCHA, ALMOND, PISTACHE, CHAI, CAROB, VANILLA */
         brand: {
